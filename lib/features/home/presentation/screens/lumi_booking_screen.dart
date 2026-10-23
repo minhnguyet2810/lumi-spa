@@ -1,4 +1,6 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:convert';
+
+import 'package:http/http.dart' as http;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -23,6 +25,8 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
   bool _busy = false;
   bool _done = false;
   String? _error;
+  final _contactNameController = TextEditingController();
+  final _contactPhoneController = TextEditingController();
 
   String get _name => (widget.service['name'] ?? 'Dịch vụ LUMI').toString();
   String get _serviceId => (widget.service['id'] ?? '').toString();
@@ -31,6 +35,21 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
   String _dateText(DateTime d) =>
       '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
   String _hourText(int hour) => '${hour.toString().padLeft(2, '0')}:00';
+
+  @override
+  void initState() {
+    super.initState();
+    final user = FirebaseAuth.instance.currentUser;
+    _contactNameController.text = user?.displayName ?? '';
+    _contactPhoneController.text = user?.phoneNumber ?? '';
+  }
+
+  @override
+  void dispose() {
+    _contactNameController.dispose();
+    _contactPhoneController.dispose();
+    super.dispose();
+  }
 
   Future<void> _pickDate() async {
     final today = DateUtils.dateOnly(DateTime.now());
@@ -73,40 +92,52 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
       setState(() => _error = 'Vui lòng chọn một khung giờ trong tương lai.');
       return;
     }
+    final contactName = _contactNameController.text.trim();
+    final contactPhone = _contactPhoneController.text.trim();
+    if (contactName.isEmpty || contactPhone.isEmpty) {
+      setState(() => _error = 'Vui lòng nhập họ tên và số điện thoại.');
+      return;
+    }
     setState(() {
       _busy = true;
       _error = null;
     });
     try {
-      // One booking per service/start-time. Transaction prevents same-slot races.
-      // Firestore security rules must enforce authenticated ownership and immutable slot data.
-      final slotId =
-          '${_serviceId}_${_date.year}${_date.month.toString().padLeft(2, '0')}${_date.day.toString().padLeft(2, '0')}_${_hour!.toString().padLeft(2, '0')}00';
-      final db = FirebaseFirestore.instance;
-      final slot = db.collection('booking_slots').doc(slotId);
-      await db.runTransaction((tx) async {
-        final existing = await tx.get(slot);
-        if (existing.exists) {
-          throw StateError(
-            'Khung giờ này đã được đặt. Vui lòng chọn giờ khác.',
-          );
-        }
-        tx.set(slot, {
-          'userId': user.uid,
+      final idToken = await user.getIdToken();
+      if (idToken == null || idToken.isEmpty) {
+        throw StateError('Không lấy được thông tin đăng nhập. Vui lòng đăng nhập lại.');
+      }
+
+      final date =
+          '${_date.year.toString().padLeft(4, '0')}-'
+          '${_date.month.toString().padLeft(2, '0')}-'
+          '${_date.day.toString().padLeft(2, '0')}';
+      final response = await http.post(
+        Uri.parse('http://10.0.2.2:3000/api/bookings'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $idToken',
+        },
+        body: jsonEncode({
           'serviceId': _serviceId,
-          'serviceName': _name,
-          'price': widget.service['price'],
-          'durationMinutes': widget.service['durationMinutes'],
-          'startAt': Timestamp.fromDate(when),
-          'status': 'confirmed',
-          'createdAt': FieldValue.serverTimestamp(),
-        });
-      });
+          'date': date,
+          'hour': _hour,
+          'contactName': contactName,
+          'contactPhone': contactPhone,
+        }),
+      );
+
+      final body = jsonDecode(response.body) as Map<String, dynamic>;
+      if (response.statusCode != 201 || body['success'] != true) {
+        throw StateError(
+          (body['message'] ?? 'Không thể tạo lịch hẹn.').toString(),
+        );
+      }
       if (mounted) setState(() => _done = true);
     } catch (e) {
       if (mounted) {
         setState(
-          () => _error = e is StateError ? e.message.toString() : 'Không thể xác nhận lịch. Kiểm tra kết nối và Firestore Rules rồi thử lại.',
+          () => _error = e is StateError ? e.message.toString() : 'Không thể gửi yêu cầu. Kiểm tra kết nối với backend rồi thử lại.',
         );
       }
     } finally {
@@ -237,6 +268,38 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
                           ],
                         ),
                         const SizedBox(height: 22),
+                        _heading('03', 'Thông tin liên hệ'),
+                        const SizedBox(height: 12),
+                        TextField(
+                          controller: _contactNameController,
+                          textCapitalization: TextCapitalization.words,
+                          textInputAction: TextInputAction.next,
+                          decoration: InputDecoration(
+                            labelText: 'Họ và tên',
+                            filled: true,
+                            fillColor: Colors.white,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: BorderSide.none,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        TextField(
+                          controller: _contactPhoneController,
+                          keyboardType: TextInputType.phone,
+                          textInputAction: TextInputAction.done,
+                          decoration: InputDecoration(
+                            labelText: 'Số điện thoại',
+                            filled: true,
+                            fillColor: Colors.white,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: BorderSide.none,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 22),
                         if (_error != null)
                           Text(
                             _error!,
@@ -321,7 +384,7 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
           const Icon(Icons.check_circle_outline, size: 68, color: rose),
           const SizedBox(height: 16),
           Text(
-            'Your moment is reserved.',
+            'Yêu cầu đặt lịch đã được gửi.',
             textAlign: TextAlign.center,
             style: GoogleFonts.cormorantGaramond(color: plum, fontSize: 35),
           ),
@@ -330,6 +393,12 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
             '$_name\n${_dateText(_date)} · ${_hourText(_hour!)}',
             textAlign: TextAlign.center,
             style: GoogleFonts.dmSans(color: plum, height: 1.7),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Lịch đang chờ LUMI xác nhận.',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.dmSans(color: plum.withValues(alpha: .7)),
           ),
           const SizedBox(height: 24),
           FilledButton(

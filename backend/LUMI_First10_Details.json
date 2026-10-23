@@ -1,0 +1,82 @@
+[
+  {
+    "id": "lumi-001",
+    "name": "Lumi Micellar Cleansing Water",
+    "expectedPrice": 320000,
+    "descriptionLong": "Lumi Micellar Cleansing Water (300ml) thuộc nhóm làm sạch & cân bằng. Tẩy trang dịu nhẹ, hút sạch bụi mịn PM2.5 và lớp makeup mà không khô rát. Thành phần nổi bật: Chiết xuất hoa cúc La Mã, Babassu Oil Polyglyceryl. Đây là mô tả tham khảo dựa trên danh mục hiện có; hiệu quả tùy cơ địa và cần đối chiếu công thức, nhãn sản phẩm thực tế.",
+    "usageInstructions": "Thấm dung dịch lên bông tẩy trang, lau nhẹ mặt và mắt khi nhắm kín. Rửa lại nếu cần, sau đó tiếp tục bước làm sạch.",
+    "suitableFor": "Da thường, da khô và da nhạy cảm; thử trên vùng nhỏ trước khi dùng."
+  },
+  {
+    "id": "lumi-002",
+    "name": "Lumi Pure Cleansing Oil",
+    "expectedPrice": 450000,
+    "descriptionLong": "Lumi Pure Cleansing Oil (200ml) thuộc nhóm làm sạch & cân bằng. Nhũ hóa nhanh, hòa tan bã nhờn sâu trong lỗ chân lông, giảm mụn đầu đen. Thành phần nổi bật: Dầu Hạt Nho, Dầu Jojoba, Vitamin E tự nhiên. Đây là mô tả tham khảo dựa trên danh mục hiện có; hiệu quả tùy cơ địa và cần đối chiếu công thức, nhãn sản phẩm thực tế.",
+    "usageInstructions": "Dùng trên tay và mặt khô, massage nhẹ để hòa tan lớp trang điểm; thêm nước nhũ hóa rồi rửa sạch. Có thể dùng sữa rửa mặt tiếp theo.",
+    "suitableFor": "Da thường, da khô và da hỗn hợp; cân nhắc nếu dễ kích ứng với dầu thực vật."
+  },
+  {
+    "id": "lumi-003",
+    "name": "Lumi Gentle Foam Cleanser",
+    "expectedPrice": 350000,
+    "descriptionLong": "Lumi Gentle Foam Cleanser (150ml) thuộc nhóm làm sạch & cân bằng. Tạo bọt mịn làm sạch nhẹ dịu, giữ màng ẩm tự nhiên cho da nhạy cảm. Thành phần nổi bật: Chiết xuất Yến Mạch, Betaine, pH 5.5. Đây là mô tả tham khảo dựa trên danh mục hiện có; hiệu quả tùy cơ địa và cần đối chiếu công thức, nhãn sản phẩm thực tế.",
+    "usageInstructions": "Làm ướt mặt, tạo bọt với lượng vừa đủ, massage nhẹ và rửa sạch. Tránh chà xát mạnh.",
+    "suitableFor": "Da thường, da khô và da nhạy cảm."
+  },
+  {
+    "id": "lumi-004",
+    "name": "Lumi Salicylic Gel Cleanser",
+    "expectedPrice": 380000,
+    "descriptionLong": "Lumi Salicylic Gel Cleanser (200ml) thuộc nhóm làm sạch & cân bằng. Làm sạch sâu lỗ chân lông, kiềm dầu, ngăn ngừa mụn viêm hình thành. Thành phần nổi bật: 2% BHA (Salicylic Acid), Tràm Trà (Tea Tree), Kẽm PCA. Đây là mô tả tham khảo dựa trên danh mục hiện có; hiệu quả tùy cơ địa và cần đối chiếu công thức, nhãn sản phẩm thực tế.",
+    "usageInstructions": "Làm ướt mặt, massage nhẹ trong thời gian ngắn rồi rửa sạch. Tránh vùng mắt; giảm tần suất nếu khô rát và dùng chống nắng ban ngày.",
+    "suitableFor": "Da dầu, da hỗn hợp và da dễ bít tắc; da nhạy cảm nên bắt đầu thưa."
+  },
+  {
+    "id": "lumi-005",
+    "name": "Lumi Enzyme Powder Wash",
+    "expectedPrice": 420000,
+    "descriptionLong": "Lumi Enzyme Powder Wash (70g) thuộc nhóm làm sạch & cân bằng. Tẩy sừng sinh học vi điểm dạng bột, giúp da mịn màng tức thì. Thành phần nổi bật: Papain (Enzyme đu đủ), Chiết xuất Cám Gạo. Đây là mô tả tham khảo dựa trên danh mục hiện có; hiệu quả tùy cơ địa và cần đối chiếu công thức, nhãn sản phẩm thực tế.",
+    "usageInstructions": "Cho lượng bột nhỏ vào lòng bàn tay ướt, tạo bọt rồi massage thật nhẹ, rửa sạch. Bắt đầu 1–2 lần/tuần, điều chỉnh theo phản ứng da.",
+    "suitableFor": "Da thường và da có bề mặt thô ráp; không dùng trên vùng đang kích ứng."
+  },
+  {
+    "id": "lumi-006",
+    "name": "Lumi Soothing Floral Toner",
+    "expectedPrice": 340000,
+    "descriptionLong": "Lumi Soothing Floral Toner (200ml) thuộc nhóm làm sạch & cân bằng. Cân bằng pH, làm dịu da ửng đỏ sau khi rửa mặt hoặc nặn mụn. Thành phần nổi bật: Nước cất Hoa Hồng hữu cơ, Chiết xuất Rau Má cô đặc. Đây là mô tả tham khảo dựa trên danh mục hiện có; hiệu quả tùy cơ địa và cần đối chiếu công thức, nhãn sản phẩm thực tế.",
+    "usageInstructions": "Sau bước rửa mặt, thoa toner bằng tay sạch hoặc bông mềm, vỗ nhẹ. Tránh thoa lên vùng da tổn thương hở.",
+    "suitableFor": "Da thường, da khô và da có xu hướng nhạy cảm."
+  },
+  {
+    "id": "lumi-007",
+    "name": "Lumi Clarifying Pore Toner",
+    "expectedPrice": 360000,
+    "descriptionLong": "Lumi Clarifying Pore Toner (200ml) thuộc nhóm làm sạch & cân bằng. Kiểm soát bóng nhờn vùng chữ T, hỗ trợ se khít lỗ chân lông. Thành phần nổi bật: Chiết xuất Cây Phỉ (Witch Hazel), Niacinamide 2%. Đây là mô tả tham khảo dựa trên danh mục hiện có; hiệu quả tùy cơ địa và cần đối chiếu công thức, nhãn sản phẩm thực tế.",
+    "usageInstructions": "Sau khi làm sạch, thoa một lượng vừa đủ, tập trung vùng tiết dầu. Giảm tần suất nếu da khô căng.",
+    "suitableFor": "Da dầu và da hỗn hợp, đặc biệt vùng chữ T."
+  },
+  {
+    "id": "lumi-008",
+    "name": "Lumi Microbiome Essence Toner",
+    "expectedPrice": 480000,
+    "descriptionLong": "Lumi Microbiome Essence Toner (150ml) thuộc nhóm làm sạch & cân bằng. Củng cố hệ vi sinh trên da, phục hồi hàng rào ẩm cho da yếu tổn thương. Thành phần nổi bật: Men vi sinh Galactomyces, Bifida Ferment Lysate. Đây là mô tả tham khảo dựa trên danh mục hiện có; hiệu quả tùy cơ địa và cần đối chiếu công thức, nhãn sản phẩm thực tế.",
+    "usageInstructions": "Sau bước làm sạch, thoa toner bằng tay và vỗ nhẹ; tiếp tục serum hoặc kem dưỡng.",
+    "suitableFor": "Da thường, da khô và da cần hỗ trợ duy trì độ ẩm."
+  },
+  {
+    "id": "lumi-009",
+    "name": "Lumi Mineral Thermal Mist",
+    "expectedPrice": 260000,
+    "descriptionLong": "Lumi Mineral Thermal Mist (150ml) thuộc nhóm làm sạch & cân bằng. Cấp cứu hạ nhiệt làn da kích ứng, đỏ rát do nắng hoặc sau peel. Thành phần nổi bật: Nước khoáng nhiệt, Kẽm, Magie sinh học. Đây là mô tả tham khảo dựa trên danh mục hiện có; hiệu quả tùy cơ địa và cần đối chiếu công thức, nhãn sản phẩm thực tế.",
+    "usageInstructions": "Giữ chai cách mặt khoảng 20–30 cm, nhắm mắt và xịt lớp sương mỏng. Để thấm tự nhiên rồi khóa ẩm nếu cần.",
+    "suitableFor": "Nhiều loại da, đặc biệt da cảm thấy khô hoặc nóng; tránh dùng trên tổn thương hở."
+  },
+  {
+    "id": "lumi-010",
+    "name": "Lumi Micro-Peel Exfoliating Gel",
+    "expectedPrice": 320000,
+    "descriptionLong": "Lumi Micro-Peel Exfoliating Gel (100ml) thuộc nhóm làm sạch & cân bằng. Tẩy da chết dạng kỳ vật lý dịu nhẹ, lấy đi lớp sừng mà không gây xước da. Thành phần nổi bật: Cellulose thực vật, Chiết xuất Táo xanh. Đây là mô tả tham khảo dựa trên danh mục hiện có; hiệu quả tùy cơ địa và cần đối chiếu công thức, nhãn sản phẩm thực tế.",
+    "usageInstructions": "Thoa lên da sạch theo hướng dẫn trên bao bì, massage cực nhẹ rồi rửa sạch. Không chà mạnh; bắt đầu 1–2 lần/tuần.",
+    "suitableFor": "Da thường, da hỗn hợp và da có bề mặt sần; không dùng khi da đang kích ứng."
+  }
+]

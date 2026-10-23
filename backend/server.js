@@ -4,12 +4,30 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const db = require('./firebase');
+const adminRoutes = require('./routes/admin');
+const notificationRoutes = require('./routes/notifications');
+const membershipRoutes = require('./routes/membership');
+const orderRoutes = require('./routes/orders');
+const bookingRoutes = require('./routes/bookings');
+const profileRoutes = require('./routes/profile');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
+
+app.use('/api/admin', adminRoutes);
+
+app.use('/api/notifications', notificationRoutes);
+
+app.use('/api/membership', membershipRoutes);
+
+app.use('/api/orders', orderRoutes);
+
+app.use('/api/bookings', bookingRoutes);
+
+app.use('/api/me', profileRoutes);
 
 // Convert Firestore Timestamp into JSON-compatible values.
 function serialize(value) {
@@ -197,7 +215,11 @@ app.get('/', (req, res) => {
   });
 });
 
-// Start server
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`LUMI API running at http://localhost:${PORT}`);
-});
+// Start server only when run directly.
+if (require.main === module) {
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`LUMI API running at http://localhost:${PORT}`);
+  });
+}
+
+module.exports = app;

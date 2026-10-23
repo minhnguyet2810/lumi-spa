@@ -5,6 +5,7 @@ const { getFirestore } = require('firebase-admin/firestore');
 if (getApps().length === 0) {
   initializeApp({
     credential: applicationDefault(),
+    projectId: 'lumi-spa',
   });
 }
 

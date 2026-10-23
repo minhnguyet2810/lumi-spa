@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "147383769123",
+    "project_id": "lumi-spa",
+    "storage_bucket": "lumi-spa.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:147383769123:android:68c90cacc313d56627f996",
+        "android_client_info": {
+          "package_name": "com.example.lumi_spa"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBPHbOTyVscZfPZQhAGDepXjKN4kHjU6rY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

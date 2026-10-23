@@ -37,11 +37,13 @@ class _SplashScreenState extends State<SplashScreen> {
       } else if (!hasSeenOnboarding) {
         context.go('/welcome');
       } else {
-        context.go('/login');
+        // Returning guests may browse without signing in.
+        context.go('/home');
       }
     } catch (e) {
       if (!mounted) return;
-      context.go('/login');
+      // If onboarding state is unavailable, allow browsing.
+      context.go('/home');
     }
   }
 

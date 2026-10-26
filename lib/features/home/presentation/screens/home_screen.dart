@@ -1148,12 +1148,15 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _spa() => LumiSpaCatalog(
     servicesFuture: _servicesFuture,
     onRefresh: _refreshServices,
-    onBook: (service) {
-      Navigator.of(context).push(
-        MaterialPageRoute<void>(
+    onBook: (service) async {
+      final booked = await Navigator.of(context).push<bool>(
+        MaterialPageRoute<bool>(
           builder: (_) => LumiBookingScreen(service: service),
         ),
       );
+      if (booked == true && mounted) {
+        setState(() => _tab = 3);
+      }
     },
   );
 

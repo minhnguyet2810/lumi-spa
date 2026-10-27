@@ -29,5 +29,7 @@ class ApiConfig {
   static Uri get servicesUri => Uri.parse('$baseUrl/api/services');
   static Uri serviceDetailUri(String id) => Uri.parse('$baseUrl/api/services/$id');
   static Uri get bookingsUri => Uri.parse('$baseUrl/api/bookings');
+  static Uri slotsUri(String date, String serviceId) =>
+      Uri.parse('$baseUrl/api/bookings/slots?date=$date&serviceId=$serviceId');
   static Uri cancelBookingUri(String id) => Uri.parse('$baseUrl/api/bookings/$id/cancel');
 }

@@ -39,7 +39,7 @@ class BookingApiService {
     return token;
   }
 
-  /// Task 1: GET /api/services
+  /// GET /api/services
   Future<List<Map<String, dynamic>>> getServices() async {
     try {
       final response = await http.get(ApiConfig.servicesUri).timeout(
@@ -57,7 +57,7 @@ class BookingApiService {
     return LumiCatalogRepository.fetchServices();
   }
 
-  /// Task 1: GET /api/services/:id
+  /// GET /api/services/:id
   Future<Map<String, dynamic>?> getServiceDetail(String id) async {
     try {
       final response = await http.get(ApiConfig.serviceDetailUri(id)).timeout(
@@ -75,7 +75,25 @@ class BookingApiService {
     return all.firstWhere((s) => s['id'] == id, orElse: () => <String, dynamic>{});
   }
 
-  /// Task 3: POST /api/bookings
+  /// GET /api/bookings/slots (Kiểm tra slot trống từ server)
+  Future<List<Map<String, dynamic>>> getAvailableSlots(String date, String serviceId) async {
+    try {
+      final response = await http
+          .get(ApiConfig.slotsUri(date, serviceId))
+          .timeout(const Duration(seconds: 4));
+      if (response.statusCode == 200) {
+        final body = jsonDecode(response.body) as Map<String, dynamic>;
+        if (body['success'] == true && body['data']?['slots'] is List) {
+          return List<Map<String, dynamic>>.from(
+            (body['data']['slots'] as List).map((e) => Map<String, dynamic>.from(e as Map)),
+          );
+        }
+      }
+    } catch (_) {}
+    return [];
+  }
+
+  /// POST /api/bookings
   Future<BookingItem> createBooking({
     required String serviceId,
     required String date, // YYYY-MM-DD
@@ -128,7 +146,7 @@ class BookingApiService {
     throw BookingApiException(message, statusCode: response.statusCode);
   }
 
-  /// Task 4: GET /api/bookings
+  /// GET /api/bookings
   Future<List<BookingItem>> getMyBookings() async {
     final token = await _requireToken();
 
@@ -160,7 +178,7 @@ class BookingApiService {
     throw BookingApiException(message, statusCode: response.statusCode);
   }
 
-  /// Task 5: PATCH /api/bookings/:id/cancel
+  /// PATCH /api/bookings/:id/cancel
   Future<void> cancelBooking(String bookingId) async {
     final token = await _requireToken();
 

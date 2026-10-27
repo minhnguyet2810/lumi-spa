@@ -1,7 +1,9 @@
+import 'dart:async';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lumi_spa/core/theme/lumi_style.dart';
-import 'package:lumi_spa/features/booking/data/booking_api_service.dart';
+import 'package:lumi_spa/features/booking/data/booking_repository.dart';
 import 'package:lumi_spa/features/booking/data/models/booking_item.dart';
 import 'package:lumi_spa/features/booking/presentation/widgets/booking_card.dart';
 import 'package:lumi_spa/features/booking/presentation/widgets/booking_detail_sheet.dart';
@@ -30,35 +32,89 @@ class _LumiAppointmentsScreenState extends State<LumiAppointmentsScreen> {
   static const blue = LumiStyle.mutedBlue;
   static const muted = LumiStyle.muted;
 
-  int _selectedTab = 0; // 0: Sắp tới, 1: Hoàn thành, 2: Đã hủy
+  int _selectedTab = 0; // 0: Sắp tới, 1: Lịch sử, 2: Đã hủy
   bool _isLoading = false;
   String? _errorMessage;
   List<BookingItem> _bookings = [];
+  StreamSubscription<List<BookingItem>>? _streamSubscription;
 
   @override
   void initState() {
     super.initState();
     if (widget.isLoggedIn) {
-      _fetchBookings();
+      _listenToFirestoreBookings();
     }
   }
 
   @override
   void didUpdateWidget(covariant LumiAppointmentsScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.isLoggedIn != oldWidget.isLoggedIn && widget.isLoggedIn) {
-      _fetchBookings();
+    if (widget.isLoggedIn != oldWidget.isLoggedIn) {
+      if (widget.isLoggedIn) {
+        _listenToFirestoreBookings();
+      } else {
+        _streamSubscription?.cancel();
+        setState(() => _bookings = []);
+      }
     }
   }
 
+  @override
+  void dispose() {
+    _streamSubscription?.cancel();
+    super.dispose();
+  }
+
+  /// KẾT NỐI MY APPOINTMENTS VỚI FIRESTORE
+  /// Lắng nghe cập nhật realtime từ Cloud Firestore
+  void _listenToFirestoreBookings() {
+    _streamSubscription?.cancel();
+
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      setState(() {
+        _bookings = [];
+        _isLoading = false;
+      });
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    _streamSubscription = BookingRepository.instance
+        .streamUserBookings(user.uid)
+        .listen(
+      (list) {
+        if (mounted) {
+          setState(() {
+            _bookings = list;
+            _isLoading = false;
+            _errorMessage = null;
+          });
+        }
+      },
+      onError: (e) {
+        debugPrint('Firestore stream error, fallback to one-time fetch: $e');
+        _fetchBookings();
+      },
+    );
+  }
+
+  /// Tải lại dữ liệu (kết nối Firestore + fallback API)
   Future<void> _fetchBookings() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
 
     try {
-      final list = await BookingApiService.instance.getMyBookings();
+      final list = await BookingRepository.instance.getUserBookings(user.uid);
       if (mounted) {
         setState(() {
           _bookings = list;
@@ -77,17 +133,22 @@ class _LumiAppointmentsScreenState extends State<LumiAppointmentsScreen> {
 
   List<BookingItem> get _filteredBookings {
     switch (_selectedTab) {
-      case 0: // Sắp tới: pending, confirmed
-        return _bookings.where((b) => b.status == 'pending' || b.status == 'confirmed').toList();
-      case 1: // Hoàn thành: completed
-        return _bookings.where((b) => b.status == 'completed').toList();
-      case 2: // Đã hủy: cancelled
-        return _bookings.where((b) => b.status == 'cancelled').toList();
+      case 0: // Sắp tới: pending & confirmed trong tương lai
+        return _bookings.where((b) => b.isUpcoming).toList();
+      case 1: // Lịch sử: completed hoặc đã qua thời gian hẹn
+        return _bookings.where((b) => b.isHistory).toList();
+      case 2: // Đã hủy
+        return _bookings.where((b) => b.isCancelled).toList();
       default:
         return _bookings;
     }
   }
 
+  int get _upcomingCount => _bookings.where((b) => b.isUpcoming).length;
+  int get _historyCount => _bookings.where((b) => b.isHistory).length;
+  int get _cancelledCount => _bookings.where((b) => b.isCancelled).length;
+
+  /// HỦY LỊCH HẸN
   Future<void> _confirmCancel(BookingItem booking) async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -103,7 +164,7 @@ class _LumiAppointmentsScreenState extends State<LumiAppointmentsScreen> {
           ),
         ),
         content: Text(
-          'Quý khách có chắc chắn muốn hủy lịch hẹn liệu trình "${booking.serviceName}" vào lúc ${booking.formattedDateTime} không?\n\nPhòng và chuyên viên sẽ được giải phóng cho khách hàng khác.',
+          'Quý khách có chắc chắn muốn hủy lịch hẹn liệu trình "${booking.serviceName}" vào lúc ${booking.formattedDateTime} không?\n\nPhòng và chuyên viên sẽ được giải phóng trên hệ thống cho khách hàng khác.',
           style: GoogleFonts.dmSans(fontSize: 13, height: 1.5, color: plum),
         ),
         actions: [
@@ -149,7 +210,7 @@ class _LumiAppointmentsScreenState extends State<LumiAppointmentsScreen> {
     );
 
     try {
-      await BookingApiService.instance.cancelBooking(bookingId);
+      await BookingRepository.instance.cancelBooking(bookingId);
       if (mounted) {
         Navigator.of(context, rootNavigator: true).pop(); // dismiss loading
         ScaffoldMessenger.of(context).showSnackBar(
@@ -158,7 +219,6 @@ class _LumiAppointmentsScreenState extends State<LumiAppointmentsScreen> {
             backgroundColor: plum,
           ),
         );
-        _fetchBookings();
       }
     } catch (e) {
       if (mounted) {
@@ -185,8 +245,9 @@ class _LumiAppointmentsScreenState extends State<LumiAppointmentsScreen> {
     );
   }
 
-  Widget _tabButton(String title, int index) {
+  Widget _tabButton(String title, int count, int index) {
     final selected = _selectedTab == index;
+    final displayTitle = count > 0 ? '$title ($count)' : title;
 
     return Expanded(
       child: InkWell(
@@ -209,7 +270,7 @@ class _LumiAppointmentsScreenState extends State<LumiAppointmentsScreen> {
                 : null,
           ),
           child: Text(
-            title,
+            displayTitle,
             textAlign: TextAlign.center,
             style: GoogleFonts.dmSans(
               fontSize: 12,
@@ -228,21 +289,24 @@ class _LumiAppointmentsScreenState extends State<LumiAppointmentsScreen> {
 
     if (!widget.isLoggedIn) {
       title = 'Đăng nhập để xem lịch hẹn';
-      desc = 'Đăng nhập để theo dõi và quản lý những buổi chăm sóc của riêng bạn tại LUMI.';
+      desc =
+          'Đăng nhập để theo dõi và quản lý những buổi chăm sóc của riêng bạn tại LUMI.';
     } else {
       switch (_selectedTab) {
         case 0:
           title = 'Chưa có lịch hẹn sắp tới';
-          desc = 'Hãy chọn một liệu trình thư giãn phù hợp để bắt đầu khoảng lặng của riêng bạn.';
+          desc =
+              'Hãy chọn một liệu trình thư giãn phù hợp để bắt đầu khoảng lặng của riêng bạn.';
           break;
         case 1:
-          title = 'Chưa có lịch sử hoàn thành';
-          desc = 'Các buổi chăm sóc sau khi thực hiện xong sẽ hiển thị tại đây.';
+          title = 'Chưa có lịch sử dịch vụ';
+          desc =
+              'Các buổi chăm sóc sau khi hoàn thành hoặc qua ngày hẹn sẽ lưu trữ tại đây.';
           break;
         case 2:
         default:
           title = 'Chưa có lịch hẹn nào bị hủy';
-          desc = 'Danh sách các lịch đã hủy sẽ lưu trữ tại khu vực này.';
+          desc = 'Danh sách các lịch đã hủy sẽ hiển thị tại khu vực này.';
           break;
       }
     }
@@ -270,7 +334,7 @@ class _LumiAppointmentsScreenState extends State<LumiAppointmentsScreen> {
                   : _selectedTab == 0
                       ? Icons.calendar_month_outlined
                       : _selectedTab == 1
-                          ? Icons.check_circle_outline_rounded
+                          ? Icons.history_rounded
                           : Icons.event_busy_outlined,
               color: plum,
               size: 36,
@@ -297,11 +361,13 @@ class _LumiAppointmentsScreenState extends State<LumiAppointmentsScreen> {
             width: double.infinity,
             height: 48,
             child: FilledButton.icon(
-              onPressed: widget.isLoggedIn ? widget.onExploreServices : widget.onLogin,
+              onPressed:
+                  widget.isLoggedIn ? widget.onExploreServices : widget.onLogin,
               style: FilledButton.styleFrom(
                 backgroundColor: rose,
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14)),
               ),
               icon: Icon(
                 widget.isLoggedIn ? Icons.spa_outlined : Icons.login_rounded,
@@ -345,7 +411,7 @@ class _LumiAppointmentsScreenState extends State<LumiAppointmentsScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            _errorMessage ?? 'Đã xảy ra sự cố kết nối với backend local (port 3000).',
+            _errorMessage ?? 'Đã xảy ra sự cố kết nối với hệ thống Firestore.',
             textAlign: TextAlign.center,
             style: GoogleFonts.dmSans(fontSize: 13, color: muted, height: 1.4),
           ),
@@ -353,10 +419,81 @@ class _LumiAppointmentsScreenState extends State<LumiAppointmentsScreen> {
           OutlinedButton.icon(
             onPressed: _fetchBookings,
             icon: const Icon(Icons.refresh_rounded, size: 18, color: rose),
-            label: Text('THỬ LẠI', style: GoogleFonts.dmSans(fontWeight: FontWeight.w700, color: rose)),
+            label: Text(
+              'THỬ LẠI',
+              style: GoogleFonts.dmSans(
+                fontWeight: FontWeight.w700,
+                color: rose,
+              ),
+            ),
             style: OutlinedButton.styleFrom(
               side: const BorderSide(color: rose),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _infoCard() {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: blue.withValues(alpha: 0.62),
+        borderRadius: BorderRadius.circular(21),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.favorite_border_rounded, color: plum, size: 24),
+          const SizedBox(width: 13),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Một chút thời gian cho bản thân',
+                  style: GoogleFonts.dmSans(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: ink,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  'Khám phá những liệu trình chăm sóc và thư giãn tại LUMI SPA.',
+                  style: GoogleFonts.dmSans(
+                    fontSize: 12,
+                    height: 1.5,
+                    color: muted,
+                  ),
+                ),
+                const SizedBox(height: 9),
+                InkWell(
+                  onTap: widget.onExploreServices,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Xem dịch vụ',
+                        style: GoogleFonts.dmSans(
+                          color: rose,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 12,
+                        ),
+                      ),
+                      const SizedBox(width: 5),
+                      const Icon(
+                        Icons.arrow_forward_rounded,
+                        color: rose,
+                        size: 16,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -408,21 +545,21 @@ class _LumiAppointmentsScreenState extends State<LumiAppointmentsScreen> {
             ),
             child: Row(
               children: [
-                _tabButton('Sắp tới', 0),
-                _tabButton('Hoàn thành', 1),
-                _tabButton('Đã hủy', 2),
+                _tabButton('Sắp tới', _upcomingCount, 0),
+                _tabButton('Lịch sử', _historyCount, 1),
+                _tabButton('Đã hủy', _cancelledCount, 2),
               ],
             ),
           ),
           const SizedBox(height: 20),
           if (!widget.isLoggedIn)
             _emptyState()
-          else if (_isLoading)
+          else if (_isLoading && _bookings.isEmpty)
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 40),
               child: Center(child: CircularProgressIndicator(color: rose)),
             )
-          else if (_errorMessage != null)
+          else if (_errorMessage != null && _bookings.isEmpty)
             _errorState()
           else if (list.isEmpty)
             _emptyState()
@@ -431,7 +568,9 @@ class _LumiAppointmentsScreenState extends State<LumiAppointmentsScreen> {
               BookingCard(
                 booking: booking,
                 onTap: () => _showDetail(booking),
-                onCancel: booking.isCancellable ? () => _confirmCancel(booking) : null,
+                onCancel: booking.isCancellable
+                    ? () => _confirmCancel(booking)
+                    : null,
               ),
           const SizedBox(height: 16),
           _infoCard(),
@@ -445,66 +584,6 @@ class _LumiAppointmentsScreenState extends State<LumiAppointmentsScreen> {
                 fontSize: 10,
                 letterSpacing: 1,
               ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _infoCard() {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: blue.withValues(alpha: 0.25),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Icon(Icons.favorite_border_rounded, color: plum, size: 22),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Khoảnh khắc an yên cho bản thân',
-                  style: GoogleFonts.dmSans(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: ink,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Khám phá thêm các liệu trình chăm sóc da mặt và cơ thể tại LUMI SPA.',
-                  style: GoogleFonts.dmSans(
-                    fontSize: 12,
-                    height: 1.4,
-                    color: muted,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                InkWell(
-                  onTap: widget.onExploreServices,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'Xem tất cả dịch vụ',
-                        style: GoogleFonts.dmSans(
-                          color: rose,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 12,
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      const Icon(Icons.arrow_forward_rounded, color: rose, size: 14),
-                    ],
-                  ),
-                ),
-              ],
             ),
           ),
         ],

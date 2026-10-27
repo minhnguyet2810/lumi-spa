@@ -5,7 +5,6 @@ const { requireAuth } = require('../auth');
 const { reserveBookingResources } = require('../booking_transactions');
 
 const router = express.Router();
-router.use(requireAuth);
 
 const VALID_HOURS = new Set([9, 10, 11, 12, 13, 14, 15, 16, 17]);
 
@@ -23,6 +22,93 @@ function bookingData(doc) {
     cancelledAt: data.cancelledAt?.toDate?.().toISOString() || null,
   };
 }
+
+// GET /api/bookings/slots (Public: Tra cứu khung giờ còn trống)
+router.get('/slots', async (req, res) => {
+  try {
+    const { date, serviceId } = req.query;
+    if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      return fail(res, 400, 'Tham số date không hợp lệ (định dạng YYYY-MM-DD).');
+    }
+
+    let durationMinutes = 60;
+    let categoryId = null;
+
+    if (serviceId) {
+      const sDoc = await db.collection('services').doc(serviceId).get();
+      if (sDoc.exists) {
+        const sData = sDoc.data();
+        durationMinutes = Number(sData.durationMinutes) || 60;
+        categoryId = sData.categoryId || null;
+      }
+    }
+
+    const [year, month, day] = date.split('-').map(Number);
+    const startOfDay = new Date(Date.UTC(year, month - 1, day, 0, 0, 0));
+    const endOfDay = new Date(Date.UTC(year, month - 1, day, 23, 59, 59));
+
+    const bookingsSnap = await db.collection('bookings')
+      .where('startAt', '>=', Timestamp.fromDate(startOfDay))
+      .where('startAt', '<=', Timestamp.fromDate(endOfDay))
+      .get();
+
+    const activeBookings = bookingsSnap.docs
+      .map(d => d.data())
+      .filter(b => ['pending', 'confirmed'].includes(b.status));
+
+    let capacity = 2;
+    if (categoryId === 'beauty') capacity = 1;
+
+    const now = Date.now();
+    const slots = [];
+
+    for (const h of [9, 10, 11, 12, 13, 14, 15, 16, 17]) {
+      const slotStart = new Date(Date.UTC(year, month - 1, day, h - 7));
+      const slotEnd = new Date(slotStart.getTime() + durationMinutes * 60 * 1000);
+
+      if (h * 60 + durationMinutes > 18 * 60) {
+        slots.push({ hour: h, status: 'closedExceeded', available: false, reason: 'Quá 18:00' });
+        continue;
+      }
+
+      if (slotStart.getTime() <= now) {
+        slots.push({ hour: h, status: 'past', available: false, reason: 'Đã qua' });
+        continue;
+      }
+
+      const overlapping = activeBookings.filter(b => {
+        if (!b.startAt) return false;
+        const bStart = b.startAt.toDate().getTime();
+        const bDuration = Number(b.durationMinutes) || 60;
+        const bEnd = bStart + bDuration * 60 * 1000;
+        const catMatch = !categoryId || !b.categoryId || b.categoryId === categoryId;
+        return catMatch && slotStart.getTime() < bEnd && bStart < slotEnd.getTime();
+      }).length;
+
+      if (overlapping >= capacity) {
+        slots.push({ hour: h, status: 'fullyBooked', available: false, remainingCapacity: 0, reason: 'Kín chỗ' });
+      } else {
+        slots.push({ hour: h, status: 'available', available: true, remainingCapacity: capacity - overlapping });
+      }
+    }
+
+    return res.json({
+      success: true,
+      data: {
+        date,
+        serviceId,
+        durationMinutes,
+        slots,
+      },
+    });
+  } catch (error) {
+    console.error('Slot fetch error:', error);
+    return fail(res, 500, 'Không thể tải danh sách khung giờ.');
+  }
+});
+
+// Các API bên dưới yêu cầu Firebase ID Token
+router.use(requireAuth);
 
 // GET /api/bookings
 router.get('/', async (req, res) => {

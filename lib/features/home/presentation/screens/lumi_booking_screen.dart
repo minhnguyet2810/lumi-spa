@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lumi_spa/core/theme/lumi_style.dart';
-import 'package:lumi_spa/features/booking/data/booking_api_service.dart';
+import 'package:lumi_spa/features/booking/data/booking_repository.dart';
 import 'package:lumi_spa/features/booking/data/models/booking_item.dart';
+import 'package:lumi_spa/features/booking/data/models/slot_availability.dart';
 
 class LumiBookingScreen extends StatefulWidget {
   const LumiBookingScreen({super.key, required this.service});
@@ -23,6 +24,8 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
   DateTime _date = DateUtils.dateOnly(DateTime.now());
   int? _hour;
   bool _busy = false;
+  bool _loadingSlots = false;
+  List<SlotAvailability> _slots = [];
   BookingItem? _createdBooking;
   String? _error;
 
@@ -31,14 +34,20 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
 
   String get _name => (widget.service['name'] ?? 'Dịch vụ LUMI').toString();
   String get _serviceId => (widget.service['id'] ?? '').toString();
-  int get _durationMinutes => int.tryParse(widget.service['durationMinutes']?.toString() ?? '60') ?? 60;
+  String? get _categoryId => widget.service['categoryId']?.toString();
+  int get _durationMinutes =>
+      int.tryParse(widget.service['durationMinutes']?.toString() ?? '60') ?? 60;
   String get _duration => '$_durationMinutes phút';
 
-  String get _price {
+  num get _rawPrice {
     final raw = widget.service['price'];
-    if (raw == null) return 'Liên hệ';
-    final n = num.tryParse(raw.toString());
-    if (n == null || n <= 0) return 'Liên hệ';
+    if (raw == null) return 0;
+    return num.tryParse(raw.toString()) ?? 0;
+  }
+
+  String get _price {
+    final n = _rawPrice;
+    if (n <= 0) return 'Liên hệ';
     return '${n.toInt().toString().replaceAllMapped(RegExp(r'\B(?=(\d{3})+(?!\d))'), (m) => '.')} đ';
   }
 
@@ -52,6 +61,7 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
     final user = FirebaseAuth.instance.currentUser;
     _contactNameController.text = user?.displayName ?? '';
     _contactPhoneController.text = user?.phoneNumber ?? '';
+    _loadSlots();
   }
 
   @override
@@ -61,13 +71,46 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
     super.dispose();
   }
 
-  bool _isSlotValid(int h) {
-    // Spa opens 09:00 - 18:00. Service must end before or at 18:00.
-    if (h * 60 + _durationMinutes > 18 * 60) return false;
+  Future<void> _loadSlots() async {
+    setState(() {
+      _loadingSlots = true;
+      _error = null;
+    });
 
-    // Must be in future
-    final slotTime = DateTime(_date.year, _date.month, _date.day, h);
-    return slotTime.isAfter(DateTime.now());
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      final slots = await BookingRepository.instance.getAvailableSlots(
+        date: _date,
+        serviceId: _serviceId,
+        categoryId: _categoryId,
+        durationMinutes: _durationMinutes,
+        currentUserId: user?.uid,
+      );
+
+      if (mounted) {
+        setState(() {
+          _slots = slots;
+          _loadingSlots = false;
+          // Nếu giờ đang chọn bị rơi vào slot không khả dụng thì hủy chọn
+          if (_hour != null) {
+            final currentSlot = slots.firstWhere(
+              (s) => s.hour == _hour,
+              orElse: () => const SlotAvailability(
+                hour: -1,
+                status: SlotStatus.past,
+              ),
+            );
+            if (!currentSlot.isAvailable) {
+              _hour = null;
+            }
+          }
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _loadingSlots = false);
+      }
+    }
   }
 
   Future<void> _pickDate() async {
@@ -81,7 +124,7 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.light(
+            colorScheme: const ColorScheme.light(
               primary: rose,
               onPrimary: Colors.white,
               surface: ivory,
@@ -98,6 +141,7 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
         _hour = null;
         _error = null;
       });
+      await _loadSlots();
     }
   }
 
@@ -136,7 +180,10 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
             Text(
               'Quý khách vui lòng đăng nhập để lưu và quản lý lịch hẹn tại LUMI SPA.',
               textAlign: TextAlign.center,
-              style: GoogleFonts.dmSans(fontSize: 14, color: plum.withValues(alpha: 0.7)),
+              style: GoogleFonts.dmSans(
+                fontSize: 14,
+                color: plum.withValues(alpha: 0.7),
+              ),
             ),
             const SizedBox(height: 24),
             SizedBox(
@@ -148,13 +195,37 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
                   context.push('/login');
                 },
                 style: FilledButton.styleFrom(backgroundColor: rose),
-                child: Text('ĐĂNG NHẬP NGAY', style: GoogleFonts.dmSans(fontWeight: FontWeight.w700)),
+                child: Text(
+                  'ĐĂNG NHẬP NGAY',
+                  style: GoogleFonts.dmSans(fontWeight: FontWeight.w700),
+                ),
               ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  void _onSlotTapped(SlotAvailability slot) {
+    if (slot.isAvailable) {
+      setState(() {
+        _hour = slot.hour;
+        _error = null;
+      });
+    } else {
+      // Hiển thị giải thích lý do khung giờ không chọn được
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${slot.timeText}: ${slot.explanation}'),
+          backgroundColor: slot.status == SlotStatus.userConflict
+              ? Colors.amber.shade900
+              : plum,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
   }
 
   Future<void> _confirm() async {
@@ -167,7 +238,8 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
       if (FirebaseAuth.instance.currentUser != null) {
         await _confirm();
       } else {
-        setState(() => _error = 'Quý khách vui lòng đăng nhập để hoàn tất đặt lịch.');
+        setState(() =>
+            _error = 'Quý khách vui lòng đăng nhập để hoàn tất đặt lịch.');
       }
       return;
     }
@@ -177,8 +249,16 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
       return;
     }
 
-    if (!_isSlotValid(_hour!)) {
-      setState(() => _error = 'Khung giờ này không khả dụng hoặc vượt quá giờ đóng cửa (18:00).');
+    final selectedSlot = _slots.firstWhere(
+      (s) => s.hour == _hour,
+      orElse: () => const SlotAvailability(
+        hour: -1,
+        status: SlotStatus.past,
+      ),
+    );
+
+    if (!selectedSlot.isAvailable) {
+      setState(() => _error = selectedSlot.explanation);
       return;
     }
 
@@ -190,8 +270,10 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
       return;
     }
 
-    if (contactPhone.isEmpty || !RegExp(r'^[0-9+().\s-]{8,20}$').hasMatch(contactPhone)) {
-      setState(() => _error = 'Vui lòng nhập số điện thoại hợp lệ (8 - 20 số).');
+    if (contactPhone.isEmpty ||
+        !RegExp(r'^[0-9+().\s-]{8,20}$').hasMatch(contactPhone)) {
+      setState(
+          () => _error = 'Vui lòng nhập số điện thoại hợp lệ (8 - 20 số).');
       return;
     }
 
@@ -201,14 +283,13 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
     });
 
     try {
-      final dateStr =
-          '${_date.year.toString().padLeft(4, '0')}-'
-          '${_date.month.toString().padLeft(2, '0')}-'
-          '${_date.day.toString().padLeft(2, '0')}';
-
-      final booking = await BookingApiService.instance.createBooking(
+      final booking = await BookingRepository.instance.createBooking(
         serviceId: _serviceId,
-        date: dateStr,
+        serviceName: _name,
+        categoryId: _categoryId,
+        price: _rawPrice,
+        durationMinutes: _durationMinutes,
+        date: _date,
         hour: _hour!,
         contactName: contactName,
         contactPhone: contactPhone,
@@ -219,11 +300,19 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
           _createdBooking = booking;
         });
       }
+    } on BookingConflictException catch (conflictEx) {
+      if (mounted) {
+        setState(() {
+          _error = conflictEx.message;
+        });
+        _loadSlots(); // Tải lại danh sách slot để cập nhật
+      }
     } catch (e) {
       if (mounted) {
         setState(() {
           _error = e.toString();
         });
+        _loadSlots();
       }
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -309,7 +398,8 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
                         const SizedBox(height: 12),
                         OutlinedButton.icon(
                           onPressed: _pickDate,
-                          icon: const Icon(Icons.calendar_month_outlined, color: rose),
+                          icon: const Icon(Icons.calendar_month_outlined,
+                              color: rose),
                           label: Text(_dateText(_date)),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: plum,
@@ -321,39 +411,31 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
                           ),
                         ),
                         const SizedBox(height: 24),
-                        _heading('02', 'Chọn khung giờ'),
-                        const SizedBox(height: 8),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            _heading('02', 'Chọn khung giờ'),
+                            if (_loadingSlots)
+                              const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: rose,
+                                ),
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
                         Text(
-                          'Giờ hoạt động: 09:00 – 18:00 (dịch vụ phải kết thúc trước 18:00).',
+                          'Spa mở cửa 09:00 – 18:00. Hiển thị trạng thái slot còn trống theo thời gian thực.',
                           style: GoogleFonts.dmSans(
                             color: plum.withValues(alpha: .7),
                             fontSize: 12,
                           ),
                         ),
-                        const SizedBox(height: 12),
-                        Wrap(
-                          spacing: 10,
-                          runSpacing: 10,
-                          children: [
-                            for (final h in [9, 10, 11, 12, 13, 14, 15, 16, 17])
-                              ChoiceChip(
-                                label: Text(_hourText(h)),
-                                selected: _hour == h,
-                                onSelected: _isSlotValid(h)
-                                    ? (_) => setState(() {
-                                        _hour = h;
-                                        _error = null;
-                                      })
-                                    : null,
-                                selectedColor: blush,
-                                disabledColor: Colors.black.withValues(alpha: 0.04),
-                                labelStyle: GoogleFonts.dmSans(
-                                  color: _isSlotValid(h) ? plum : Colors.grey,
-                                  fontWeight: _hour == h ? FontWeight.w700 : FontWeight.normal,
-                                ),
-                              ),
-                          ],
-                        ),
+                        const SizedBox(height: 14),
+                        _buildSlotsGrid(),
                         const SizedBox(height: 24),
                         _heading('03', 'Thông tin liên hệ'),
                         const SizedBox(height: 12),
@@ -363,12 +445,14 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
                           textInputAction: TextInputAction.next,
                           decoration: InputDecoration(
                             labelText: 'Họ và tên *',
-                            labelStyle: GoogleFonts.dmSans(color: plum.withValues(alpha: 0.7)),
+                            labelStyle: GoogleFonts.dmSans(
+                                color: plum.withValues(alpha: 0.7)),
                             filled: true,
                             fillColor: Colors.white,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(14),
-                              borderSide: const BorderSide(color: Color(0xFFE5DCDA)),
+                              borderSide:
+                                  const BorderSide(color: Color(0xFFE5DCDA)),
                             ),
                           ),
                         ),
@@ -379,12 +463,14 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
                           textInputAction: TextInputAction.done,
                           decoration: InputDecoration(
                             labelText: 'Số điện thoại liên hệ *',
-                            labelStyle: GoogleFonts.dmSans(color: plum.withValues(alpha: 0.7)),
+                            labelStyle: GoogleFonts.dmSans(
+                                color: plum.withValues(alpha: 0.7)),
                             filled: true,
                             fillColor: Colors.white,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(14),
-                              borderSide: const BorderSide(color: Color(0xFFE5DCDA)),
+                              borderSide:
+                                  const BorderSide(color: Color(0xFFE5DCDA)),
                             ),
                           ),
                         ),
@@ -398,8 +484,10 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
                               border: Border.all(color: Colors.red.shade200),
                             ),
                             child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Icon(Icons.info_outline, color: Colors.red.shade700, size: 20),
+                                Icon(Icons.error_outline_rounded,
+                                    color: Colors.red.shade700, size: 20),
                                 const SizedBox(width: 10),
                                 Expanded(
                                   child: Text(
@@ -461,6 +549,147 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
     );
   }
 
+  Widget _buildSlotsGrid() {
+    if (_slots.isEmpty && _loadingSlots) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 24),
+        child: Center(
+          child: CircularProgressIndicator(color: rose),
+        ),
+      );
+    }
+
+    // Nếu chưa load xong từ Firestore thì fallback standard
+    final slotsList = _slots.isNotEmpty
+        ? _slots
+        : [9, 10, 11, 12, 13, 14, 15, 16, 17].map((h) {
+            final slotTime = DateTime(_date.year, _date.month, _date.day, h);
+            final isPast = slotTime.isBefore(DateTime.now());
+            final isClosed = h * 60 + _durationMinutes > 18 * 60;
+            return SlotAvailability(
+              hour: h,
+              status: isClosed
+                  ? SlotStatus.closedExceeded
+                  : (isPast ? SlotStatus.past : SlotStatus.available),
+              remainingCapacity: isClosed || isPast ? 0 : 2,
+            );
+          }).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Wrap(
+          spacing: 8,
+          runSpacing: 10,
+          children: slotsList.map((slot) {
+            final isSelected = _hour == slot.hour;
+            final isAvail = slot.isAvailable;
+
+            Color bgColor;
+            Color borderColor;
+            Color textColor;
+
+            if (isSelected) {
+              bgColor = blush;
+              borderColor = rose;
+              textColor = plum;
+            } else if (isAvail) {
+              bgColor = Colors.white;
+              borderColor = const Color(0xFFE5DCDA);
+              textColor = plum;
+            } else if (slot.status == SlotStatus.userConflict) {
+              bgColor = const Color(0xFFFFF3CD);
+              borderColor = const Color(0xFFFFEEBA);
+              textColor = const Color(0xFF856404);
+            } else {
+              bgColor = Colors.black.withValues(alpha: 0.03);
+              borderColor = Colors.black.withValues(alpha: 0.05);
+              textColor = Colors.grey.shade500;
+            }
+
+            return InkWell(
+              onTap: () => _onSlotTapped(slot),
+              borderRadius: BorderRadius.circular(12),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                width: 100,
+                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+                decoration: BoxDecoration(
+                  color: bgColor,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: isSelected ? rose : borderColor,
+                    width: isSelected ? 1.8 : 1,
+                  ),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      slot.timeText,
+                      style: GoogleFonts.dmSans(
+                        fontSize: 14,
+                        fontWeight:
+                            isSelected ? FontWeight.w700 : FontWeight.w600,
+                        color: textColor,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      slot.statusBadge,
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.dmSans(
+                        fontSize: 10,
+                        fontWeight:
+                            isAvail ? FontWeight.w600 : FontWeight.normal,
+                        color: isAvail
+                            ? const Color(0xFF2E7D32)
+                            : (slot.status == SlotStatus.userConflict
+                                ? const Color(0xFF856404)
+                                : Colors.grey.shade500),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            _legendItem(const Color(0xFF2E7D32), 'Còn trống'),
+            const SizedBox(width: 14),
+            _legendItem(const Color(0xFF856404), 'Trùng lịch'),
+            const SizedBox(width: 14),
+            _legendItem(Colors.grey.shade500, 'Hết chỗ / Đã qua'),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _legendItem(Color color, String label) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
+        const SizedBox(width: 5),
+        Text(
+          label,
+          style: GoogleFonts.dmSans(
+            fontSize: 11,
+            color: plum.withValues(alpha: 0.65),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _heading(String number, String title) => Row(
         children: [
           CircleAvatar(
@@ -511,11 +740,12 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
                 color: blush.withValues(alpha: 0.5),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.check_circle_outline_rounded, size: 50, color: rose),
+              child: const Icon(Icons.check_circle_outline_rounded,
+                  size: 50, color: rose),
             ),
             const SizedBox(height: 20),
             Text(
-              'Booking Request Submitted',
+              'Đặt lịch thành công',
               textAlign: TextAlign.center,
               style: GoogleFonts.cormorantGaramond(
                 color: plum,
@@ -552,23 +782,39 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
               ),
               child: Column(
                 children: [
-                  _summaryRow('Mã lịch hẹn:', '#${booking.id.isNotEmpty ? booking.id.substring(0, booking.id.length > 8 ? 8 : booking.id.length) : "LUMI"}'),
+                  _summaryRow(
+                    'Mã lịch hẹn:',
+                    '#${booking.id.isNotEmpty ? booking.id.substring(0, booking.id.length > 8 ? 8 : booking.id.length) : "LUMI"}',
+                  ),
                   const Divider(height: 20),
                   _summaryRow('Dịch vụ:', booking.serviceName),
                   const Divider(height: 20),
-                  _summaryRow('Thời gian:', '${_dateText(_date)} lúc ${_hourText(_hour!)}'),
+                  _summaryRow(
+                    'Thời gian:',
+                    '${_dateText(_date)} lúc ${_hour != null ? _hourText(_hour!) : booking.formattedTime}',
+                  ),
                   const Divider(height: 20),
                   _summaryRow('Thời lượng:', '$_durationMinutes phút'),
                   const Divider(height: 20),
-                  _summaryRow('Người đặt:', booking.contactName.isNotEmpty ? booking.contactName : _contactNameController.text),
+                  _summaryRow(
+                    'Người đặt:',
+                    booking.contactName.isNotEmpty
+                        ? booking.contactName
+                        : _contactNameController.text,
+                  ),
                   const Divider(height: 20),
-                  _summaryRow('Số điện thoại:', booking.contactPhone.isNotEmpty ? booking.contactPhone : _contactPhoneController.text),
+                  _summaryRow(
+                    'Số điện thoại:',
+                    booking.contactPhone.isNotEmpty
+                        ? booking.contactPhone
+                        : _contactPhoneController.text,
+                  ),
                 ],
               ),
             ),
             const SizedBox(height: 16),
             Text(
-              'Spa sẽ liên hệ xác nhận lịch trong ít phút. Quý khách có thể theo dõi trong mục Lịch hẹn của bạn.',
+              'Lịch hẹn của bạn đã được ghi nhận trên Firestore. Spa sẽ liên hệ xác nhận trong ít phút.',
               textAlign: TextAlign.center,
               style: GoogleFonts.dmSans(
                 color: plum.withValues(alpha: .7),
@@ -586,9 +832,13 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
                 },
                 style: FilledButton.styleFrom(
                   backgroundColor: rose,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                 ),
-                child: Text('HOÀN TẤT & VỀ TRANG CHỦ', style: GoogleFonts.dmSans(fontWeight: FontWeight.w700)),
+                child: Text(
+                  'HOÀN TẤT & VỀ TRANG CHỦ',
+                  style: GoogleFonts.dmSans(fontWeight: FontWeight.w700),
+                ),
               ),
             ),
           ],
@@ -601,13 +851,18 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: GoogleFonts.dmSans(color: plum.withValues(alpha: 0.6), fontSize: 13)),
+        Text(
+          label,
+          style: GoogleFonts.dmSans(
+              color: plum.withValues(alpha: 0.6), fontSize: 13),
+        ),
         const SizedBox(width: 8),
         Expanded(
           child: Text(
             value,
             textAlign: TextAlign.right,
-            style: GoogleFonts.dmSans(color: plum, fontWeight: FontWeight.w600, fontSize: 13),
+            style: GoogleFonts.dmSans(
+                color: plum, fontWeight: FontWeight.w600, fontSize: 13),
           ),
         ),
       ],

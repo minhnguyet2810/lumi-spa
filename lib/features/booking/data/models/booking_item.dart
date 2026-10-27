@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class BookingItem {
   final String id;
   final String serviceId;
@@ -12,6 +14,8 @@ class BookingItem {
   final DateTime? createdAt;
   final DateTime? cancelledAt;
   final String? imageUrl;
+  final String? staffId;
+  final String? roomId;
 
   const BookingItem({
     required this.id,
@@ -27,12 +31,19 @@ class BookingItem {
     this.createdAt,
     this.cancelledAt,
     this.imageUrl,
+    this.staffId,
+    this.roomId,
   });
 
   factory BookingItem.fromJson(Map<String, dynamic> json) {
     DateTime? parseDate(dynamic value) {
       if (value == null) return null;
       if (value is DateTime) return value;
+      if (value is Timestamp) return value.toDate().toLocal();
+      try {
+        final dynamic d = (value as dynamic).toDate();
+        if (d is DateTime) return d.toLocal();
+      } catch (_) {}
       if (value is String) {
         return DateTime.tryParse(value)?.toLocal();
       }
@@ -53,14 +64,95 @@ class BookingItem {
       createdAt: parseDate(json['createdAt']),
       cancelledAt: parseDate(json['cancelledAt']),
       imageUrl: json['imageUrl']?.toString(),
+      staffId: json['staffId']?.toString(),
+      roomId: json['roomId']?.toString(),
     );
   }
 
+  factory BookingItem.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
+    final data = doc.data() ?? {};
+    return BookingItem.fromJson({...data, 'id': doc.id});
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'serviceId': serviceId,
+      'serviceName': serviceName,
+      if (categoryId != null) 'categoryId': categoryId,
+      'price': price,
+      'durationMinutes': durationMinutes,
+      'status': status,
+      'contactName': contactName,
+      'contactPhone': contactPhone,
+      if (startAt != null) 'startAt': Timestamp.fromDate(startAt!),
+      if (createdAt != null) 'createdAt': Timestamp.fromDate(createdAt!),
+      if (cancelledAt != null) 'cancelledAt': Timestamp.fromDate(cancelledAt!),
+      if (imageUrl != null) 'imageUrl': imageUrl,
+      if (staffId != null) 'staffId': staffId,
+      if (roomId != null) 'roomId': roomId,
+    };
+  }
+
+  BookingItem copyWith({
+    String? id,
+    String? serviceId,
+    String? serviceName,
+    String? categoryId,
+    num? price,
+    int? durationMinutes,
+    String? status,
+    String? contactName,
+    String? contactPhone,
+    DateTime? startAt,
+    DateTime? createdAt,
+    DateTime? cancelledAt,
+    String? imageUrl,
+    String? staffId,
+    String? roomId,
+  }) {
+    return BookingItem(
+      id: id ?? this.id,
+      serviceId: serviceId ?? this.serviceId,
+      serviceName: serviceName ?? this.serviceName,
+      categoryId: categoryId ?? this.categoryId,
+      price: price ?? this.price,
+      durationMinutes: durationMinutes ?? this.durationMinutes,
+      status: status ?? this.status,
+      contactName: contactName ?? this.contactName,
+      contactPhone: contactPhone ?? this.contactPhone,
+      startAt: startAt ?? this.startAt,
+      createdAt: createdAt ?? this.createdAt,
+      cancelledAt: cancelledAt ?? this.cancelledAt,
+      imageUrl: imageUrl ?? this.imageUrl,
+      staffId: staffId ?? this.staffId,
+      roomId: roomId ?? this.roomId,
+    );
+  }
+
+  /// Có thể hủy nếu trạng thái là pending hoặc confirmed, và thời gian chưa bắt đầu
   bool get isCancellable {
     if (status != 'pending' && status != 'confirmed') return false;
     if (startAt == null) return false;
     return startAt!.isAfter(DateTime.now());
   }
+
+  /// Lịch sắp tới: chưa diễn ra hoặc đang diễn ra
+  bool get isUpcoming {
+    if (status != 'pending' && status != 'confirmed') return false;
+    if (startAt == null) return true;
+    return startAt!.isAfter(DateTime.now().subtract(const Duration(minutes: 30)));
+  }
+
+  /// Lịch sử: đã hoàn thành hoặc đã qua thời gian hẹn (nhưng chưa hủy)
+  bool get isHistory {
+    if (status == 'completed') return true;
+    if (status == 'cancelled') return false;
+    if (startAt == null) return false;
+    return startAt!.isBefore(DateTime.now().subtract(const Duration(minutes: 30)));
+  }
+
+  /// Đã hủy
+  bool get isCancelled => status == 'cancelled';
 
   String get statusLabel {
     switch (status) {

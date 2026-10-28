@@ -94,19 +94,31 @@ class LumiCatalogRepository {
   static const String defaultProductImage =
       'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=900&auto=format&fit=crop';
 
+  static bool _isValidRealImage(dynamic url) {
+    if (url is! String) return false;
+    final trimmed = url.trim().toLowerCase();
+    if (trimmed.isEmpty) return false;
+    if (trimmed.contains('placehold') ||
+        trimmed.contains('dummyimage') ||
+        trimmed.contains('example.com')) {
+      return false;
+    }
+    return true;
+  }
+
   static Map<String, dynamic> withDemoImage(Map<String, dynamic> item) {
     final id = item['id']?.toString() ?? '';
     final existing = item['imageUrls'];
-    final hasImages =
+    final hasRealImages =
         existing is List &&
-        existing.any((v) => v is String && v.trim().isNotEmpty);
+        existing.any((v) => _isValidRealImage(v));
 
-    if (hasImages) {
+    if (hasRealImages) {
       final first = existing.firstWhere(
-        (v) => v is String && v.trim().isNotEmpty,
+        (v) => _isValidRealImage(v),
         orElse: () => null,
       );
-      if (first != null && (item['imageUrl'] == null || item['imageUrl'].toString().isEmpty)) {
+      if (first != null && (item['imageUrl'] == null || !_isValidRealImage(item['imageUrl']))) {
         return {
           ...item,
           'imageUrl': first,
@@ -116,10 +128,10 @@ class LumiCatalogRepository {
     }
 
     final direct = item['imageUrl'];
-    if (direct is String && direct.trim().isNotEmpty) {
+    if (_isValidRealImage(direct)) {
       return {
         ...item,
-        'imageUrls': [direct.trim()],
+        'imageUrls': [direct.toString().trim()],
       };
     }
 

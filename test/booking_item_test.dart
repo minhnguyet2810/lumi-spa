@@ -21,9 +21,10 @@ void main() {
   });
 
   group('BookingItem Model Tests', () {
-    test('fromJson parses correctly with pending status', () {
+    test('fromJson parses correctly with pending status and userId', () {
       final json = {
         'id': 'bk_test_1',
+        'userId': 'usr_thao_01',
         'serviceId': 'facial_001',
         'serviceName': 'Signature Facial',
         'categoryId': 'facial',
@@ -38,6 +39,7 @@ void main() {
       final item = BookingItem.fromJson(json);
 
       expect(item.id, 'bk_test_1');
+      expect(item.userId, 'usr_thao_01');
       expect(item.serviceName, 'Signature Facial');
       expect(item.categoryId, 'facial');
       expect(item.status, 'pending');
@@ -111,6 +113,7 @@ void main() {
       final start = DateTime(2026, 11, 20, 14, 30);
       final item = BookingItem(
         id: 'bk_format',
+        userId: 'u_1',
         serviceId: 's1',
         serviceName: 'LUMI Glow',
         price: 1250000,
@@ -125,6 +128,26 @@ void main() {
       expect(item.formattedTime, '14:30');
       expect(item.formattedDateTime, '14:30 · 20/11/2026');
       expect(item.formattedPrice, '1.250.000 đ');
+    });
+
+    test('copyWith updates fields while preserving existing values', () {
+      final item = BookingItem(
+        id: 'b1',
+        userId: 'u1',
+        serviceId: 's1',
+        serviceName: 'Liệu trình 1',
+        price: 300000,
+        durationMinutes: 60,
+        status: 'pending',
+        contactName: 'Thảo',
+        contactPhone: '0901234567',
+      );
+
+      final updated = item.copyWith(status: 'confirmed');
+      expect(updated.id, 'b1');
+      expect(updated.userId, 'u1');
+      expect(updated.status, 'confirmed');
+      expect(updated.serviceName, 'Liệu trình 1');
     });
   });
 }

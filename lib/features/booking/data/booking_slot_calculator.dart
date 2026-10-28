@@ -67,7 +67,10 @@ class BookingSlotCalculator {
         final conflictBooking = activeBookings.firstWhere(
           (b) {
             if (b.startAt == null) return false;
-            // Nếu booking có userId trùng, hoặc trong danh sách của user
+            // Chỉ trùng lịch nếu booking này thuộc về user hiện tại
+            final isUserBooking = b.userId == null || b.userId == currentUserId;
+            if (!isUserBooking) return false;
+
             return isOverlapping(
               start1: slotStart,
               durationMinutes1: durationMinutes,
@@ -133,4 +136,3 @@ class BookingSlotCalculator {
     }).toList();
   }
 }
-

@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class BookingItem {
   final String id;
+  final String? userId;
   final String serviceId;
   final String serviceName;
   final String? categoryId;
@@ -19,6 +20,7 @@ class BookingItem {
 
   const BookingItem({
     required this.id,
+    this.userId,
     required this.serviceId,
     required this.serviceName,
     this.categoryId,
@@ -52,6 +54,7 @@ class BookingItem {
 
     return BookingItem(
       id: (json['id'] ?? json['bookingId'] ?? '').toString(),
+      userId: json['userId']?.toString(),
       serviceId: (json['serviceId'] ?? '').toString(),
       serviceName: (json['serviceName'] ?? json['serviceTitle'] ?? 'Dịch vụ LUMI').toString(),
       categoryId: json['categoryId']?.toString(),
@@ -76,6 +79,7 @@ class BookingItem {
 
   Map<String, dynamic> toMap() {
     return {
+      if (userId != null) 'userId': userId,
       'serviceId': serviceId,
       'serviceName': serviceName,
       if (categoryId != null) 'categoryId': categoryId,
@@ -95,6 +99,7 @@ class BookingItem {
 
   BookingItem copyWith({
     String? id,
+    String? userId,
     String? serviceId,
     String? serviceName,
     String? categoryId,
@@ -112,6 +117,7 @@ class BookingItem {
   }) {
     return BookingItem(
       id: id ?? this.id,
+      userId: userId ?? this.userId,
       serviceId: serviceId ?? this.serviceId,
       serviceName: serviceName ?? this.serviceName,
       categoryId: categoryId ?? this.categoryId,

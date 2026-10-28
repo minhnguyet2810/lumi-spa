@@ -104,6 +104,24 @@ class BookingRepository {
   }) async {
     final existingBookings = await getBookingsForDate(date);
 
+    // Đảm bảo tích hợp cả lịch hẹn cá nhân của user trong ngày
+    if (currentUserId != null && currentUserId.isNotEmpty) {
+      final userBookings = await getUserBookings(currentUserId);
+      final userDayBookings = userBookings.where((b) {
+        if (b.startAt == null) return false;
+        return b.startAt!.year == date.year &&
+            b.startAt!.month == date.month &&
+            b.startAt!.day == date.day;
+      }).toList();
+
+      final existingIds = existingBookings.map((b) => b.id).toSet();
+      for (final ub in userDayBookings) {
+        if (!existingIds.contains(ub.id)) {
+          existingBookings.add(ub);
+        }
+      }
+    }
+
     return BookingSlotCalculator.calculateSlots(
       date: date,
       durationMinutes: durationMinutes,

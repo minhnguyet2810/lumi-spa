@@ -57,6 +57,7 @@ void main() {
       final targetDate = DateTime(2026, 11, 22);
       final userBookingAt14 = BookingItem(
         id: 'bk_user_1',
+        userId: 'user_thao_123',
         serviceId: 's_body',
         serviceName: 'Thư giãn toàn thân',
         price: 500000,
@@ -88,6 +89,40 @@ void main() {
       // Slot 15:00 is free
       expect(slot15.status, SlotStatus.available);
       expect(slot15.isAvailable, isTrue);
+    });
+
+    test('Another user booking does NOT cause userConflict for current user', () {
+      final targetDate = DateTime(2026, 11, 22);
+      final otherUserBooking = BookingItem(
+        id: 'bk_other_99',
+        userId: 'different_user_456',
+        serviceId: 's_facial',
+        serviceName: 'Chăm sóc da',
+        categoryId: 'facial',
+        price: 600000,
+        durationMinutes: 60,
+        status: 'confirmed',
+        contactName: 'Khách Khác',
+        contactPhone: '0988888888',
+        startAt: DateTime(2026, 11, 22, 14, 0),
+      );
+
+      final slots = BookingSlotCalculator.calculateSlots(
+        date: targetDate,
+        durationMinutes: 60,
+        categoryId: 'facial',
+        existingBookings: [otherUserBooking],
+        currentUserId: 'user_thao_123',
+        now: DateTime(2026, 11, 20, 8, 0),
+      );
+
+      final slot14 = slots.firstWhere((s) => s.hour == 14);
+
+      // It is NOT userConflict because it's a different user!
+      // Facial capacity is 2, so 1 booked -> 1 still available!
+      expect(slot14.status, SlotStatus.available);
+      expect(slot14.remainingCapacity, 1);
+      expect(slot14.isAvailable, isTrue);
     });
 
     test('XỬ LÝ KÍN CHỖ: Detects spa capacity limit (kín phòng & chuyên viên)', () {
@@ -144,6 +179,36 @@ void main() {
       expect(slot11.statusBadge, 'Còn 2 slot');
     });
 
+    test('Back-to-back bookings do NOT conflict', () {
+      // 09:00 - 10:00 booking should not overlap with 10:00 - 11:00 slot
+      final start1 = DateTime(2026, 11, 20, 9, 0);
+      final start2 = DateTime(2026, 11, 20, 10, 0);
+
+      final isConflicted = BookingSlotCalculator.isOverlapping(
+        start1: start1,
+        durationMinutes1: 60,
+        start2: start2,
+        durationMinutes2: 60,
+      );
+
+      expect(isConflicted, isFalse);
+    });
+
+    test('90-minute service booking overlaps and blocks adjacent slot', () {
+      // 10:00 booking of 90 minutes (10:00 - 11:30) overlaps with 11:00 - 12:00 slot
+      final start1 = DateTime(2026, 11, 20, 10, 0);
+      final start2 = DateTime(2026, 11, 20, 11, 0);
+
+      final isConflicted = BookingSlotCalculator.isOverlapping(
+        start1: start1,
+        durationMinutes1: 90,
+        start2: start2,
+        durationMinutes2: 60,
+      );
+
+      expect(isConflicted, isTrue);
+    });
+
     test('Cancelled bookings do NOT occupy spa slots', () {
       final targetDate = DateTime(2026, 11, 24);
 
@@ -177,4 +242,3 @@ void main() {
     });
   });
 }
-

@@ -91,10 +91,10 @@ class LumiCatalogRepository {
         'https://images.unsplash.com/photo-1556228722-d0b5de75d776?w=900&auto=format&fit=crop',
   };
 
-  static const String _defaultProductImage =
+  static const String defaultProductImage =
       'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=900&auto=format&fit=crop';
 
-  static Map<String, dynamic> _withDemoImage(Map<String, dynamic> item) {
+  static Map<String, dynamic> withDemoImage(Map<String, dynamic> item) {
     final id = item['id']?.toString() ?? '';
     final existing = item['imageUrls'];
     final hasImages =
@@ -135,7 +135,7 @@ class LumiCatalogRepository {
     }
 
     // Fallback mặc định
-    url ??= _defaultProductImage;
+    url ??= defaultProductImage;
 
     return {
       ...item,
@@ -150,7 +150,7 @@ class LumiCatalogRepository {
         .map((doc) {
           return <String, dynamic>{...doc.data(), 'id': doc.id};
         })
-        .map(_withDemoImage)
+        .map(withDemoImage)
         .where((item) => item['isActive'] != false)
         .toList();
   }
@@ -161,7 +161,7 @@ class LumiCatalogRepository {
         .map((doc) {
           return <String, dynamic>{...doc.data(), 'id': doc.id};
         })
-        .map(_withDemoImage)
+        .map(withDemoImage)
         .where((item) => item['isActive'] != false)
         .toList();
   }

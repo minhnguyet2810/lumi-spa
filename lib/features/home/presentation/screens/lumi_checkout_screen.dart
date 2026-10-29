@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'lumi_shop_catalog.dart';
+import 'lumi_order_success_screen.dart';
 
 class LumiCheckoutScreen extends StatefulWidget {
   const LumiCheckoutScreen({
@@ -240,63 +241,31 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
     );
   }
 
-  Future<void> _placeOrder() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
-
-    FocusScope.of(context).unfocus();
-
-    await showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (dialogContext) {
-        return AlertDialog(
-          backgroundColor: cream,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          icon: const Icon(
-            Icons.check_circle_outline,
-            color: rose,
-            size: 58,
-          ),
-          title: Text(
-            'Đặt hàng thành công',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.dmSans(
-              color: ink,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          content: Text(
-            'Cảm ơn bạn đã mua sắm tại LUMI. '
-            'Đơn hàng sẽ được xác nhận sớm nhất.',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.dmSans(
-              color: muted,
-              height: 1.5,
-            ),
-          ),
-          actionsAlignment: MainAxisAlignment.center,
-          actions: [
-            FilledButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              style: FilledButton.styleFrom(
-                backgroundColor: rose,
-              ),
-              child: const Text('ĐỒNG Ý'),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (mounted) {
-      LumiShopCatalog.clearCart();
-      Navigator.of(context).pop();
-    }
+ Future<void> _placeOrder() async {
+  if (!_formKey.currentState!.validate()) {
+    return;
   }
+
+  FocusScope.of(context).unfocus();
+
+  final orderId =
+      'LUMI-${DateTime.now().millisecondsSinceEpoch.toString().substring(6)}';
+
+  final orderTotal = grandTotal;
+
+  LumiShopCatalog.clearCart();
+
+  if (!mounted) return;
+
+  Navigator.of(context).pushReplacement(
+    MaterialPageRoute<void>(
+      builder: (_) => LumiOrderSuccessScreen(
+        orderId: orderId,
+        total: orderTotal,
+      ),
+    ),
+  );
+}
 
   @override
   Widget build(BuildContext context) {

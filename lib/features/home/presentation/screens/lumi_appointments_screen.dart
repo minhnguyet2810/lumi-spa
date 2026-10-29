@@ -213,6 +213,7 @@ class _LumiAppointmentsScreenState extends State<LumiAppointmentsScreen> {
       await BookingRepository.instance.cancelBooking(bookingId);
       if (mounted) {
         Navigator.of(context, rootNavigator: true).pop(); // dismiss loading
+        _fetchBookings();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Đã hủy lịch hẹn thành công.'),

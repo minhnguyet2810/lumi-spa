@@ -8,7 +8,7 @@ const router = express.Router();
 
 const VALID_HOURS = new Set([9, 10, 11, 12, 13, 14, 15, 16, 17]);
 // Bộ nhớ cục bộ khi chạy local chưa có quyền Google Cloud Firestore
-const devBookings = [];
+const { devBookings } = require('../dev_store');
 
 function fail(res, status, message) {
   return res.status(status).json({ success: false, message });

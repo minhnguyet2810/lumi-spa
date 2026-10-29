@@ -2,6 +2,7 @@ const express = require('express');
 const db = require('../firebase');
 const { FieldValue } = require('firebase-admin/firestore');
 const { requireAuth, requireAdmin } = require('../admin_auth');
+const { devBookings } = require('../dev_store');
 
 const router = express.Router();
 
@@ -23,6 +24,10 @@ function serialize(value) {
 }
 
 async function listCollection(name) {
+  if (!db.hasCredentials) {
+    if (name === 'bookings') return devBookings;
+    return [];
+  }
   const snapshot = await db.collection(name).limit(100).get();
 
   return snapshot.docs.map(doc => ({
@@ -56,6 +61,14 @@ router.get('/bookings', async (req, res) => {
 // PATCH /api/admin/bookings/:id/confirm
 router.patch('/bookings/:id/confirm', async (req, res) => {
   try {
+    if (!db.hasCredentials) {
+      const b = devBookings.find(item => item.id === req.params.id);
+      if (!b) return res.status(404).json({ success: false, message: 'Không tìm thấy lịch hẹn.' });
+      b.status = 'confirmed';
+      b.confirmedAt = new Date().toISOString();
+      b.confirmedBy = req.user.uid;
+      return res.json({ success: true, message: 'Đã xác nhận lịch hẹn.' });
+    }
     const bookingRef = db.collection('bookings').doc(req.params.id);
 
     await db.runTransaction(async tx => {
@@ -138,6 +151,14 @@ router.patch('/bookings/:id/confirm', async (req, res) => {
 // PATCH /api/admin/bookings/:id/reject
 router.patch('/bookings/:id/reject', async (req, res) => {
   try {
+    if (!db.hasCredentials) {
+      const b = devBookings.find(item => item.id === req.params.id);
+      if (!b) return res.status(404).json({ success: false, message: 'Không tìm thấy lịch hẹn.' });
+      b.status = 'cancelled';
+      b.rejectedAt = new Date().toISOString();
+      b.rejectedReason = req.body?.reason || 'Hết chỗ';
+      return res.json({ success: true, message: 'Đã từ chối lịch hẹn.' });
+    }
     const bookingRef = db.collection('bookings').doc(req.params.id);
 
     await db.runTransaction(async tx => {

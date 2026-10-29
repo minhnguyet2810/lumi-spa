@@ -1,6 +1,7 @@
 import 'lumi_booking_screen.dart';
 import 'spa_catalog.dart';
 import 'lumi_shop_catalog.dart';
+import 'lumi_checkout_screen.dart';
 import 'notifications_screen.dart';
 import 'lumi_journal_screen.dart';
 
@@ -113,9 +114,13 @@ class _HomeScreenState extends State<HomeScreen> {
     if (_loadingSession) return;
 
     if (_isLoggedIn) {
-      _showComingSoon(action);
-      return;
-    }
+  if (action == 'Thanh toán đơn hàng') {
+    _openCheckout();
+  } else {
+    _showComingSoon(action);
+  }
+  return;
+}
 
     showModalBottomSheet<void>(
       context: context,
@@ -1157,9 +1162,20 @@ class _HomeScreenState extends State<HomeScreen> {
     },
   );
 
+  void _openCheckout() {
+  final cartItems = LumiShopCatalog.currentCart;
+
+  Navigator.of(context).push(
+    MaterialPageRoute<void>(
+      builder: (_) => LumiCheckoutScreen(
+        cartItems: cartItems,
+      ),
+    ),
+  );
+}
   Widget _shop() {
     return LumiShopCatalog(
-      onCheckout: () => _requireLogin('thanh toán đơn hàng'),
+      onCheckout: () => _requireLogin('Thanh toán đơn hàng'),
     );
   }
 

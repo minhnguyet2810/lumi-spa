@@ -27,8 +27,10 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
   static final Map<String, _CartLine> _sessionCart = {};
   final Map<String, _CartLine> cart = _sessionCart;
   String selected = 'Tất cả';
-  // LUMI_FILTERS_V1: bộ lọc dùng trực tiếp trên dữ liệu API hiện có.
+  // Bộ lọc sản phẩm LUMI
+  String selectedProduct = 'Tất cả';
   String selectedSize = 'Tất cả';
+  int minPrice = 0;
   int maxPrice = 1000000;
   String sortOrder = 'popular';
   late Future<List<Map<String, dynamic>>> products;
@@ -101,104 +103,317 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
   }
 
   Widget _filterPanel(List<Map<String, dynamic>> items) {
+    final productNames = ['Tất cả', ...items.map(_name).toSet().toList()..sort()];
     final sizes = ['Tất cả', ...items.map(_size).toSet().toList()..sort()];
+
+    final isFiltered = selected != 'Tất cả' ||
+        selectedProduct != 'Tất cả' ||
+        selectedSize != 'Tất cả' ||
+        minPrice > 0 ||
+        maxPrice < 1000000 ||
+        sortOrder != 'popular';
+
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: blush.withValues(alpha: .45),
-        borderRadius: BorderRadius.circular(16),
+        color: const Color(0xFFFBF4F5),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFEFE4E6)),
+        boxShadow: [
+          BoxShadow(
+            color: ink.withValues(alpha: .03),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(Icons.tune_rounded, color: rose, size: 19),
-              const SizedBox(width: 7),
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: blush,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.tune_rounded, color: rose, size: 18),
+              ),
+              const SizedBox(width: 9),
               Text(
                 'Lọc sản phẩm',
                 style: GoogleFonts.dmSans(
                   fontWeight: FontWeight.w700,
+                  fontSize: 15,
                   color: ink,
                 ),
               ),
+              if (isFiltered) ...[
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: rose,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Text(
+                    'Đang lọc',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
               const Spacer(),
-              TextButton(
+              TextButton.icon(
                 onPressed: () => setState(() {
                   selected = 'Tất cả';
+                  selectedProduct = 'Tất cả';
                   selectedSize = 'Tất cả';
+                  minPrice = 0;
                   maxPrice = 1000000;
                   sortOrder = 'popular';
+                  search.clear();
                 }),
-                child: const Text('Đặt lại'),
+                icon: const Icon(Icons.refresh_rounded, size: 15, color: rose),
+                label: Text(
+                  'Đặt lại',
+                  style: GoogleFonts.dmSans(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 12,
+                    color: rose,
+                  ),
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 5),
+          const SizedBox(height: 14),
+
+          // 1. Lọc theo từng sản phẩm
           Text(
-            'Dung tích / quy cách',
-            style: GoogleFonts.dmSans(color: muted, fontSize: 12),
+            'Lọc theo từng sản phẩm',
+            style: GoogleFonts.dmSans(
+              color: ink,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
           ),
-          const SizedBox(height: 7),
-          Wrap(
-            spacing: 7,
-            runSpacing: 7,
-            children: sizes
-                .map(
-                  (size) => ChoiceChip(
-                    label: Text(size),
-                    selected: selectedSize == size,
-                    onSelected: (_) => setState(() => selectedSize = size),
-                    selectedColor: rose,
-                    backgroundColor: Colors.white,
-                    showCheckmark: false,
-                    labelStyle: GoogleFonts.dmSans(
-                      color: selectedSize == size ? Colors.white : ink,
-                      fontSize: 12,
-                    ),
-                    side: BorderSide.none,
-                  ),
-                )
-                .toList(),
+          const SizedBox(height: 6),
+          DropdownButtonFormField<String>(
+            key: ValueKey('product_$selectedProduct'),
+            initialValue: productNames.contains(selectedProduct) ? selectedProduct : 'Tất cả',
+            isExpanded: true,
+            decoration: InputDecoration(
+              prefixIcon: const Icon(Icons.spa_outlined, color: rose, size: 18),
+              filled: true,
+              fillColor: Colors.white,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFFE5DCDA)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFFE5DCDA)),
+              ),
+            ),
+            style: GoogleFonts.dmSans(color: ink, fontSize: 13),
+            items: productNames.map((name) {
+              return DropdownMenuItem<String>(
+                value: name,
+                child: Text(
+                  name == 'Tất cả' ? 'Tất cả sản phẩm' : name,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              );
+            }).toList(),
+            onChanged: (val) {
+              if (val != null) setState(() => selectedProduct = val);
+            },
           ),
           const SizedBox(height: 12),
+
+          // 2. Lọc theo dung tích
           Text(
-            'Giá tối đa: ${_money(maxPrice)}',
-            style: GoogleFonts.dmSans(color: ink, fontSize: 13),
+            'Lọc theo dung tích / quy cách',
+            style: GoogleFonts.dmSans(
+              color: ink,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
           ),
-          Slider(
-            value: maxPrice.toDouble(),
+          const SizedBox(height: 6),
+          DropdownButtonFormField<String>(
+            key: ValueKey('size_$selectedSize'),
+            initialValue: sizes.contains(selectedSize) ? selectedSize : 'Tất cả',
+            isExpanded: true,
+            decoration: InputDecoration(
+              prefixIcon: const Icon(Icons.inventory_2_outlined, color: rose, size: 18),
+              filled: true,
+              fillColor: Colors.white,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFFE5DCDA)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFFE5DCDA)),
+              ),
+            ),
+            style: GoogleFonts.dmSans(color: ink, fontSize: 13),
+            items: sizes.map((size) {
+              return DropdownMenuItem<String>(
+                value: size,
+                child: Text(
+                  size == 'Tất cả' ? 'Tất cả dung tích' : size,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              );
+            }).toList(),
+            onChanged: (val) {
+              if (val != null) setState(() => selectedSize = val);
+            },
+          ),
+          const SizedBox(height: 12),
+
+          // 3. Lọc theo khoảng giá
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Lọc theo khoảng giá',
+                style: GoogleFonts.dmSans(
+                  color: ink,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              Text(
+                '${_money(minPrice)} – ${_money(maxPrice)}',
+                style: GoogleFonts.dmSans(
+                  color: rose,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          RangeSlider(
+            values: RangeValues(
+              minPrice.toDouble().clamp(0, 1000000),
+              maxPrice.toDouble().clamp(0, 1000000),
+            ),
             min: 0,
             max: 1000000,
             divisions: 20,
             activeColor: rose,
-            onChanged: (value) => setState(() => maxPrice = value.round()),
+            inactiveColor: const Color(0xFFE5DCDA),
+            labels: RangeLabels(_money(minPrice), _money(maxPrice)),
+            onChanged: (values) {
+              setState(() {
+                minPrice = values.start.round();
+                maxPrice = values.end.round();
+              });
+            },
           ),
+          Row(
+            children: [
+              _priceChip('Tất cả', 0, 1000000),
+              const SizedBox(width: 6),
+              _priceChip('< 350k', 0, 350000),
+              const SizedBox(width: 6),
+              _priceChip('350k–500k', 350000, 500000),
+              const SizedBox(width: 6),
+              _priceChip('> 500k', 500000, 1000000),
+            ],
+          ),
+          const SizedBox(height: 14),
+
+          // 4. Sắp xếp theo phổ biến / giá tăng / giá giảm
+          Text(
+            'Sắp xếp',
+            style: GoogleFonts.dmSans(
+              color: ink,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 6),
           DropdownButtonFormField<String>(
+            key: ValueKey('sort_$sortOrder'),
             initialValue: sortOrder,
             isExpanded: true,
             decoration: InputDecoration(
-              labelText: 'Sắp xếp',
+              prefixIcon: const Icon(Icons.sort_rounded, color: rose, size: 18),
               filled: true,
               fillColor: Colors.white,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFFE5DCDA)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFFE5DCDA)),
               ),
             ),
+            style: GoogleFonts.dmSans(color: ink, fontSize: 13),
             items: const [
               DropdownMenuItem(
                 value: 'popular',
-                child: Text('Mặc định / phổ biến'),
+                child: Text('Phổ biến nhất'),
               ),
-              DropdownMenuItem(value: 'low', child: Text('Giá thấp đến cao')),
-              DropdownMenuItem(value: 'high', child: Text('Giá cao đến thấp')),
-              DropdownMenuItem(value: 'name', child: Text('Tên A–Z')),
+              DropdownMenuItem(
+                value: 'low',
+                child: Text('Giá tăng dần (Thấp đến cao)'),
+              ),
+              DropdownMenuItem(
+                value: 'high',
+                child: Text('Giá giảm dần (Cao đến thấp)'),
+              ),
             ],
             onChanged: (value) {
               if (value != null) setState(() => sortOrder = value);
             },
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _priceChip(String label, int min, int max) {
+    final isSelected = minPrice == min && maxPrice == max;
+    return Expanded(
+      child: InkWell(
+        onTap: () => setState(() {
+          minPrice = min;
+          maxPrice = max;
+        }),
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          decoration: BoxDecoration(
+            color: isSelected ? rose : Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: isSelected ? rose : const Color(0xFFE5DCDA),
+            ),
+          ),
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.dmSans(
+              fontSize: 11,
+              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+              color: isSelected ? Colors.white : ink,
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -697,21 +912,28 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
               final active = categories.contains(selected)
                   ? selected
                   : 'Tất cả';
+              final activeProduct =
+                  items.any((item) => _name(item) == selectedProduct)
+                      ? selectedProduct
+                      : 'Tất cả';
               final activeSize =
                   items.any((item) => _size(item) == selectedSize)
-                  ? selectedSize
-                  : 'Tất cả';
+                      ? selectedSize
+                      : 'Tất cả';
               final filtered = items.where((item) {
                 final matchesCategory =
                     active == 'Tất cả' || _category(item) == active;
+                final matchesProduct =
+                    activeProduct == 'Tất cả' || _name(item) == activeProduct;
                 final matchesSize =
                     activeSize == 'Tất cả' || _size(item) == activeSize;
                 final price = _amount(item['price']);
                 final matchesPrice =
-                    price != null && price >= 0 && price <= maxPrice;
+                    price != null && price >= minPrice && price <= maxPrice;
                 final text = '${_name(item)} ${item['description'] ?? ''}'
                     .toLowerCase();
                 return matchesCategory &&
+                    matchesProduct &&
                     matchesSize &&
                     matchesPrice &&
                     text.contains(search.text.trim().toLowerCase());
@@ -728,12 +950,15 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                     _amount(a['price']) ?? 0,
                   ),
                 );
-              } else if (sortOrder == 'name') {
-                filtered.sort(
-                  (a, b) =>
-                      _name(a).toLowerCase().compareTo(_name(b).toLowerCase()),
-                );
+              } else {
+                // popular: sắp xếp theo thứ tự phổ biến
+                filtered.sort((a, b) {
+                  final orderA = int.tryParse(a['sortOrder']?.toString() ?? '') ?? 999;
+                  final orderB = int.tryParse(b['sortOrder']?.toString() ?? '') ?? 999;
+                  return orderA.compareTo(orderB);
+                });
               }
+
               // popular giữ thứ tự do API cung cấp; chưa có số lượt bán thực tế.
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

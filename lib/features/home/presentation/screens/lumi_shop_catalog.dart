@@ -27,8 +27,8 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
   static final Map<String, _CartLine> _sessionCart = {};
   final Map<String, _CartLine> cart = _sessionCart;
   String selected = 'Tất cả';
-  // Bộ lọc sản phẩm LUMI
-  String selectedProduct = 'Tất cả';
+  // Bộ lọc sản phẩm LUMI: Dòng sản phẩm chính, Dạng quy cách (ml / g / khác), Dung tích
+  String selectedUnit = 'Tất cả'; // 'Tất cả', 'ml' (Tuýp/Kem/Chai), 'g' (Hũ/Lọ/Bột), 'other' (Hộp/Ống)
   String selectedSize = 'Tất cả';
   int minPrice = 0;
   int maxPrice = 1000000;
@@ -102,12 +102,51 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
     return 'Chưa rõ dung tích';
   }
 
+  String _getUnitType(String size) {
+    final s = size.toLowerCase();
+    if (s.contains('ml') && !s.contains('ống')) {
+      return 'ml';
+    } else if ((s.contains('g') || s.contains('hũ')) && !s.contains('miếng')) {
+      return 'g';
+    }
+    return 'other';
+  }
+
+  String _formatSizeDisplay(String size) {
+    if (size == 'Tất cả') return 'Tất cả dung tích / quy cách';
+    final s = size.toLowerCase();
+    if (s.contains('ml') && !s.contains('ống')) {
+      return 'Dạng tuýp / kem / chai: $size';
+    } else if (s.contains('hũ') || s.contains('g')) {
+      return 'Dạng hũ / lọ / bột: $size';
+    } else if (s.contains('miếng') || s.contains('hộp') || s.contains('ống')) {
+      return 'Dạng hộp / quy cách: $size';
+    }
+    return size;
+  }
+
   Widget _filterPanel(List<Map<String, dynamic>> items) {
-    final productNames = ['Tất cả', ...items.map(_name).toSet().toList()..sort()];
-    final sizes = ['Tất cả', ...items.map(_size).toSet().toList()..sort()];
+    final categories = ['Tất cả', ...items.map(_category).toSet().toList()..sort()];
+
+    // Quy cách phụ thuộc theo Dòng sản phẩm chính đã chọn ("theo sản phẩm")
+    final categoryFilteredItems = selected == 'Tất cả'
+        ? items
+        : items.where((it) => _category(it) == selected).toList();
+
+    // Lọc theo dạng quy cách (ml / g / khác)
+    final unitFilteredItems = selectedUnit == 'Tất cả'
+        ? categoryFilteredItems
+        : categoryFilteredItems
+            .where((it) => _getUnitType(_size(it)) == selectedUnit)
+            .toList();
+
+    final availableSizes = [
+      'Tất cả',
+      ...unitFilteredItems.map(_size).toSet().toList()..sort(),
+    ];
 
     final isFiltered = selected != 'Tất cả' ||
-        selectedProduct != 'Tất cả' ||
+        selectedUnit != 'Tất cả' ||
         selectedSize != 'Tất cả' ||
         minPrice > 0 ||
         maxPrice < 1000000 ||
@@ -171,7 +210,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
               TextButton.icon(
                 onPressed: () => setState(() {
                   selected = 'Tất cả';
-                  selectedProduct = 'Tất cả';
+                  selectedUnit = 'Tất cả';
                   selectedSize = 'Tất cả';
                   minPrice = 0;
                   maxPrice = 1000000;
@@ -192,9 +231,9 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
           ),
           const SizedBox(height: 14),
 
-          // 1. Lọc theo từng sản phẩm
+          // 1. Lọc theo từng dòng sản phẩm chính
           Text(
-            'Lọc theo từng sản phẩm',
+            'Dòng sản phẩm chính',
             style: GoogleFonts.dmSans(
               color: ink,
               fontSize: 12,
@@ -203,11 +242,11 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
           ),
           const SizedBox(height: 6),
           DropdownButtonFormField<String>(
-            key: ValueKey('product_$selectedProduct'),
-            initialValue: productNames.contains(selectedProduct) ? selectedProduct : 'Tất cả',
+            key: ValueKey('category_$selected'),
+            initialValue: categories.contains(selected) ? selected : 'Tất cả',
             isExpanded: true,
             decoration: InputDecoration(
-              prefixIcon: const Icon(Icons.spa_outlined, color: rose, size: 18),
+              prefixIcon: const Icon(Icons.auto_awesome_outlined, color: rose, size: 18),
               filled: true,
               fillColor: Colors.white,
               contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -221,24 +260,29 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
               ),
             ),
             style: GoogleFonts.dmSans(color: ink, fontSize: 13),
-            items: productNames.map((name) {
+            items: categories.map((cat) {
               return DropdownMenuItem<String>(
-                value: name,
+                value: cat,
                 child: Text(
-                  name == 'Tất cả' ? 'Tất cả sản phẩm' : name,
+                  cat == 'Tất cả' ? 'Tất cả dòng sản phẩm' : cat,
                   overflow: TextOverflow.ellipsis,
                 ),
               );
             }).toList(),
             onChanged: (val) {
-              if (val != null) setState(() => selectedProduct = val);
+              if (val != null) {
+                setState(() {
+                  selected = val;
+                  selectedSize = 'Tất cả';
+                });
+              }
             },
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
 
-          // 2. Lọc theo dung tích
+          // 2. Dung tích & quy cách theo dòng sản phẩm (tuýp, kem -> ml; hũ, lọ -> g)
           Text(
-            'Lọc theo dung tích / quy cách',
+            'Dung tích & Quy cách (theo dòng sản phẩm)',
             style: GoogleFonts.dmSans(
               color: ink,
               fontSize: 12,
@@ -246,9 +290,21 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
             ),
           ),
           const SizedBox(height: 6),
+          Row(
+            children: [
+              _unitChip('Tất cả', 'Tất cả'),
+              const SizedBox(width: 5),
+              _unitChip('Tuýp/Kem (ml)', 'ml'),
+              const SizedBox(width: 5),
+              _unitChip('Hũ/Lọ (g)', 'g'),
+              const SizedBox(width: 5),
+              _unitChip('Hộp/Khác', 'other'),
+            ],
+          ),
+          const SizedBox(height: 8),
           DropdownButtonFormField<String>(
-            key: ValueKey('size_$selectedSize'),
-            initialValue: sizes.contains(selectedSize) ? selectedSize : 'Tất cả',
+            key: ValueKey('size_${selected}_${selectedUnit}_$selectedSize'),
+            initialValue: availableSizes.contains(selectedSize) ? selectedSize : 'Tất cả',
             isExpanded: true,
             decoration: InputDecoration(
               prefixIcon: const Icon(Icons.inventory_2_outlined, color: rose, size: 18),
@@ -265,11 +321,11 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
               ),
             ),
             style: GoogleFonts.dmSans(color: ink, fontSize: 13),
-            items: sizes.map((size) {
+            items: availableSizes.map((size) {
               return DropdownMenuItem<String>(
                 value: size,
                 child: Text(
-                  size == 'Tất cả' ? 'Tất cả dung tích' : size,
+                  _formatSizeDisplay(size),
                   overflow: TextOverflow.ellipsis,
                 ),
               );
@@ -278,14 +334,14 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
               if (val != null) setState(() => selectedSize = val);
             },
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
 
-          // 3. Lọc theo khoảng giá
+          // 3. Khoảng giá
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Lọc theo khoảng giá',
+                'Khoảng giá',
                 style: GoogleFonts.dmSans(
                   color: ink,
                   fontSize: 12,
@@ -334,7 +390,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
           ),
           const SizedBox(height: 14),
 
-          // 4. Sắp xếp theo phổ biến / giá tăng / giá giảm
+          // 4. Sắp xếp
           Text(
             'Sắp xếp',
             style: GoogleFonts.dmSans(
@@ -382,6 +438,38 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
             },
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _unitChip(String label, String unitValue) {
+    final isSelected = selectedUnit == unitValue;
+    return Expanded(
+      child: InkWell(
+        onTap: () => setState(() {
+          selectedUnit = unitValue;
+          selectedSize = 'Tất cả';
+        }),
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 7),
+          decoration: BoxDecoration(
+            color: isSelected ? rose : Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: isSelected ? rose : const Color(0xFFE5DCDA),
+            ),
+          ),
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.dmSans(
+              fontSize: 10.5,
+              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+              color: isSelected ? Colors.white : ink,
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -912,28 +1000,38 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
               final active = categories.contains(selected)
                   ? selected
                   : 'Tất cả';
-              final activeProduct =
-                  items.any((item) => _name(item) == selectedProduct)
-                      ? selectedProduct
-                      : 'Tất cả';
-              final activeSize =
-                  items.any((item) => _size(item) == selectedSize)
-                      ? selectedSize
-                      : 'Tất cả';
+              final categoryFilteredItems = active == 'Tất cả'
+                  ? items
+                  : items.where((it) => _category(it) == active).toList();
+              final unitFilteredItems = selectedUnit == 'Tất cả'
+                  ? categoryFilteredItems
+                  : categoryFilteredItems
+                      .where((it) => _getUnitType(_size(it)) == selectedUnit)
+                      .toList();
+              final availableSizes = [
+                'Tất cả',
+                ...unitFilteredItems.map(_size).toSet(),
+              ];
+              final activeSize = availableSizes.contains(selectedSize)
+                  ? selectedSize
+                  : 'Tất cả';
+
               final filtered = items.where((item) {
                 final matchesCategory =
                     active == 'Tất cả' || _category(item) == active;
-                final matchesProduct =
-                    activeProduct == 'Tất cả' || _name(item) == activeProduct;
+                final itemSize = _size(item);
+                final itemUnit = _getUnitType(itemSize);
+                final matchesUnit =
+                    selectedUnit == 'Tất cả' || itemUnit == selectedUnit;
                 final matchesSize =
-                    activeSize == 'Tất cả' || _size(item) == activeSize;
+                    activeSize == 'Tất cả' || itemSize == activeSize;
                 final price = _amount(item['price']);
                 final matchesPrice =
                     price != null && price >= minPrice && price <= maxPrice;
                 final text = '${_name(item)} ${item['description'] ?? ''}'
                     .toLowerCase();
                 return matchesCategory &&
-                    matchesProduct &&
+                    matchesUnit &&
                     matchesSize &&
                     matchesPrice &&
                     text.contains(search.text.trim().toLowerCase());

@@ -57,15 +57,13 @@ class BookingRepository {
           .where('userId', isEqualTo: userId)
           .get();
 
-      if (snapshot.docs.isNotEmpty) {
-        final list = snapshot.docs.map((doc) => BookingItem.fromFirestore(doc)).toList();
-        list.sort((a, b) {
-          final dateA = a.startAt ?? DateTime(0);
-          final dateB = b.startAt ?? DateTime(0);
-          return dateB.compareTo(dateA);
-        });
-        return list;
-      }
+      final list = snapshot.docs.map((doc) => BookingItem.fromFirestore(doc)).toList();
+      list.sort((a, b) {
+        final dateA = a.startAt ?? DateTime(0);
+        final dateB = b.startAt ?? DateTime(0);
+        return dateB.compareTo(dateA);
+      });
+      return list;
     } catch (e) {
       debugPrint('Firestore fetch error, fallback to API: $e');
     }

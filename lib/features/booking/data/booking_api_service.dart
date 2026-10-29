@@ -29,7 +29,12 @@ class BookingApiService {
         statusCode: 401,
       );
     }
-    final token = await user.getIdToken();
+    String? token;
+    try {
+      token = await user.getIdToken(true);
+    } catch (_) {
+      token = await user.getIdToken();
+    }
     if (token == null || token.isEmpty) {
       throw BookingApiException(
         'Không lấy được mã xác thực. Vui lòng đăng nhập lại.',

@@ -2,3 +2,4 @@
 const devBookings = [];
 
 module.exports = { devBookings };
+

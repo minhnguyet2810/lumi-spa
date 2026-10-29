@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'lumi_shop_catalog.dart';
 import 'lumi_order_success_screen.dart';
+import '../../../../core/data/lumi_order_store.dart';
 
 class LumiCheckoutScreen extends StatefulWidget {
   const LumiCheckoutScreen({
@@ -253,7 +254,19 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
 
   final orderTotal = grandTotal;
 
-  LumiShopCatalog.clearCart();
+final now = DateTime.now();
+final formattedDate =
+    '${now.day.toString().padLeft(2, '0')}/'
+    '${now.month.toString().padLeft(2, '0')}/'
+    '${now.year}';
+
+LumiOrderStore.addOrder(
+  id: orderId,
+  date: formattedDate,
+  total: _money(orderTotal),
+);
+
+LumiShopCatalog.clearCart();
 
   if (!mounted) return;
 

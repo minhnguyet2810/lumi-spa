@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'lumi_order_detail_screen.dart';
+import '../../../../core/data/lumi_order_store.dart';
 
 class LumiMyOrdersScreen extends StatelessWidget {
   const LumiMyOrdersScreen({super.key});
@@ -12,20 +13,9 @@ class LumiMyOrdersScreen extends StatelessWidget {
   static const blush = Color(0xFFF4E4E8);
   static const blue = Color(0xFFDDECEF);
 
-  final List<Map<String, String>> orders = const [
-    {
-      'id': 'LUMI-123456',
-      'date': '29/10/2026',
-      'total': '450.000 đ',
-      'status': 'Chờ xác nhận',
-    },
-    {
-      'id': 'LUMI-987654',
-      'date': '20/10/2026',
-      'total': '680.000 đ',
-      'status': 'Đã giao',
-    },
-  ];
+  List<Map<String, String>> get orders {
+  return LumiOrderStore.orders;
+}
 
   Color _statusColor(String status) {
     switch (status) {

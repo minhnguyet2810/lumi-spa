@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../../../core/data/lumi_order_store.dart';
+
 class LumiOrderDetailScreen extends StatelessWidget {
   const LumiOrderDetailScreen({
     super.key,
@@ -17,13 +19,19 @@ class LumiOrderDetailScreen extends StatelessWidget {
   static const blue = Color(0xFFDDECEF);
 
   Color _statusColor(String status) {
-    if (status == 'Đã giao') return Colors.green.shade700;
-    if (status == 'Đã hủy') return Colors.red.shade700;
-    if (status == 'Đang giao') return Colors.blue.shade700;
-    return rose;
+    switch (status) {
+      case 'Đã giao':
+        return Colors.green.shade700;
+      case 'Đã hủy':
+        return Colors.red.shade700;
+      case 'Đang giao':
+        return Colors.blue.shade700;
+      default:
+        return rose;
+    }
   }
 
-  Widget _row(String label, String value) {
+  Widget _infoRow(String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 7),
       child: Row(
@@ -54,10 +62,113 @@ class LumiOrderDetailScreen extends StatelessWidget {
     );
   }
 
+  Widget _section({
+    required String title,
+    required IconData icon,
+    required Widget child,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(17),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: blush),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                icon,
+                color: rose,
+                size: 21,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                title,
+                style: GoogleFonts.dmSans(
+                  color: ink,
+                  fontSize: 17,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+          const Divider(height: 25),
+          child,
+        ],
+      ),
+    );
+  }
+
+  Future<void> _confirmCancel(BuildContext context) async {
+    final shouldCancel = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: cream,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+          ),
+          title: Text(
+            'Hủy đơn hàng?',
+            style: GoogleFonts.dmSans(
+              color: ink,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          content: Text(
+            'Bạn có chắc chắn muốn hủy đơn hàng này không?',
+            style: GoogleFonts.dmSans(
+              color: muted,
+              height: 1.5,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop(false);
+              },
+              child: Text(
+                'Không',
+                style: GoogleFonts.dmSans(color: muted),
+              ),
+            ),
+            FilledButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop(true);
+              },
+              style: FilledButton.styleFrom(
+                backgroundColor: Colors.red.shade700,
+              ),
+              child: const Text('Hủy đơn'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldCancel != true || !context.mounted) {
+      return;
+    }
+
+    LumiOrderStore.cancelOrder(order['id'] ?? '');
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Đã hủy đơn hàng thành công.'),
+      ),
+    );
+
+    Navigator.of(context).pop();
+  }
+
   @override
   Widget build(BuildContext context) {
     final status = order['status'] ?? 'Chờ xác nhận';
     final statusColor = _statusColor(status);
+    final canCancel = status == 'Chờ xác nhận';
 
     return Scaffold(
       backgroundColor: cream,
@@ -84,9 +195,11 @@ class LumiOrderDetailScreen extends StatelessWidget {
             ),
             child: Column(
               children: [
-                const Icon(
-                  Icons.local_shipping_outlined,
-                  color: rose,
+                Icon(
+                  status == 'Đã hủy'
+                      ? Icons.cancel_outlined
+                      : Icons.local_shipping_outlined,
+                  color: statusColor,
                   size: 42,
                 ),
                 const SizedBox(height: 10),
@@ -115,10 +228,22 @@ class LumiOrderDetailScreen extends StatelessWidget {
             icon: Icons.receipt_long_outlined,
             child: Column(
               children: [
-                _row('Mã đơn hàng', order['id'] ?? ''),
-                _row('Ngày đặt', order['date'] ?? ''),
-                _row('Phương thức thanh toán', 'COD'),
-                _row('Tổng tiền', order['total'] ?? ''),
+                _infoRow(
+                  'Mã đơn hàng',
+                  order['id'] ?? 'Chưa có',
+                ),
+                _infoRow(
+                  'Ngày đặt',
+                  order['date'] ?? 'Chưa có',
+                ),
+                _infoRow(
+                  'Phương thức thanh toán',
+                  'COD',
+                ),
+                _infoRow(
+                  'Tổng tiền',
+                  order['total'] ?? 'Chưa có',
+                ),
               ],
             ),
           ),
@@ -176,24 +301,18 @@ class LumiOrderDetailScreen extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 25),
-          if (status == 'Chờ xác nhận')
+          if (canCancel) ...[
+            const SizedBox(height: 25),
             SizedBox(
               width: double.infinity,
               height: 52,
               child: OutlinedButton(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                        'Chức năng hủy đơn đang được phát triển.',
-                      ),
-                    ),
-                  );
-                },
+                onPressed: () => _confirmCancel(context),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: Colors.red.shade700,
-                  side: BorderSide(color: Colors.red.shade300),
+                  side: BorderSide(
+                    color: Colors.red.shade300,
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
@@ -201,42 +320,36 @@ class LumiOrderDetailScreen extends StatelessWidget {
                 child: const Text('HỦY ĐƠN HÀNG'),
               ),
             ),
-        ],
-      ),
-    );
-  }
-
-  Widget _section({
-    required String title,
-    required IconData icon,
-    required Widget child,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(17),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: blush),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, color: rose, size: 21),
-              const SizedBox(width: 8),
-              Text(
-                title,
-                style: GoogleFonts.dmSans(
-                  color: ink,
-                  fontSize: 17,
-                  fontWeight: FontWeight.w700,
-                ),
+          ],
+          if (status == 'Đã hủy') ...[
+            const SizedBox(height: 20),
+            Container(
+              padding: const EdgeInsets.all(15),
+              decoration: BoxDecoration(
+                color: Colors.red.shade50,
+                borderRadius: BorderRadius.circular(14),
               ),
-            ],
-          ),
-          const Divider(height: 25),
-          child,
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.info_outline,
+                    color: Colors.red.shade700,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Đơn hàng này đã được hủy và không thể tiếp tục xử lý.',
+                      style: GoogleFonts.dmSans(
+                        color: Colors.red.shade700,
+                        fontSize: 13,
+                        height: 1.4,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ],
       ),
     );

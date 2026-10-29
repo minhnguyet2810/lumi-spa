@@ -27,8 +27,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
   static final Map<String, _CartLine> _sessionCart = {};
   final Map<String, _CartLine> cart = _sessionCart;
   String selected = 'Tất cả';
-  // Bộ lọc sản phẩm LUMI: Dòng sản phẩm chính, Dạng quy cách (ml / g / khác), Dung tích
-  String selectedUnit = 'Tất cả'; // 'Tất cả', 'ml' (Tuýp/Kem/Chai), 'g' (Hũ/Lọ/Bột), 'other' (Hộp/Ống)
+  // Bộ lọc sản phẩm LUMI: Dòng sản phẩm chính, Dung tích / Quy cách tự động theo sản phẩm
   String selectedSize = 'Tất cả';
   int minPrice = 0;
   int maxPrice = 1000000;
@@ -102,51 +101,78 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
     return 'Chưa rõ dung tích';
   }
 
-  String _getUnitType(String size) {
-    final s = size.toLowerCase();
-    if (s.contains('ml') && !s.contains('ống')) {
-      return 'ml';
-    } else if ((s.contains('g') || s.contains('hũ')) && !s.contains('miếng')) {
-      return 'g';
-    }
-    return 'other';
-  }
-
-  String _formatSizeDisplay(String size) {
+  String _formatSizeForCategory(String category, String size) {
     if (size == 'Tất cả') return 'Tất cả dung tích / quy cách';
-    final s = size.toLowerCase();
-    if (s.contains('ml') && !s.contains('ống')) {
-      return 'Dạng tuýp / kem / chai: $size';
-    } else if (s.contains('hũ') || s.contains('g')) {
-      return 'Dạng hũ / lọ / bột: $size';
-    } else if (s.contains('miếng') || s.contains('hộp') || s.contains('ống')) {
-      return 'Dạng hộp / quy cách: $size';
+
+    if (category == 'Mặt nạ chăm sóc chuyên sâu') {
+      if (size.contains('100g')) return 'Dạng hũ: $size (Mặt nạ đất sét / bùn)';
+      if (size.contains('miếng')) return 'Dạng hộp: $size (Mặt nạ miếng sinh học)';
     }
+
+    if (category == 'Chống nắng & Bảo vệ quang học') {
+      if (size.contains('50ml')) return 'Dạng tuýp: $size (Kem / Gel chống nắng)';
+      if (size.contains('15g')) return 'Dạng hộp: $size (Cushion phấn nước)';
+    }
+
+    if (category == 'Tinh chất đặc trị & Tế bào gốc') {
+      if (size.contains('15ml')) return 'Dạng lọ: $size (Serum đặc trị mụn SOS)';
+      if (size.contains('30ml')) return 'Dạng lọ: $size (Serum phục hồi & dưỡng trắng)';
+      if (size.contains('50ml')) return 'Dạng chai: $size (Ampoule cấp ẩm B5)';
+      if (size.contains('ống')) return 'Dạng vỉ: $size (Tế bào gốc EGF)';
+    }
+
+    if (category == 'Dưỡng ẩm & Khóa dưỡng') {
+      if (size.contains('15ml')) return 'Dạng tuýp: $size (Kem mắt)';
+      if (size.contains('30ml')) return 'Dạng lọ: $size (Dầu dưỡng da mặt)';
+      if (size.contains('40ml')) return 'Dạng tuýp: $size (Balm phục hồi)';
+      if (size.contains('50ml')) return 'Dạng tuýp: $size (Gel cream dưỡng ẩm)';
+      if (size.contains('50g')) return 'Dạng hũ: $size (Kem dưỡng khóa ẩm / Đêm)';
+      if (size.contains('80ml')) return 'Dạng chai: $size (Lotion kiềm dầu / Mặt nạ ngủ)';
+    }
+
+    if (category == 'Làm sạch & Cân bằng') {
+      if (size.contains('70g')) return 'Dạng lọ bột: $size (Bột rửa mặt Enzyme)';
+      if (size.contains('100ml')) return 'Dạng tuýp: $size (Gel tẩy da chết)';
+      if (size.contains('150ml')) return 'Dạng chai: $size (Sữa rửa mặt bọt / Toner / Xịt khoáng)';
+      if (size.contains('200ml')) return 'Dạng chai: $size (Dầu / Gel rửa mặt / Toner)';
+      if (size.contains('300ml')) return 'Dạng chai: $size (Nước tẩy trang Micellar)';
+    }
+
+    if (category == 'Chăm sóc cơ thể & Dưỡng sinh') {
+      if (size.contains('50ml')) return 'Dạng tuýp: $size (Kem dưỡng tay)';
+      if (size.contains('100ml')) return 'Dạng chai: $size (Serum da đầu)';
+      if (size.contains('150ml')) return 'Dạng chai: $size (Serum AHA dưỡng thể)';
+      if (size.contains('200ml')) return 'Dạng chai: $size (Dầu massage / Kem ủ tóc)';
+      if (size.contains('250ml')) return 'Dạng chai: $size (Sữa dưỡng thể)';
+      if (size.contains('250g')) return 'Dạng hũ: $size (Muối tắm cà phê)';
+      if (size.contains('300ml')) return 'Dạng chai: $size (Dầu gội thảo mộc)';
+      if (size.contains('400g')) return 'Dạng hũ: $size (Muối ngâm chân gừng)';
+      if (size.contains('2x10g')) return 'Dạng hũ đôi: $size (Sáp dưỡng & tẩy tế bào chết môi)';
+    }
+
+    final s = size.toLowerCase();
+    if (s.contains('hũ')) return 'Dạng hũ: $size';
+    if (s.contains('hộp') || s.contains('miếng')) return 'Dạng hộp: $size';
+    if (s.contains('ống')) return 'Dạng vỉ / ống: $size';
+    if (s.contains('g')) return 'Dạng hũ / lọ: $size';
+    if (s.contains('ml')) return 'Dạng tuýp / chai: $size';
     return size;
   }
 
   Widget _filterPanel(List<Map<String, dynamic>> items) {
     final categories = ['Tất cả', ...items.map(_category).toSet().toList()..sort()];
 
-    // Quy cách phụ thuộc theo Dòng sản phẩm chính đã chọn ("theo sản phẩm")
+    // Quy cách tự động lọc theo Dòng sản phẩm chính đang chọn ("theo sản phẩm")
     final categoryFilteredItems = selected == 'Tất cả'
         ? items
         : items.where((it) => _category(it) == selected).toList();
 
-    // Lọc theo dạng quy cách (ml / g / khác)
-    final unitFilteredItems = selectedUnit == 'Tất cả'
-        ? categoryFilteredItems
-        : categoryFilteredItems
-            .where((it) => _getUnitType(_size(it)) == selectedUnit)
-            .toList();
-
     final availableSizes = [
       'Tất cả',
-      ...unitFilteredItems.map(_size).toSet().toList()..sort(),
+      ...categoryFilteredItems.map(_size).toSet().toList()..sort(),
     ];
 
     final isFiltered = selected != 'Tất cả' ||
-        selectedUnit != 'Tất cả' ||
         selectedSize != 'Tất cả' ||
         minPrice > 0 ||
         maxPrice < 1000000 ||
@@ -210,7 +236,6 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
               TextButton.icon(
                 onPressed: () => setState(() {
                   selected = 'Tất cả';
-                  selectedUnit = 'Tất cả';
                   selectedSize = 'Tất cả';
                   minPrice = 0;
                   maxPrice = 1000000;
@@ -280,9 +305,9 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
           ),
           const SizedBox(height: 14),
 
-          // 2. Dung tích & quy cách theo dòng sản phẩm (tuýp, kem -> ml; hũ, lọ -> g)
+          // 2. Dung tích & quy cách tự động hiện theo sản phẩm (không cần tab lẻ)
           Text(
-            'Dung tích & Quy cách (theo dòng sản phẩm)',
+            'Dung tích / Quy cách (tự động theo sản phẩm)',
             style: GoogleFonts.dmSans(
               color: ink,
               fontSize: 12,
@@ -290,20 +315,8 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
             ),
           ),
           const SizedBox(height: 6),
-          Row(
-            children: [
-              _unitChip('Tất cả', 'Tất cả'),
-              const SizedBox(width: 5),
-              _unitChip('Tuýp/Kem (ml)', 'ml'),
-              const SizedBox(width: 5),
-              _unitChip('Hũ/Lọ (g)', 'g'),
-              const SizedBox(width: 5),
-              _unitChip('Hộp/Khác', 'other'),
-            ],
-          ),
-          const SizedBox(height: 8),
           DropdownButtonFormField<String>(
-            key: ValueKey('size_${selected}_${selectedUnit}_$selectedSize'),
+            key: ValueKey('size_${selected}_$selectedSize'),
             initialValue: availableSizes.contains(selectedSize) ? selectedSize : 'Tất cả',
             isExpanded: true,
             decoration: InputDecoration(
@@ -325,7 +338,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
               return DropdownMenuItem<String>(
                 value: size,
                 child: Text(
-                  _formatSizeDisplay(size),
+                  _formatSizeForCategory(selected, size),
                   overflow: TextOverflow.ellipsis,
                 ),
               );
@@ -438,38 +451,6 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
             },
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _unitChip(String label, String unitValue) {
-    final isSelected = selectedUnit == unitValue;
-    return Expanded(
-      child: InkWell(
-        onTap: () => setState(() {
-          selectedUnit = unitValue;
-          selectedSize = 'Tất cả';
-        }),
-        borderRadius: BorderRadius.circular(8),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 7),
-          decoration: BoxDecoration(
-            color: isSelected ? rose : Colors.white,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: isSelected ? rose : const Color(0xFFE5DCDA),
-            ),
-          ),
-          child: Text(
-            label,
-            textAlign: TextAlign.center,
-            style: GoogleFonts.dmSans(
-              fontSize: 10.5,
-              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-              color: isSelected ? Colors.white : ink,
-            ),
-          ),
-        ),
       ),
     );
   }
@@ -1003,14 +984,9 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
               final categoryFilteredItems = active == 'Tất cả'
                   ? items
                   : items.where((it) => _category(it) == active).toList();
-              final unitFilteredItems = selectedUnit == 'Tất cả'
-                  ? categoryFilteredItems
-                  : categoryFilteredItems
-                      .where((it) => _getUnitType(_size(it)) == selectedUnit)
-                      .toList();
               final availableSizes = [
                 'Tất cả',
-                ...unitFilteredItems.map(_size).toSet(),
+                ...categoryFilteredItems.map(_size).toSet(),
               ];
               final activeSize = availableSizes.contains(selectedSize)
                   ? selectedSize
@@ -1020,9 +996,6 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                 final matchesCategory =
                     active == 'Tất cả' || _category(item) == active;
                 final itemSize = _size(item);
-                final itemUnit = _getUnitType(itemSize);
-                final matchesUnit =
-                    selectedUnit == 'Tất cả' || itemUnit == selectedUnit;
                 final matchesSize =
                     activeSize == 'Tất cả' || itemSize == activeSize;
                 final price = _amount(item['price']);
@@ -1031,7 +1004,6 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                 final text = '${_name(item)} ${item['description'] ?? ''}'
                     .toLowerCase();
                 return matchesCategory &&
-                    matchesUnit &&
                     matchesSize &&
                     matchesPrice &&
                     text.contains(search.text.trim().toLowerCase());

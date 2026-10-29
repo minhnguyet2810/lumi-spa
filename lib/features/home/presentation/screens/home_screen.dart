@@ -4,6 +4,7 @@ import 'lumi_shop_catalog.dart';
 import 'lumi_checkout_screen.dart';
 import 'notifications_screen.dart';
 import 'lumi_journal_screen.dart';
+import 'lumi_my_orders_screen.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -1274,10 +1275,16 @@ class _HomeScreenState extends State<HomeScreen> {
           () => setState(() => _tab = 3),
         ),
         _profileTile(
-          Icons.shopping_bag_outlined,
-          'Đơn hàng của tôi',
-          () => _showComingSoon('Quản lý đơn hàng'),
-        ),
+  Icons.shopping_bag_outlined,
+  'Đơn hàng của tôi',
+  () {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => const LumiMyOrdersScreen(),
+      ),
+    );
+  },
+),
         _profileTile(
           Icons.favorite_border,
           'Yêu thích',

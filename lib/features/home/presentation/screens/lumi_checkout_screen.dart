@@ -260,10 +260,25 @@ final formattedDate =
     '${now.month.toString().padLeft(2, '0')}/'
     '${now.year}';
 
+final items = widget.cartItems.map((item) {
+  return <String, dynamic>{
+    'productId': item.product['id']?.toString() ?? '',
+    'name': item.product['name']?.toString() ??
+        'Sản phẩm LUMI',
+    'quantity': item.quantity,
+    'price': item.product['price'] ?? 0,
+  };
+}).toList();
+
 LumiOrderStore.addOrder(
   id: orderId,
   date: formattedDate,
   total: _money(orderTotal),
+  customerName: _nameController.text.trim(),
+  phone: _phoneController.text.trim(),
+  address: _addressController.text.trim(),
+  note: _noteController.text.trim(),
+  items: items,
 );
 
 LumiShopCatalog.clearCart();

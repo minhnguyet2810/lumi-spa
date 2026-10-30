@@ -32,6 +32,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
   int minPrice = 0;
   int maxPrice = 1000000;
   String sortOrder = 'popular';
+  bool _isFilterExpanded = false;
   late Future<List<Map<String, dynamic>>> products;
 
   @override
@@ -178,12 +179,22 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
         maxPrice < 1000000 ||
         sortOrder != 'popular';
 
-    return Container(
-      padding: const EdgeInsets.all(16),
+    int activeFilterCount = 0;
+    if (selected != 'Tất cả') activeFilterCount++;
+    if (selectedSize != 'Tất cả') activeFilterCount++;
+    if (minPrice > 0 || maxPrice < 1000000) activeFilterCount++;
+    if (sortOrder != 'popular') activeFilterCount++;
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeInOut,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: const Color(0xFFFBF4F5),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFEFE4E6)),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: _isFilterExpanded ? rose.withValues(alpha: 0.35) : const Color(0xFFEFE4E6),
+        ),
         boxShadow: [
           BoxShadow(
             color: ink.withValues(alpha: .03),
@@ -195,267 +206,332 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: blush,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(Icons.tune_rounded, color: rose, size: 18),
-              ),
-              const SizedBox(width: 9),
-              Text(
-                'Lọc sản phẩm',
-                style: GoogleFonts.dmSans(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 15,
-                  color: ink,
-                ),
-              ),
-              if (isFiltered) ...[
-                const SizedBox(width: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: rose,
-                    borderRadius: BorderRadius.circular(10),
+          // THANH NGANG GỌN GÀNG (Chạm vào để mở rộng/thu gọn menu filter)
+          InkWell(
+            onTap: () => setState(() => _isFilterExpanded = !_isFilterExpanded),
+            borderRadius: BorderRadius.circular(12),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 2),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(7),
+                    decoration: BoxDecoration(
+                      color: blush,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.tune_rounded, color: rose, size: 18),
                   ),
-                  child: const Text(
-                    'Đang lọc',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
+                  const SizedBox(width: 10),
+                  Text(
+                    'Bộ lọc & Sắp xếp',
+                    style: GoogleFonts.dmSans(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14,
+                      color: ink,
+                    ),
+                  ),
+                  if (isFiltered) ...[
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: rose,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        'Đang lọc ($activeFilterCount)',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                  const Spacer(),
+                  if (isFiltered) ...[
+                    TextButton(
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      onPressed: () => setState(() {
+                        selected = 'Tất cả';
+                        selectedSize = 'Tất cả';
+                        minPrice = 0;
+                        maxPrice = 1000000;
+                        sortOrder = 'popular';
+                        search.clear();
+                      }),
+                      child: Text(
+                        'Đặt lại',
+                        style: GoogleFonts.dmSans(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12,
+                          color: rose,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                  ],
+                  AnimatedRotation(
+                    turns: _isFilterExpanded ? 0.5 : 0.0,
+                    duration: const Duration(milliseconds: 250),
+                    child: const Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      color: ink,
+                      size: 24,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // MENU BỘ LỌC CHI TIẾT (Mở rộng khi chạm vào)
+          AnimatedCrossFade(
+            firstChild: const SizedBox.shrink(),
+            secondChild: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 12),
+                const Divider(color: Color(0xFFEFE4E6), height: 1),
+                const SizedBox(height: 14),
+
+                // 1. Lọc theo từng dòng sản phẩm chính
+                Text(
+                  'Dòng sản phẩm chính',
+                  style: GoogleFonts.dmSans(
+                    color: ink,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                DropdownButtonFormField<String>(
+                  key: ValueKey('category_$selected'),
+                  initialValue: categories.contains(selected) ? selected : 'Tất cả',
+                  isExpanded: true,
+                  decoration: InputDecoration(
+                    prefixIcon: const Icon(Icons.auto_awesome_outlined, color: rose, size: 18),
+                    filled: true,
+                    fillColor: Colors.white,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFFE5DCDA)),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFFE5DCDA)),
+                    ),
+                  ),
+                  style: GoogleFonts.dmSans(color: ink, fontSize: 13),
+                  items: categories.map((cat) {
+                    return DropdownMenuItem<String>(
+                      value: cat,
+                      child: Text(
+                        cat == 'Tất cả' ? 'Tất cả dòng sản phẩm' : cat,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    );
+                  }).toList(),
+                  onChanged: (val) {
+                    if (val != null) {
+                      setState(() {
+                        selected = val;
+                        selectedSize = 'Tất cả';
+                      });
+                    }
+                  },
+                ),
+                const SizedBox(height: 14),
+
+                // 2. Dung tích & quy cách tự động hiện theo sản phẩm
+                Text(
+                  'Dung tích / Quy cách (tự động theo sản phẩm)',
+                  style: GoogleFonts.dmSans(
+                    color: ink,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                DropdownButtonFormField<String>(
+                  key: ValueKey('size_${selected}_$selectedSize'),
+                  initialValue: availableSizes.contains(selectedSize) ? selectedSize : 'Tất cả',
+                  isExpanded: true,
+                  decoration: InputDecoration(
+                    prefixIcon: const Icon(Icons.inventory_2_outlined, color: rose, size: 18),
+                    filled: true,
+                    fillColor: Colors.white,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFFE5DCDA)),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFFE5DCDA)),
+                    ),
+                  ),
+                  style: GoogleFonts.dmSans(color: ink, fontSize: 13),
+                  items: availableSizes.map((size) {
+                    return DropdownMenuItem<String>(
+                      value: size,
+                      child: Text(
+                        _formatSizeForCategory(selected, size),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    );
+                  }).toList(),
+                  onChanged: (val) {
+                    if (val != null) setState(() => selectedSize = val);
+                  },
+                ),
+                const SizedBox(height: 14),
+
+                // 3. Khoảng giá
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Khoảng giá',
+                      style: GoogleFonts.dmSans(
+                        color: ink,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    Text(
+                      '${_money(minPrice)} – ${_money(maxPrice)}',
+                      style: GoogleFonts.dmSans(
+                        color: rose,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                RangeSlider(
+                  values: RangeValues(
+                    minPrice.toDouble().clamp(0, 1000000),
+                    maxPrice.toDouble().clamp(0, 1000000),
+                  ),
+                  min: 0,
+                  max: 1000000,
+                  divisions: 20,
+                  activeColor: rose,
+                  inactiveColor: const Color(0xFFE5DCDA),
+                  labels: RangeLabels(_money(minPrice), _money(maxPrice)),
+                  onChanged: (values) {
+                    setState(() {
+                      minPrice = values.start.round();
+                      maxPrice = values.end.round();
+                    });
+                  },
+                ),
+                Row(
+                  children: [
+                    _priceChip('Tất cả', 0, 1000000),
+                    const SizedBox(width: 6),
+                    _priceChip('< 350k', 0, 350000),
+                    const SizedBox(width: 6),
+                    _priceChip('350k–500k', 350000, 500000),
+                    const SizedBox(width: 6),
+                    _priceChip('> 500k', 500000, 1000000),
+                  ],
+                ),
+                const SizedBox(height: 14),
+
+                // 4. Sắp xếp
+                Text(
+                  'Sắp xếp',
+                  style: GoogleFonts.dmSans(
+                    color: ink,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                DropdownButtonFormField<String>(
+                  key: ValueKey('sort_$sortOrder'),
+                  initialValue: sortOrder,
+                  isExpanded: true,
+                  decoration: InputDecoration(
+                    prefixIcon: const Icon(Icons.sort_rounded, color: rose, size: 18),
+                    filled: true,
+                    fillColor: Colors.white,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFFE5DCDA)),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFFE5DCDA)),
+                    ),
+                  ),
+                  style: GoogleFonts.dmSans(color: ink, fontSize: 13),
+                  items: const [
+                    DropdownMenuItem(
+                      value: 'popular',
+                      child: Text('Phổ biến nhất'),
+                    ),
+                    DropdownMenuItem(
+                      value: 'low',
+                      child: Text('Giá tăng dần (Thấp đến cao)'),
+                    ),
+                    DropdownMenuItem(
+                      value: 'high',
+                      child: Text('Giá giảm dần (Cao đến thấp)'),
+                    ),
+                  ],
+                  onChanged: (value) {
+                    if (value != null) setState(() => sortOrder = value);
+                  },
+                ),
+                const SizedBox(height: 16),
+
+                // Nút thu gọn bộ lọc
+                SizedBox(
+                  width: double.infinity,
+                  height: 40,
+                  child: OutlinedButton.icon(
+                    onPressed: () => setState(() => _isFilterExpanded = false),
+                    icon: const Icon(Icons.expand_less_rounded, size: 18, color: rose),
+                    label: Text(
+                      'Thu gọn bộ lọc',
+                      style: GoogleFonts.dmSans(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: rose,
+                      ),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: rose),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
                   ),
                 ),
               ],
-              const Spacer(),
-              TextButton.icon(
-                onPressed: () => setState(() {
-                  selected = 'Tất cả';
-                  selectedSize = 'Tất cả';
-                  minPrice = 0;
-                  maxPrice = 1000000;
-                  sortOrder = 'popular';
-                  search.clear();
-                }),
-                icon: const Icon(Icons.refresh_rounded, size: 15, color: rose),
-                label: Text(
-                  'Đặt lại',
-                  style: GoogleFonts.dmSans(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 12,
-                    color: rose,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-
-          // 1. Lọc theo từng dòng sản phẩm chính
-          Text(
-            'Dòng sản phẩm chính',
-            style: GoogleFonts.dmSans(
-              color: ink,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
             ),
-          ),
-          const SizedBox(height: 6),
-          DropdownButtonFormField<String>(
-            key: ValueKey('category_$selected'),
-            initialValue: categories.contains(selected) ? selected : 'Tất cả',
-            isExpanded: true,
-            decoration: InputDecoration(
-              prefixIcon: const Icon(Icons.auto_awesome_outlined, color: rose, size: 18),
-              filled: true,
-              fillColor: Colors.white,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Color(0xFFE5DCDA)),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Color(0xFFE5DCDA)),
-              ),
-            ),
-            style: GoogleFonts.dmSans(color: ink, fontSize: 13),
-            items: categories.map((cat) {
-              return DropdownMenuItem<String>(
-                value: cat,
-                child: Text(
-                  cat == 'Tất cả' ? 'Tất cả dòng sản phẩm' : cat,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              );
-            }).toList(),
-            onChanged: (val) {
-              if (val != null) {
-                setState(() {
-                  selected = val;
-                  selectedSize = 'Tất cả';
-                });
-              }
-            },
-          ),
-          const SizedBox(height: 14),
-
-          // 2. Dung tích & quy cách tự động hiện theo sản phẩm (không cần tab lẻ)
-          Text(
-            'Dung tích / Quy cách (tự động theo sản phẩm)',
-            style: GoogleFonts.dmSans(
-              color: ink,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 6),
-          DropdownButtonFormField<String>(
-            key: ValueKey('size_${selected}_$selectedSize'),
-            initialValue: availableSizes.contains(selectedSize) ? selectedSize : 'Tất cả',
-            isExpanded: true,
-            decoration: InputDecoration(
-              prefixIcon: const Icon(Icons.inventory_2_outlined, color: rose, size: 18),
-              filled: true,
-              fillColor: Colors.white,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Color(0xFFE5DCDA)),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Color(0xFFE5DCDA)),
-              ),
-            ),
-            style: GoogleFonts.dmSans(color: ink, fontSize: 13),
-            items: availableSizes.map((size) {
-              return DropdownMenuItem<String>(
-                value: size,
-                child: Text(
-                  _formatSizeForCategory(selected, size),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              );
-            }).toList(),
-            onChanged: (val) {
-              if (val != null) setState(() => selectedSize = val);
-            },
-          ),
-          const SizedBox(height: 14),
-
-          // 3. Khoảng giá
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Khoảng giá',
-                style: GoogleFonts.dmSans(
-                  color: ink,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              Text(
-                '${_money(minPrice)} – ${_money(maxPrice)}',
-                style: GoogleFonts.dmSans(
-                  color: rose,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          RangeSlider(
-            values: RangeValues(
-              minPrice.toDouble().clamp(0, 1000000),
-              maxPrice.toDouble().clamp(0, 1000000),
-            ),
-            min: 0,
-            max: 1000000,
-            divisions: 20,
-            activeColor: rose,
-            inactiveColor: const Color(0xFFE5DCDA),
-            labels: RangeLabels(_money(minPrice), _money(maxPrice)),
-            onChanged: (values) {
-              setState(() {
-                minPrice = values.start.round();
-                maxPrice = values.end.round();
-              });
-            },
-          ),
-          Row(
-            children: [
-              _priceChip('Tất cả', 0, 1000000),
-              const SizedBox(width: 6),
-              _priceChip('< 350k', 0, 350000),
-              const SizedBox(width: 6),
-              _priceChip('350k–500k', 350000, 500000),
-              const SizedBox(width: 6),
-              _priceChip('> 500k', 500000, 1000000),
-            ],
-          ),
-          const SizedBox(height: 14),
-
-          // 4. Sắp xếp
-          Text(
-            'Sắp xếp',
-            style: GoogleFonts.dmSans(
-              color: ink,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 6),
-          DropdownButtonFormField<String>(
-            key: ValueKey('sort_$sortOrder'),
-            initialValue: sortOrder,
-            isExpanded: true,
-            decoration: InputDecoration(
-              prefixIcon: const Icon(Icons.sort_rounded, color: rose, size: 18),
-              filled: true,
-              fillColor: Colors.white,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Color(0xFFE5DCDA)),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Color(0xFFE5DCDA)),
-              ),
-            ),
-            style: GoogleFonts.dmSans(color: ink, fontSize: 13),
-            items: const [
-              DropdownMenuItem(
-                value: 'popular',
-                child: Text('Phổ biến nhất'),
-              ),
-              DropdownMenuItem(
-                value: 'low',
-                child: Text('Giá tăng dần (Thấp đến cao)'),
-              ),
-              DropdownMenuItem(
-                value: 'high',
-                child: Text('Giá giảm dần (Cao đến thấp)'),
-              ),
-            ],
-            onChanged: (value) {
-              if (value != null) setState(() => sortOrder = value);
-            },
+            crossFadeState: _isFilterExpanded
+                ? CrossFadeState.showSecond
+                : CrossFadeState.showFirst,
+            duration: const Duration(milliseconds: 250),
           ),
         ],
       ),
     );
   }
 
-  Widget _priceChip(String label, int min, int max) {
+    Widget _priceChip(String label, int min, int max) {
     final isSelected = minPrice == min && maxPrice == max;
     return Expanded(
       child: InkWell(

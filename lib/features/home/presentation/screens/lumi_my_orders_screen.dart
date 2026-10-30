@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import 'lumi_order_detail_screen.dart';
 import '../../../../core/data/lumi_order_store.dart';
 
-class LumiMyOrdersScreen extends StatelessWidget {
+class LumiMyOrdersScreen extends StatefulWidget {
   const LumiMyOrdersScreen({super.key});
 
+  @override
+  State<LumiMyOrdersScreen> createState() => _LumiMyOrdersScreenState();
+}
+
+class _LumiMyOrdersScreenState extends State<LumiMyOrdersScreen> {
   static const rose = Color(0xFFB56F86);
   static const ink = Color(0xFF503B42);
   static const muted = Color(0xFF78676B);
@@ -13,9 +19,29 @@ class LumiMyOrdersScreen extends StatelessWidget {
   static const blush = Color(0xFFF4E4E8);
   static const blue = Color(0xFFDDECEF);
 
+  String selectedStatus = 'Tất cả';
+
+  final List<String> statuses = [
+    'Tất cả',
+    'Chờ xác nhận',
+    'Đang giao',
+    'Đã giao',
+    'Đã hủy',
+  ];
+
   List<Map<String, String>> get orders {
-  return LumiOrderStore.orders;
-}
+    return LumiOrderStore.orders;
+  }
+
+  List<Map<String, String>> get filteredOrders {
+    if (selectedStatus == 'Tất cả') {
+      return orders;
+    }
+
+    return orders
+        .where((order) => order['status'] == selectedStatus)
+        .toList();
+  }
 
   Color _statusColor(String status) {
     switch (status) {
@@ -28,6 +54,73 @@ class LumiMyOrdersScreen extends StatelessWidget {
       default:
         return rose;
     }
+  }
+
+  Widget _emptyState(String message) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(
+            Icons.shopping_bag_outlined,
+            size: 65,
+            color: rose,
+          ),
+          const SizedBox(height: 15),
+          Text(
+            message,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.dmSans(
+              color: ink,
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Các đơn hàng của bạn sẽ xuất hiện ở đây.',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.dmSans(color: muted),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _statusFilter() {
+    return SizedBox(
+      height: 42,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: statuses.length,
+        separatorBuilder: (_, _) => const SizedBox(width: 8),
+        itemBuilder: (context, index) {
+          final status = statuses[index];
+          final isSelected = selectedStatus == status;
+
+          return ChoiceChip(
+            label: Text(status),
+            selected: isSelected,
+            onSelected: (_) {
+              setState(() {
+                selectedStatus = status;
+              });
+            },
+            selectedColor: rose,
+            backgroundColor: Colors.white,
+            checkmarkColor: Colors.white,
+            side: BorderSide(
+              color: isSelected ? rose : blush,
+            ),
+            labelStyle: GoogleFonts.dmSans(
+              color: isSelected ? Colors.white : ink,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          );
+        },
+      ),
+    );
   }
 
   Widget _orderCard(
@@ -93,15 +186,17 @@ class LumiMyOrdersScreen extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: OutlinedButton(
-              onPressed: () {
-  Navigator.of(context).push(
-    MaterialPageRoute<void>(
-      builder: (_) => LumiOrderDetailScreen(
-        order: order,
-      ),
-    ),
-  );
-},
+              onPressed: () async {
+                await Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => LumiOrderDetailScreen(
+                      order: order,
+                    ),
+                  ),
+                );
+
+                setState(() {});
+              },
               style: OutlinedButton.styleFrom(
                 foregroundColor: rose,
                 side: const BorderSide(color: rose),
@@ -142,6 +237,9 @@ class LumiMyOrdersScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final hasOrders = orders.isNotEmpty;
+    final hasFilteredOrders = filteredOrders.isNotEmpty;
+
     return Scaffold(
       backgroundColor: cream,
       appBar: AppBar(
@@ -156,33 +254,8 @@ class LumiMyOrdersScreen extends StatelessWidget {
           ),
         ),
       ),
-      body: orders.isEmpty
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(
-                    Icons.shopping_bag_outlined,
-                    size: 65,
-                    color: rose,
-                  ),
-                  const SizedBox(height: 15),
-                  Text(
-                    'Bạn chưa có đơn hàng nào',
-                    style: GoogleFonts.dmSans(
-                      color: ink,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Các đơn hàng của bạn sẽ xuất hiện ở đây.',
-                    style: GoogleFonts.dmSans(color: muted),
-                  ),
-                ],
-              ),
-            )
+      body: !hasOrders
+          ? _emptyState('Bạn chưa có đơn hàng nào')
           : ListView(
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 30),
               children: [
@@ -203,9 +276,19 @@ class LumiMyOrdersScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 20),
-                ...orders.map(
-                  (order) => _orderCard(context, order),
-                ),
+                _statusFilter(),
+                const SizedBox(height: 20),
+                if (!hasFilteredOrders)
+                  SizedBox(
+                    height: 300,
+                    child: _emptyState(
+                      'Chưa có đơn hàng ở trạng thái "$selectedStatus"',
+                    ),
+                  )
+                else
+                  ...filteredOrders.map(
+                    (order) => _orderCard(context, order),
+                  ),
               ],
             ),
     );

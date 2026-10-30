@@ -8,9 +8,12 @@
     "description": "Tẩy trang dịu nhẹ, hút sạch bụi mịn PM2.5 và lớp makeup mà không khô rát",
     "price": 320000,
     "currency": "VND",
-    "imageUrls": [],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=900&auto=format&fit=crop"
+    ],
     "isActive": true,
-    "sortOrder": 1
+    "sortOrder": 1,
+    "imageUrl": "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=900&auto=format&fit=crop"
   },
   {
     "id": "lumi-002",
@@ -21,9 +24,12 @@
     "description": "Nhũ hóa nhanh, hòa tan bã nhờn sâu trong lỗ chân lông, giảm mụn đầu đen",
     "price": 450000,
     "currency": "VND",
-    "imageUrls": [],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1608248597359-00f7243c2c19?w=900&auto=format&fit=crop"
+    ],
     "isActive": true,
-    "sortOrder": 2
+    "sortOrder": 2,
+    "imageUrl": "https://images.unsplash.com/photo-1608248597359-00f7243c2c19?w=900&auto=format&fit=crop"
   },
   {
     "id": "lumi-003",
@@ -34,9 +40,12 @@
     "description": "Tạo bọt mịn làm sạch nhẹ dịu, giữ màng ẩm tự nhiên cho da nhạy cảm",
     "price": 350000,
     "currency": "VND",
-    "imageUrls": [],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1556228722-d0b5de75d776?w=900&auto=format&fit=crop"
+    ],
     "isActive": true,
-    "sortOrder": 3
+    "sortOrder": 3,
+    "imageUrl": "https://images.unsplash.com/photo-1556228722-d0b5de75d776?w=900&auto=format&fit=crop"
   },
   {
     "id": "lumi-004",
@@ -47,9 +56,12 @@
     "description": "Làm sạch sâu lỗ chân lông, kiềm dầu, ngăn ngừa mụn viêm hình thành",
     "price": 380000,
     "currency": "VND",
-    "imageUrls": [],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1567928815116-24ba00508dc2?w=900&auto=format&fit=crop"
+    ],
     "isActive": true,
-    "sortOrder": 4
+    "sortOrder": 4,
+    "imageUrl": "https://images.unsplash.com/photo-1567928815116-24ba00508dc2?w=900&auto=format&fit=crop"
   },
   {
     "id": "lumi-005",
@@ -60,9 +72,12 @@
     "description": "Tẩy sừng sinh học vi điểm dạng bột, giúp da mịn màng tức thì",
     "price": 420000,
     "currency": "VND",
-    "imageUrls": [],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=900&auto=format&fit=crop"
+    ],
     "isActive": true,
-    "sortOrder": 5
+    "sortOrder": 5,
+    "imageUrl": "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=900&auto=format&fit=crop"
   },
   {
     "id": "lumi-006",
@@ -73,9 +88,12 @@
     "description": "Cân bằng pH, làm dịu da ửng đỏ sau khi rửa mặt hoặc nặn mụn",
     "price": 340000,
     "currency": "VND",
-    "imageUrls": [],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?w=900&auto=format&fit=crop"
+    ],
     "isActive": true,
-    "sortOrder": 6
+    "sortOrder": 6,
+    "imageUrl": "https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?w=900&auto=format&fit=crop"
   },
   {
     "id": "lumi-007",
@@ -86,9 +104,12 @@
     "description": "Kiểm soát bóng nhờn vùng chữ T, hỗ trợ se khít lỗ chân lông",
     "price": 360000,
     "currency": "VND",
-    "imageUrls": [],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1617897903246-719242758050?w=900&auto=format&fit=crop"
+    ],
     "isActive": true,
-    "sortOrder": 7
+    "sortOrder": 7,
+    "imageUrl": "https://images.unsplash.com/photo-1617897903246-719242758050?w=900&auto=format&fit=crop"
   },
   {
     "id": "lumi-008",
@@ -99,9 +120,12 @@
     "description": "Củng cố hệ vi sinh trên da, phục hồi hàng rào ẩm cho da yếu tổn thương",
     "price": 480000,
     "currency": "VND",
-    "imageUrls": [],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?w=900&auto=format&fit=crop"
+    ],
     "isActive": true,
-    "sortOrder": 8
+    "sortOrder": 8,
+    "imageUrl": "https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?w=900&auto=format&fit=crop"
   },
   {
     "id": "lumi-009",
@@ -112,9 +136,12 @@
     "description": "Cấp cứu hạ nhiệt làn da kích ứng, đỏ rát do nắng hoặc sau peel",
     "price": 260000,
     "currency": "VND",
-    "imageUrls": [],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1616683693504-3ea7e9ad6fec?w=900&auto=format&fit=crop"
+    ],
     "isActive": true,
-    "sortOrder": 9
+    "sortOrder": 9,
+    "imageUrl": "https://images.unsplash.com/photo-1616683693504-3ea7e9ad6fec?w=900&auto=format&fit=crop"
   },
   {
     "id": "lumi-010",
@@ -125,9 +152,12 @@
     "description": "Tẩy da chết dạng kỳ vật lý dịu nhẹ, lấy đi lớp sừng mà không gây xước da",
     "price": 320000,
     "currency": "VND",
-    "imageUrls": [],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=900&auto=format&fit=crop"
+    ],
     "isActive": true,
-    "sortOrder": 10
+    "sortOrder": 10,
+    "imageUrl": "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=900&auto=format&fit=crop"
   },
   {
     "id": "lumi-011",
@@ -138,9 +168,12 @@
     "description": "Cấp ẩm tầng sâu, bơm căng mọng làn da khô sần, bong tróc",
     "price": 590000,
     "currency": "VND",
-    "imageUrls": [],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=900&auto=format&fit=crop"
+    ],
     "isActive": true,
-    "sortOrder": 11
+    "sortOrder": 11,
+    "imageUrl": "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=900&auto=format&fit=crop"
   },
   {
     "id": "lumi-012",
@@ -151,9 +184,12 @@
     "description": "Cắt cơn đỏ rát ngứa, thúc đẩy lành mô sẹo non sau nặn mụn",
     "price": 480000,
     "currency": "VND",
-    "imageUrls": [],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=900&auto=format&fit=crop"
+    ],
     "isActive": true,
-    "sortOrder": 12
+    "sortOrder": 12,
+    "imageUrl": "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=900&auto=format&fit=crop"
   },
   {
     "id": "lumi-013",
@@ -164,9 +200,12 @@
     "description": "Chống oxy hóa mạnh mẽ, mờ thâm mụn mới, làm đều màu và sáng da",
     "price": 650000,
     "currency": "VND",
-    "imageUrls": [],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1617897903246-719242758050?w=900&auto=format&fit=crop"
+    ],
     "isActive": true,
-    "sortOrder": 13
+    "sortOrder": 13,
+    "imageUrl": "https://images.unsplash.com/photo-1617897903246-719242758050?w=900&auto=format&fit=crop"
   },
   {
     "id": "lumi-014",
@@ -177,9 +216,12 @@
     "description": "Điều tiết dầu nhờn quá mức, thu nhỏ kích thước lỗ chân lông rõ rệt",
     "price": 520000,
     "currency": "VND",
-    "imageUrls": [],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=900&auto=format&fit=crop"
+    ],
     "isActive": true,
-    "sortOrder": 14
+    "sortOrder": 14,
+    "imageUrl": "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=900&auto=format&fit=crop"
   },
   {
     "id": "lumi-015",
@@ -190,9 +232,12 @@
     "description": "Chấm mụn viêm, mụn mủ; gom cồi khô nhanh chỉ sau 24–48h",
     "price": 350000,
     "currency": "VND",
-    "imageUrls": [],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1556229010-6c3f2c9ca5f8?w=900&auto=format&fit=crop"
+    ],
     "isActive": true,
-    "sortOrder": 15
+    "sortOrder": 15,
+    "imageUrl": "https://images.unsplash.com/photo-1556229010-6c3f2c9ca5f8?w=900&auto=format&fit=crop"
   },
   {
     "id": "lumi-016",
@@ -203,9 +248,12 @@
     "description": "Kích thích tăng sinh nguyên bào sợi, săn chắc và nâng đỡ cơ mặt",
     "price": 780000,
     "currency": "VND",
-    "imageUrls": [],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?w=900&auto=format&fit=crop"
+    ],
     "isActive": true,
-    "sortOrder": 16
+    "sortOrder": 16,
+    "imageUrl": "https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?w=900&auto=format&fit=crop"
   },
   {
     "id": "lumi-017",
@@ -216,9 +264,12 @@
     "description": "Tái tạo biểu bì, giảm nếp nhăn li ti và làm mịn bề mặt da mà ít kích ứng",
     "price": 720000,
     "currency": "VND",
-    "imageUrls": [],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1608248597359-00f7243c2c19?w=900&auto=format&fit=crop"
+    ],
     "isActive": true,
-    "sortOrder": 17
+    "sortOrder": 17,
+    "imageUrl": "https://images.unsplash.com/photo-1608248597359-00f7243c2c19?w=900&auto=format&fit=crop"
   },
   {
     "id": "lumi-018",
@@ -229,9 +280,12 @@
     "description": "Tăng độ đàn hồi, ngăn ngừa lão hóa tầng sâu và làm mờ rãnh nhăn",
     "price": 850000,
     "currency": "VND",
-    "imageUrls": [],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=900&auto=format&fit=crop"
+    ],
     "isActive": true,
-    "sortOrder": 18
+    "sortOrder": 18,
+    "imageUrl": "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=900&auto=format&fit=crop"
   },
   {
     "id": "lumi-019",
@@ -242,9 +296,12 @@
     "description": "Đánh bay nám mảng nông, đốm tàn nhang và vết thâm đỏ PIE/PIH dai dẳng",
     "price": 690000,
     "currency": "VND",
-    "imageUrls": [],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1616683693504-3ea7e9ad6fec?w=900&auto=format&fit=crop"
+    ],
     "isActive": true,
-    "sortOrder": 19
+    "sortOrder": 19,
+    "imageUrl": "https://images.unsplash.com/photo-1616683693504-3ea7e9ad6fec?w=900&auto=format&fit=crop"
   },
   {
     "id": "lumi-020",
@@ -255,9 +312,12 @@
     "description": "Đặc trị phục hồi cấp tốc sau liệu trình lăn kim, laser, phi kim",
     "price": 950000,
     "currency": "VND",
-    "imageUrls": [],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=900&auto=format&fit=crop"
+    ],
     "isActive": true,
-    "sortOrder": 20
+    "sortOrder": 20,
+    "imageUrl": "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=900&auto=format&fit=crop"
   },
   {
     "id": "lumi-021",
@@ -268,9 +328,12 @@
     "description": "Chất gel mỏng tan trên da, cấp nước khóa ẩm thoáng nhẹ không gây mụn",
     "price": 450000,
     "currency": "VND",
-    "imageUrls": [],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=900&auto=format&fit=crop"
+    ],
     "isActive": true,
-    "sortOrder": 21
+    "sortOrder": 21,
+    "imageUrl": "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=900&auto=format&fit=crop"
   },
   {
     "id": "lumi-022",
@@ -281,9 +344,12 @@
     "description": "Khôi phục lớp màng lipid bị rách nát do dùng treatment sai cách",
     "price": 550000,
     "currency": "VND",
-    "imageUrls": [],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?w=900&auto=format&fit=crop"
+    ],
     "isActive": true,
-    "sortOrder": 22
+    "sortOrder": 22,
+    "imageUrl": "https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?w=900&auto=format&fit=crop"
   },
   {
     "id": "lumi-023",
@@ -294,9 +360,12 @@
     "description": "Kem sáp phục hồi cấp tốc da sau peel hóa học, giảm bong tróc rát buốt",
     "price": 490000,
     "currency": "VND",
-    "imageUrls": [],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1556228722-d0b5de75d776?w=900&auto=format&fit=crop"
+    ],
     "isActive": true,
-    "sortOrder": 23
+    "sortOrder": 23,
+    "imageUrl": "https://images.unsplash.com/photo-1556228722-d0b5de75d776?w=900&auto=format&fit=crop"
   },
   {
     "id": "lumi-024",
@@ -307,9 +376,12 @@
     "description": "Dưỡng trắng lâu dài và tạo hiệu ứng nâng tông trong trẻo tức thì ban ngày",
     "price": 480000,
     "currency": "VND",
-    "imageUrls": [],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=900&auto=format&fit=crop"
+    ],
     "isActive": true,
-    "sortOrder": 24
+    "sortOrder": 24,
+    "imageUrl": "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=900&auto=format&fit=crop"
   },
   {
     "id": "lumi-025",
@@ -320,9 +392,12 @@
     "description": "Nuôi dưỡng phục hồi chuyên sâu ban đêm, ngăn ngừa chảy xệ cơ mặt",
     "price": 620000,
     "currency": "VND",
-    "imageUrls": [],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?w=900&auto=format&fit=crop"
+    ],
     "isActive": true,
-    "sortOrder": 25
+    "sortOrder": 25,
+    "imageUrl": "https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?w=900&auto=format&fit=crop"
   },
   {
     "id": "lumi-026",
@@ -333,9 +408,12 @@
     "description": "Sữa dưỡng ẩm kiềm bóng dầu suốt cả ngày, thông thoáng nang lông",
     "price": 420000,
     "currency": "VND",
-    "imageUrls": [],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=900&auto=format&fit=crop"
+    ],
     "isActive": true,
-    "sortOrder": 26
+    "sortOrder": 26,
+    "imageUrl": "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=900&auto=format&fit=crop"
   },
   {
     "id": "lumi-027",
@@ -346,9 +424,12 @@
     "description": "Mặt nạ ngủ thạch trong suốt nạp năng lượng, giúp da rạng rỡ sau giấc ngủ",
     "price": 390000,
     "currency": "VND",
-    "imageUrls": [],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?w=900&auto=format&fit=crop"
+    ],
     "isActive": true,
-    "sortOrder": 27
+    "sortOrder": 27,
+    "imageUrl": "https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?w=900&auto=format&fit=crop"
   },
   {
     "id": "lumi-028",
@@ -359,9 +440,12 @@
     "description": "Dầu dưỡng khóa ẩm sâu, phục hồi màng ẩm cho da siêu khô và da lão hóa",
     "price": 560000,
     "currency": "VND",
-    "imageUrls": [],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1608248597359-00f7243c2c19?w=900&auto=format&fit=crop"
+    ],
     "isActive": true,
-    "sortOrder": 28
+    "sortOrder": 28,
+    "imageUrl": "https://images.unsplash.com/photo-1608248597359-00f7243c2c19?w=900&auto=format&fit=crop"
   },
   {
     "id": "lumi-029",
@@ -372,9 +456,12 @@
     "description": "Đánh tan bọng mắt, làm mờ quầng thâm và giảm nếp nhăn khóe mắt",
     "price": 490000,
     "currency": "VND",
-    "imageUrls": [],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1556229010-6c3f2c9ca5f8?w=900&auto=format&fit=crop"
+    ],
     "isActive": true,
-    "sortOrder": 29
+    "sortOrder": 29,
+    "imageUrl": "https://images.unsplash.com/photo-1556229010-6c3f2c9ca5f8?w=900&auto=format&fit=crop"
   },
   {
     "id": "lumi-030",
@@ -385,9 +472,12 @@
     "description": "Serum đầu lăn kim loại mát lạnh massage xua tan mệt mỏi vùng mắt",
     "price": 450000,
     "currency": "VND",
-    "imageUrls": [],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=900&auto=format&fit=crop"
+    ],
     "isActive": true,
-    "sortOrder": 30
+    "sortOrder": 30,
+    "imageUrl": "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=900&auto=format&fit=crop"
   },
   {
     "id": "lumi-031",
@@ -398,9 +488,12 @@
     "description": "Ôm sát khuôn mặt như làn da thứ 2, làm dịu tức thì cơn sốt đỏ sau laser",
     "price": 350000,
     "currency": "VND",
-    "imageUrls": [],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=900&auto=format&fit=crop"
+    ],
     "isActive": true,
-    "sortOrder": 31
+    "sortOrder": 31,
+    "imageUrl": "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=900&auto=format&fit=crop"
   },
   {
     "id": "lumi-032",
@@ -411,9 +504,12 @@
     "description": "Mặt nạ thạch dẻo mỏng dần khi dưỡng chất thẩm thấu hết vào biểu bì",
     "price": 420000,
     "currency": "VND",
-    "imageUrls": [],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1567928815116-24ba00508dc2?w=900&auto=format&fit=crop"
+    ],
     "isActive": true,
-    "sortOrder": 32
+    "sortOrder": 32,
+    "imageUrl": "https://images.unsplash.com/photo-1567928815116-24ba00508dc2?w=900&auto=format&fit=crop"
   },
   {
     "id": "lumi-033",
@@ -424,9 +520,12 @@
     "description": "Hút cặn bẩn dư thừa, thanh lọc bã nhờn tích tụ sâu trong nang lông",
     "price": 360000,
     "currency": "VND",
-    "imageUrls": [],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=900&auto=format&fit=crop"
+    ],
     "isActive": true,
-    "sortOrder": 33
+    "sortOrder": 33,
+    "imageUrl": "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=900&auto=format&fit=crop"
   },
   {
     "id": "lumi-034",
@@ -437,9 +536,12 @@
     "description": "Giảm sưng viêm mụn mủ, gom nhân mụn ẩn và ngăn mụn lây lan",
     "price": 380000,
     "currency": "VND",
-    "imageUrls": [],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?w=900&auto=format&fit=crop"
+    ],
     "isActive": true,
-    "sortOrder": 34
+    "sortOrder": 34,
+    "imageUrl": "https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?w=900&auto=format&fit=crop"
   },
   {
     "id": "lumi-035",
@@ -450,9 +552,12 @@
     "description": "Cấu trúc màng khóa nhiệt giúp dưỡng chất thẩm thấu tối đa, da sáng bóng",
     "price": 480000,
     "currency": "VND",
-    "imageUrls": [],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=900&auto=format&fit=crop"
+    ],
     "isActive": true,
-    "sortOrder": 35
+    "sortOrder": 35,
+    "imageUrl": "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=900&auto=format&fit=crop"
   },
   {
     "id": "lumi-036",
@@ -463,9 +568,12 @@
     "description": "Chống nắng bảo vệ toàn diện tia UVA/UVB và ánh sáng xanh",
     "price": 460000,
     "currency": "VND",
-    "imageUrls": [],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=900&auto=format&fit=crop"
+    ],
     "isActive": true,
-    "sortOrder": 36
+    "sortOrder": 36,
+    "imageUrl": "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=900&auto=format&fit=crop"
   },
   {
     "id": "lumi-037",
@@ -476,9 +584,12 @@
     "description": "Chống nắng dịu êm không kích ứng dành riêng cho da nhạy cảm sau lăn kim",
     "price": 490000,
     "currency": "VND",
-    "imageUrls": [],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?w=900&auto=format&fit=crop"
+    ],
     "isActive": true,
-    "sortOrder": 37
+    "sortOrder": 37,
+    "imageUrl": "https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?w=900&auto=format&fit=crop"
   },
   {
     "id": "lumi-038",
@@ -489,9 +600,12 @@
     "description": "Chất gel trong suốt ráo mịn lập tức, không để lại vệt trắng, chống trôi nước",
     "price": 420000,
     "currency": "VND",
-    "imageUrls": [],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1617897903246-719242758050?w=900&auto=format&fit=crop"
+    ],
     "isActive": true,
-    "sortOrder": 38
+    "sortOrder": 38,
+    "imageUrl": "https://images.unsplash.com/photo-1617897903246-719242758050?w=900&auto=format&fit=crop"
   },
   {
     "id": "lumi-039",
@@ -502,9 +616,12 @@
     "description": "Nâng tông da hồng hào tự nhiên, tạo lớp finish rạng rỡ thay thế cushion",
     "price": 450000,
     "currency": "VND",
-    "imageUrls": [],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=900&auto=format&fit=crop"
+    ],
     "isActive": true,
-    "sortOrder": 39
+    "sortOrder": 39,
+    "imageUrl": "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=900&auto=format&fit=crop"
   },
   {
     "id": "lumi-040",
@@ -515,9 +632,12 @@
     "description": "Phấn nước chống nắng tiện lợi dặm lại lớp bảo vệ trong ngày cho khách hàng",
     "price": 480000,
     "currency": "VND",
-    "imageUrls": [],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=900&auto=format&fit=crop"
+    ],
     "isActive": true,
-    "sortOrder": 40
+    "sortOrder": 40,
+    "imageUrl": "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=900&auto=format&fit=crop"
   },
   {
     "id": "lumi-041",
@@ -528,9 +648,12 @@
     "description": "Tẩy sạch da chết toàn thân, làm mịn vùng da thô ráp ở khuỷu tay và đầu gối",
     "price": 280000,
     "currency": "VND",
-    "imageUrls": [],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?w=900&auto=format&fit=crop"
+    ],
     "isActive": true,
-    "sortOrder": 41
+    "sortOrder": 41,
+    "imageUrl": "https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?w=900&auto=format&fit=crop"
   },
   {
     "id": "lumi-042",
@@ -541,9 +664,12 @@
     "description": "Sữa dưỡng thể làm mờ sạm nám, dưỡng da body trắng mịn ngọc ngà",
     "price": 460000,
     "currency": "VND",
-    "imageUrls": [],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1556228722-d0b5de75d776?w=900&auto=format&fit=crop"
+    ],
     "isActive": true,
-    "sortOrder": 42
+    "sortOrder": 42,
+    "imageUrl": "https://images.unsplash.com/photo-1556228722-d0b5de75d776?w=900&auto=format&fit=crop"
   },
   {
     "id": "lumi-043",
@@ -554,9 +680,12 @@
     "description": "Đặc trị sần sùi viêm nang lông, cải thiện mụn lưng và bắp tay",
     "price": 450000,
     "currency": "VND",
-    "imageUrls": [],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=900&auto=format&fit=crop"
+    ],
     "isActive": true,
-    "sortOrder": 43
+    "sortOrder": 43,
+    "imageUrl": "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=900&auto=format&fit=crop"
   },
   {
     "id": "lumi-044",
@@ -567,9 +696,12 @@
     "description": "Dầu trượt massage giải tỏa căng cơ, lưu thông tuần hoàn và thư giãn thần kinh",
     "price": 380000,
     "currency": "VND",
-    "imageUrls": [],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1608248597359-00f7243c2c19?w=900&auto=format&fit=crop"
+    ],
     "isActive": true,
-    "sortOrder": 44
+    "sortOrder": 44,
+    "imageUrl": "https://images.unsplash.com/photo-1608248597359-00f7243c2c19?w=900&auto=format&fit=crop"
   },
   {
     "id": "lumi-045",
@@ -580,9 +712,12 @@
     "description": "Ngâm chân ấm giải tỏa nhức mỏi khớp, đào thải độc tố và giúp ngủ sâu",
     "price": 250000,
     "currency": "VND",
-    "imageUrls": [],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?w=900&auto=format&fit=crop"
+    ],
     "isActive": true,
-    "sortOrder": 45
+    "sortOrder": 45,
+    "imageUrl": "https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?w=900&auto=format&fit=crop"
   },
   {
     "id": "lumi-046",
@@ -593,9 +728,12 @@
     "description": "Dầu gội dưỡng sinh sạch gàu, giảm rụng tóc và nuôi dưỡng chân tóc chắc khỏe",
     "price": 340000,
     "currency": "VND",
-    "imageUrls": [],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=900&auto=format&fit=crop"
+    ],
     "isActive": true,
-    "sortOrder": 46
+    "sortOrder": 46,
+    "imageUrl": "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=900&auto=format&fit=crop"
   },
   {
     "id": "lumi-047",
@@ -606,9 +744,12 @@
     "description": "Kem ủ phục hồi ngọn tóc khô xơ chẻ ngọn do hóa chất và nhiệt độ",
     "price": 360000,
     "currency": "VND",
-    "imageUrls": [],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?w=900&auto=format&fit=crop"
+    ],
     "isActive": true,
-    "sortOrder": 47
+    "sortOrder": 47,
+    "imageUrl": "https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?w=900&auto=format&fit=crop"
   },
   {
     "id": "lumi-048",
@@ -619,9 +760,12 @@
     "description": "Tẩy tế bào chết da đầu, kiềm bã nhờn chân tóc và thông thoáng nang tóc",
     "price": 380000,
     "currency": "VND",
-    "imageUrls": [],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=900&auto=format&fit=crop"
+    ],
     "isActive": true,
-    "sortOrder": 48
+    "sortOrder": 48,
+    "imageUrl": "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=900&auto=format&fit=crop"
   },
   {
     "id": "lumi-049",
@@ -632,9 +776,12 @@
     "description": "Làm mềm vùng da tay khô ráp, nuôi dưỡng viền móng tay bóng khỏe",
     "price": 190000,
     "currency": "VND",
-    "imageUrls": [],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1556229010-6c3f2c9ca5f8?w=900&auto=format&fit=crop"
+    ],
     "isActive": true,
-    "sortOrder": 49
+    "sortOrder": 49,
+    "imageUrl": "https://images.unsplash.com/photo-1556229010-6c3f2c9ca5f8?w=900&auto=format&fit=crop"
   },
   {
     "id": "lumi-050",
@@ -645,8 +792,11 @@
     "description": "Bộ đôi tẩy da chết môi và sáp dưỡng ẩm căng bóng, hồng hào tự nhiên",
     "price": 240000,
     "currency": "VND",
-    "imageUrls": [],
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=900&auto=format&fit=crop"
+    ],
     "isActive": true,
-    "sortOrder": 50
+    "sortOrder": 50,
+    "imageUrl": "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=900&auto=format&fit=crop"
   }
 ]

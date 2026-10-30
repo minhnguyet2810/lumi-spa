@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -17,6 +19,38 @@ class LumiOrderDetailScreen extends StatelessWidget {
   static const cream = Color(0xFFFFFAF8);
   static const blush = Color(0xFFF4E4E8);
   static const blue = Color(0xFFDDECEF);
+
+  List<Map<String, dynamic>> _items() {
+    final rawItems = order['items'] ?? '[]';
+
+    try {
+      final decoded = jsonDecode(rawItems);
+
+      if (decoded is List) {
+        return decoded
+            .whereType<Map>()
+            .map(
+              (item) => Map<String, dynamic>.from(item),
+            )
+            .toList();
+      }
+    } catch (_) {}
+
+    return [];
+  }
+
+  String _money(dynamic value) {
+    final number = value is num
+        ? value
+        : num.tryParse(value?.toString() ?? '') ?? 0;
+
+    final digits = number.toInt().toString();
+
+    return '${digits.replaceAllMapped(
+      RegExp(r'\B(?=(\d{3})+(?!\d))'),
+      (match) => '.',
+    )} đ';
+  }
 
   Color _statusColor(String status) {
     switch (status) {
@@ -48,7 +82,7 @@ class LumiOrderDetailScreen extends StatelessWidget {
           ),
           Expanded(
             child: Text(
-              value,
+              value.isEmpty ? 'Chưa cập nhật' : value,
               textAlign: TextAlign.right,
               style: GoogleFonts.dmSans(
                 color: ink,
@@ -97,6 +131,67 @@ class LumiOrderDetailScreen extends StatelessWidget {
           ),
           const Divider(height: 25),
           child,
+        ],
+      ),
+    );
+  }
+
+  Widget _productCard(Map<String, dynamic> item) {
+    final name = item['name']?.toString() ?? 'Sản phẩm LUMI';
+    final quantity = item['quantity'] ?? 1;
+    final price = item['price'] ?? 0;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(13),
+      decoration: BoxDecoration(
+        color: blush.withValues(alpha: .45),
+        borderRadius: BorderRadius.circular(13),
+      ),
+      child: Row(
+        children: [
+          const CircleAvatar(
+            backgroundColor: blue,
+            child: Icon(
+              Icons.spa_outlined,
+              color: rose,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.dmSans(
+                    color: ink,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  'Số lượng: $quantity',
+                  style: GoogleFonts.dmSans(
+                    color: muted,
+                    fontSize: 13,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            _money(price),
+            style: GoogleFonts.dmSans(
+              color: rose,
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
         ],
       ),
     );
@@ -169,6 +264,7 @@ class LumiOrderDetailScreen extends StatelessWidget {
     final status = order['status'] ?? 'Chờ xác nhận';
     final statusColor = _statusColor(status);
     final canCancel = status == 'Chờ xác nhận';
+    final items = _items();
 
     return Scaffold(
       backgroundColor: cream,
@@ -230,11 +326,11 @@ class LumiOrderDetailScreen extends StatelessWidget {
               children: [
                 _infoRow(
                   'Mã đơn hàng',
-                  order['id'] ?? 'Chưa có',
+                  order['id'] ?? '',
                 ),
                 _infoRow(
                   'Ngày đặt',
-                  order['date'] ?? 'Chưa có',
+                  order['date'] ?? '',
                 ),
                 _infoRow(
                   'Phương thức thanh toán',
@@ -242,7 +338,32 @@ class LumiOrderDetailScreen extends StatelessWidget {
                 ),
                 _infoRow(
                   'Tổng tiền',
-                  order['total'] ?? 'Chưa có',
+                  order['total'] ?? '',
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 15),
+          _section(
+            title: 'Thông tin người nhận',
+            icon: Icons.person_outline,
+            child: Column(
+              children: [
+                _infoRow(
+                  'Họ và tên',
+                  order['customerName'] ?? '',
+                ),
+                _infoRow(
+                  'Số điện thoại',
+                  order['phone'] ?? '',
+                ),
+                _infoRow(
+                  'Địa chỉ',
+                  order['address'] ?? '',
+                ),
+                _infoRow(
+                  'Ghi chú',
+                  order['note'] ?? '',
                 ),
               ],
             ),
@@ -251,55 +372,19 @@ class LumiOrderDetailScreen extends StatelessWidget {
           _section(
             title: 'Sản phẩm',
             icon: Icons.shopping_bag_outlined,
-            child: Container(
-              padding: const EdgeInsets.all(13),
-              decoration: BoxDecoration(
-                color: blush.withValues(alpha: .45),
-                borderRadius: BorderRadius.circular(13),
-              ),
-              child: Row(
-                children: [
-                  const CircleAvatar(
-                    backgroundColor: blue,
-                    child: Icon(
-                      Icons.spa_outlined,
-                      color: rose,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      'Sản phẩm chăm sóc da LUMI',
-                      style: GoogleFonts.dmSans(
-                        color: ink,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                  Text(
-                    'x1',
+            child: items.isEmpty
+                ? Text(
+                    'Chưa có thông tin sản phẩm.',
                     style: GoogleFonts.dmSans(
                       color: muted,
-                      fontSize: 13,
+                      fontSize: 14,
                     ),
+                  )
+                : Column(
+                    children: items
+                        .map(_productCard)
+                        .toList(),
                   ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 15),
-          _section(
-            title: 'Địa chỉ giao hàng',
-            icon: Icons.location_on_outlined,
-            child: Text(
-              'Thông tin địa chỉ sẽ được cập nhật khi kết nối API đơn hàng.',
-              style: GoogleFonts.dmSans(
-                color: muted,
-                fontSize: 14,
-                height: 1.5,
-              ),
-            ),
           ),
           if (canCancel) ...[
             const SizedBox(height: 25),

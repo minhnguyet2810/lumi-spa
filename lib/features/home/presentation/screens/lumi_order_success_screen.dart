@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import 'lumi_my_orders_screen.dart';
+
 class LumiOrderSuccessScreen extends StatelessWidget {
   const LumiOrderSuccessScreen({
     super.key,
@@ -27,6 +29,20 @@ class LumiOrderSuccessScreen extends StatelessWidget {
     )} đ';
   }
 
+  void _continueShopping(BuildContext context) {
+    Navigator.of(context).popUntil(
+      (route) => route.isFirst,
+    );
+  }
+
+  void _viewOrders(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => const LumiMyOrdersScreen(),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -47,7 +63,12 @@ class LumiOrderSuccessScreen extends StatelessWidget {
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(24, 25, 24, 30),
+            padding: const EdgeInsets.fromLTRB(
+              24,
+              25,
+              24,
+              30,
+            ),
             child: Column(
               children: [
                 Container(
@@ -127,7 +148,8 @@ class LumiOrderSuccessScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(17),
                   ),
                   child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment:
+                        CrossAxisAlignment.start,
                     children: [
                       const Icon(
                         Icons.local_shipping_outlined,
@@ -153,15 +175,36 @@ class LumiOrderSuccessScreen extends StatelessWidget {
                 SizedBox(
                   width: double.infinity,
                   height: 54,
-                  child: FilledButton(
-                    onPressed: () {
-                      Navigator.of(context).popUntil(
-                        (route) => route.isFirst,
-                      );
-                    },
+                  child: FilledButton.icon(
+                    onPressed: () => _viewOrders(context),
+                    icon: const Icon(
+                      Icons.receipt_long_outlined,
+                    ),
+                    label: Text(
+                      'XEM ĐƠN HÀNG',
+                      style: GoogleFonts.dmSans(
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: .6,
+                      ),
+                    ),
                     style: FilledButton.styleFrom(
                       backgroundColor: rose,
                       foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  height: 54,
+                  child: OutlinedButton(
+                    onPressed: () => _continueShopping(context),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: rose,
+                      side: const BorderSide(color: rose),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(15),
                       ),
@@ -177,11 +220,7 @@ class LumiOrderSuccessScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 TextButton(
-                  onPressed: () {
-                    Navigator.of(context).popUntil(
-                      (route) => route.isFirst,
-                    );
-                  },
+                  onPressed: () => _continueShopping(context),
                   child: Text(
                     'Về trang chủ',
                     style: GoogleFonts.dmSans(

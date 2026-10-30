@@ -48,30 +48,31 @@ router.get('/', async (req, res) => {
 // PATCH /api/notifications/read-all
 router.patch('/read-all', async (req, res) => {
   try {
-    const snapshot = await db.collection('notifications')
-      .where('userId', '==', req.user.uid)
-      .where('isRead', '==', false)
-      .limit(400)
-      .get();
+    let updated = 0;
+    while (true) {
+      const snapshot = await db.collection('notifications')
+        .where('userId', '==', req.user.uid)
+        .where('isRead', '==', false)
+        .limit(400)
+        .get();
 
-    if (snapshot.empty) {
-      return res.json({ success: true, updated: 0 });
-    }
+      if (snapshot.empty) break;
 
-    const batch = db.batch();
-
-    snapshot.docs.forEach(doc => {
-      batch.update(doc.ref, {
-        isRead: true,
-        readAt: FieldValue.serverTimestamp(),
+      const batch = db.batch();
+      snapshot.docs.forEach(doc => {
+        batch.update(doc.ref, {
+          isRead: true,
+          readAt: FieldValue.serverTimestamp(),
+        });
       });
-    });
 
-    await batch.commit();
+      await batch.commit();
+      updated += snapshot.size;
+    }
 
     return res.json({
       success: true,
-      updated: snapshot.size,
+      updated,
     });
   } catch (error) {
     console.error('Notifications read-all error:', error);

@@ -32,6 +32,8 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
   final _addressController = TextEditingController();
   final _noteController = TextEditingController();
 
+  bool _isSubmitting = false;
+
   num get subtotal {
     return widget.cartItems.fold<num>(
       0,
@@ -81,22 +83,31 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
       filled: true,
       fillColor: Colors.white,
       labelStyle: GoogleFonts.dmSans(color: muted),
-      hintStyle: GoogleFonts.dmSans(color: muted.withValues(alpha: .65)),
+      hintStyle: GoogleFonts.dmSans(
+        color: muted.withValues(alpha: .65),
+      ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
         borderSide: const BorderSide(color: blush),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: rose, width: 1.5),
+        borderSide: const BorderSide(
+          color: rose,
+          width: 1.5,
+        ),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: Colors.redAccent),
+        borderSide: const BorderSide(
+          color: Colors.redAccent,
+        ),
       ),
       focusedErrorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: Colors.redAccent),
+        borderSide: const BorderSide(
+          color: Colors.redAccent,
+        ),
       ),
     );
   }
@@ -104,7 +115,11 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
   Widget _sectionTitle(String title, IconData icon) {
     return Row(
       children: [
-        Icon(icon, color: rose, size: 21),
+        Icon(
+          icon,
+          color: rose,
+          size: 21,
+        ),
         const SizedBox(width: 8),
         Text(
           title,
@@ -118,20 +133,28 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
     );
   }
 
-  Widget _productItem(LumiCartItem item) {
+  String? _getProductImage(LumiCartItem item) {
     final imageUrl = item.product['imageUrl']?.toString();
-    final imageUrls = item.product['imageUrls'];
-
-    String? firstImage;
 
     if (imageUrl != null && imageUrl.trim().isNotEmpty) {
-      firstImage = imageUrl;
-    } else if (imageUrls is List && imageUrls.isNotEmpty) {
+      return imageUrl.trim();
+    }
+
+    final imageUrls = item.product['imageUrls'];
+
+    if (imageUrls is List && imageUrls.isNotEmpty) {
       final first = imageUrls.first;
+
       if (first is String && first.trim().isNotEmpty) {
-        firstImage = first;
+        return first.trim();
       }
     }
+
+    return null;
+  }
+
+  Widget _productItem(LumiCartItem item) {
+    final imageUrl = _getProductImage(item);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
@@ -148,7 +171,7 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
             child: SizedBox(
               width: 64,
               height: 64,
-              child: firstImage == null
+              child: imageUrl == null
                   ? const ColoredBox(
                       color: blue,
                       child: Icon(
@@ -158,16 +181,18 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
                       ),
                     )
                   : Image.network(
-                      firstImage,
+                      imageUrl,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, _, _) => const ColoredBox(
-                        color: blue,
-                        child: Icon(
-                          Icons.spa_outlined,
-                          color: rose,
-                          size: 28,
-                        ),
-                      ),
+                      errorBuilder: (_, _, _) {
+                        return const ColoredBox(
+                          color: blue,
+                          child: Icon(
+                            Icons.spa_outlined,
+                            color: rose,
+                            size: 28,
+                          ),
+                        );
+                      },
                     ),
             ),
           ),
@@ -226,7 +251,9 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
             style: GoogleFonts.dmSans(
               color: isTotal ? ink : muted,
               fontSize: isTotal ? 16 : 14,
-              fontWeight: isTotal ? FontWeight.w700 : FontWeight.w400,
+              fontWeight: isTotal
+                  ? FontWeight.w700
+                  : FontWeight.w400,
             ),
           ),
           Text(
@@ -234,7 +261,9 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
             style: GoogleFonts.dmSans(
               color: isTotal ? rose : ink,
               fontSize: isTotal ? 18 : 14,
-              fontWeight: isTotal ? FontWeight.w700 : FontWeight.w500,
+              fontWeight: isTotal
+                  ? FontWeight.w700
+                  : FontWeight.w500,
             ),
           ),
         ],
@@ -242,58 +271,128 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
     );
   }
 
- Future<void> _placeOrder() async {
-  if (!_formKey.currentState!.validate()) {
-    return;
+  Future<void> _placeOrder() async {
+    if (_isSubmitting) {
+      return;
+    }
+
+    final isValid = _formKey.currentState?.validate() ?? false;
+
+    if (!isValid) {
+      return;
+    }
+
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    FocusScope.of(context).unfocus();
+
+    await Future<void>.delayed(
+      const Duration(milliseconds: 500),
+    );
+
+    final orderId =
+        'LUMI-${DateTime.now().millisecondsSinceEpoch.toString().substring(6)}';
+
+    final orderTotal = grandTotal;
+
+    final now = DateTime.now();
+
+    final formattedDate =
+        '${now.day.toString().padLeft(2, '0')}/'
+        '${now.month.toString().padLeft(2, '0')}/'
+        '${now.year}';
+
+    final items = widget.cartItems.map((item) {
+      return <String, dynamic>{
+        'productId': item.product['id']?.toString() ??
+            item.product['_id']?.toString() ??
+            '',
+        'name': item.product['name']?.toString() ??
+            'Sản phẩm LUMI',
+        'quantity': item.quantity,
+        'price': item.product['price'] ?? 0,
+      };
+    }).toList();
+
+    LumiOrderStore.addOrder(
+      id: orderId,
+      date: formattedDate,
+      total: _money(orderTotal),
+      customerName: _nameController.text.trim(),
+      phone: _phoneController.text.trim(),
+      address: _addressController.text.trim(),
+      note: _noteController.text.trim(),
+      items: items,
+    );
+
+    LumiShopCatalog.clearCart();
+
+    if (!mounted) {
+      return;
+    }
+
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute<void>(
+        builder: (_) => LumiOrderSuccessScreen(
+          orderId: orderId,
+          total: orderTotal,
+        ),
+      ),
+    );
   }
 
-  FocusScope.of(context).unfocus();
+  String? _validatePhone(String? value) {
+    final phone = value?.trim() ?? '';
 
-  final orderId =
-      'LUMI-${DateTime.now().millisecondsSinceEpoch.toString().substring(6)}';
+    if (phone.isEmpty) {
+      return 'Vui lòng nhập số điện thoại';
+    }
 
-  final orderTotal = grandTotal;
+    if (!RegExp(r'^0\d{9}$').hasMatch(phone)) {
+      return 'Số điện thoại phải gồm 10 số và bắt đầu bằng 0';
+    }
 
-final now = DateTime.now();
-final formattedDate =
-    '${now.day.toString().padLeft(2, '0')}/'
-    '${now.month.toString().padLeft(2, '0')}/'
-    '${now.year}';
+    return null;
+  }
 
-final items = widget.cartItems.map((item) {
-  return <String, dynamic>{
-    'productId': item.product['id']?.toString() ?? '',
-    'name': item.product['name']?.toString() ??
-        'Sản phẩm LUMI',
-    'quantity': item.quantity,
-    'price': item.product['price'] ?? 0,
-  };
-}).toList();
-
-LumiOrderStore.addOrder(
-  id: orderId,
-  date: formattedDate,
-  total: _money(orderTotal),
-  customerName: _nameController.text.trim(),
-  phone: _phoneController.text.trim(),
-  address: _addressController.text.trim(),
-  note: _noteController.text.trim(),
-  items: items,
-);
-
-LumiShopCatalog.clearCart();
-
-  if (!mounted) return;
-
-  Navigator.of(context).pushReplacement(
-    MaterialPageRoute<void>(
-      builder: (_) => LumiOrderSuccessScreen(
-        orderId: orderId,
-        total: orderTotal,
+  Widget _submitButton() {
+    return SizedBox(
+      width: double.infinity,
+      height: 56,
+      child: FilledButton.icon(
+        onPressed: _isSubmitting ? null : _placeOrder,
+        icon: _isSubmitting
+            ? const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.white,
+                ),
+              )
+            : const Icon(Icons.check_circle_outline),
+        label: Text(
+          _isSubmitting
+              ? 'ĐANG XỬ LÝ...'
+              : 'ĐẶT HÀNG · ${_money(grandTotal)}',
+          style: GoogleFonts.dmSans(
+            fontWeight: FontWeight.w700,
+            letterSpacing: .4,
+          ),
+        ),
+        style: FilledButton.styleFrom(
+          backgroundColor: rose,
+          disabledBackgroundColor: rose.withValues(alpha: .65),
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -315,13 +414,20 @@ LumiShopCatalog.clearCart();
           ? Center(
               child: Text(
                 'Giỏ hàng đang trống.',
-                style: GoogleFonts.dmSans(color: muted),
+                style: GoogleFonts.dmSans(
+                  color: muted,
+                ),
               ),
             )
           : Form(
               key: _formKey,
               child: ListView(
-                padding: const EdgeInsets.fromLTRB(20, 10, 20, 30),
+                padding: const EdgeInsets.fromLTRB(
+                  20,
+                  10,
+                  20,
+                  30,
+                ),
                 children: [
                   _sectionTitle(
                     'Thông tin nhận hàng',
@@ -330,15 +436,22 @@ LumiShopCatalog.clearCart();
                   const SizedBox(height: 14),
                   TextFormField(
                     controller: _nameController,
+                    textCapitalization: TextCapitalization.words,
                     decoration: _inputDecoration(
                       label: 'Họ và tên',
                       icon: Icons.person_outline,
                       hint: 'Nhập tên người nhận',
                     ),
                     validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
+                      if (value == null ||
+                          value.trim().isEmpty) {
                         return 'Vui lòng nhập họ và tên';
                       }
+
+                      if (value.trim().length < 2) {
+                        return 'Họ và tên quá ngắn';
+                      }
+
                       return null;
                     },
                   ),
@@ -351,19 +464,7 @@ LumiShopCatalog.clearCart();
                       icon: Icons.phone_outlined,
                       hint: 'Nhập số điện thoại',
                     ),
-                    validator: (value) {
-                      final phone = value?.trim() ?? '';
-
-                      if (phone.isEmpty) {
-                        return 'Vui lòng nhập số điện thoại';
-                      }
-
-                      if (phone.length < 9) {
-                        return 'Số điện thoại không hợp lệ';
-                      }
-
-                      return null;
-                    },
+                    validator: _validatePhone,
                   ),
                   const SizedBox(height: 12),
                   TextFormField(
@@ -375,9 +476,15 @@ LumiShopCatalog.clearCart();
                       hint: 'Số nhà, đường, phường/xã...',
                     ),
                     validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
+                      if (value == null ||
+                          value.trim().isEmpty) {
                         return 'Vui lòng nhập địa chỉ giao hàng';
                       }
+
+                      if (value.trim().length < 5) {
+                        return 'Địa chỉ giao hàng quá ngắn';
+                      }
+
                       return null;
                     },
                   ),
@@ -421,7 +528,8 @@ LumiShopCatalog.clearCart();
                         const SizedBox(width: 12),
                         Expanded(
                           child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                            crossAxisAlignment:
+                                CrossAxisAlignment.start,
                             children: [
                               Text(
                                 'Thanh toán khi nhận hàng',
@@ -478,28 +586,7 @@ LumiShopCatalog.clearCart();
                     ),
                   ),
                   const SizedBox(height: 24),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 56,
-                    child: FilledButton.icon(
-                      onPressed: _placeOrder,
-                      icon: const Icon(Icons.check_circle_outline),
-                      label: Text(
-                        'ĐẶT HÀNG · ${_money(grandTotal)}',
-                        style: GoogleFonts.dmSans(
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: .4,
-                        ),
-                      ),
-                      style: FilledButton.styleFrom(
-                        backgroundColor: rose,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                      ),
-                    ),
-                  ),
+                  _submitButton(),
                   const SizedBox(height: 12),
                   Text(
                     'Đây là giao diện thử nghiệm. Đơn hàng chưa được lưu vào hệ thống backend.',

@@ -75,9 +75,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _editProfile() async {
     final changed = await Navigator.of(context).push<bool>(
-      MaterialPageRoute<bool>(
-        builder: (_) => const EditProfileScreen(),
-      ),
+      MaterialPageRoute<bool>(builder: (_) => const EditProfileScreen()),
     );
     if (changed == true && mounted) {
       setState(_reload);
@@ -128,7 +126,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           child: OutlinedButton.icon(
             onPressed: widget.isLoggingOut ? null : widget.onLogout,
             icon: const Icon(Icons.logout_rounded),
-            label: Text(widget.isLoggingOut ? 'ĐANG ĐĂNG XUẤT...' : 'ĐĂNG XUẤT'),
+            label: Text(
+              widget.isLoggingOut ? 'ĐANG ĐĂNG XUẤT...' : 'ĐĂNG XUẤT',
+            ),
             style: OutlinedButton.styleFrom(
               foregroundColor: LumiStyle.plum,
               side: const BorderSide(color: LumiStyle.line),
@@ -201,9 +201,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           const SizedBox(width: 6),
                           FutureBuilder<LumiMembership>(
                             future: _membershipFuture,
-                            builder: (context, tierSnapshot) => _tierPill(
-                              tierSnapshot.data?.tier,
-                            ),
+                            builder: (context, tierSnapshot) =>
+                                _tierPill(tierSnapshot.data?.tier),
                           ),
                         ],
                       ),
@@ -287,9 +286,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Text(
                     'Thẻ thành viên LUMI',
                     style: LumiStyle.body(
-                      size: 15,
-                      color: LumiStyle.plum,
-                    ).copyWith(fontWeight: FontWeight.w700),
+                      size: 16,
+                      color: LumiStyle.rose,
+                    ).copyWith(fontWeight: FontWeight.w800),
                   ),
                   const SizedBox(height: 3),
                   Text(
@@ -314,50 +313,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Material(
-          color: Colors.transparent,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(12),
-            onTap: () => context.push('/settings'),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: Row(
-                children: [
-                  Container(
-                    width: 42,
-                    height: 42,
-                    decoration: const BoxDecoration(
-                      color: LumiStyle.blushSurface,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.settings_outlined,
-                      color: LumiStyle.rose,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Cài đặt', style: LumiStyle.heading(size: 25)),
-                        Text(
-                          'Tùy chọn tài khoản',
-                          style: LumiStyle.body(size: 13),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Icon(
-                    Icons.chevron_right_rounded,
-                    color: LumiStyle.rose,
-                  ),
-                ],
-              ),
-            ),
-          ),
+        _setting(
+          Icons.settings_outlined,
+          'Cài đặt',
+          'Tùy chọn tài khoản',
+          () => context.push('/settings'),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 4),
         _setting(
           Icons.event_note_outlined,
           'Lịch sử liệu trình',
@@ -385,10 +347,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
       borderRadius: BorderRadius.circular(12),
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12),
+        padding: const EdgeInsets.symmetric(vertical: 14),
         child: Row(
           children: [
-            Icon(icon, color: LumiStyle.rose),
+            SizedBox(
+              width: 42,
+              height: 42,
+              child: Icon(icon, color: LumiStyle.rose, size: 22),
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -432,9 +398,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     ),
     child: Text(
       tier ?? '—',
-      style: LumiStyle.body(size: 10, color: LumiStyle.rose).copyWith(
-        fontWeight: FontWeight.w700,
-      ),
+      style: LumiStyle.body(
+        size: 10,
+        color: LumiStyle.rose,
+      ).copyWith(fontWeight: FontWeight.w700),
     ),
   );
 

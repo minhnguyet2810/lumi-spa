@@ -25,12 +25,27 @@ class SettingsScreen extends StatelessWidget {
             borderRadius: BorderRadius.circular(18),
             border: Border.all(color: LumiStyle.line),
           ),
-          child: _setting(
-            context,
-            icon: Icons.person_outline_rounded,
-            title: 'Thông tin cá nhân',
-            subtitle: 'Cập nhật họ tên và số điện thoại',
-            route: '/profile/edit',
+          child: Column(
+            children: [
+              _setting(
+                context,
+                icon: Icons.person_outline_rounded,
+                title: 'Thông tin cá nhân',
+                subtitle: 'Cập nhật họ tên và số điện thoại',
+                route: '/profile/edit',
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 18),
+                child: Divider(height: 1, color: LumiStyle.line),
+              ),
+              _setting(
+                context,
+                icon: Icons.notifications_none_rounded,
+                title: 'Cài đặt thông báo',
+                subtitle: 'Chọn nội dung bạn muốn nhận từ LUMI',
+                route: '/settings/notifications',
+              ),
+            ],
           ),
         ),
       ],
@@ -49,6 +64,8 @@ class SettingsScreen extends StatelessWidget {
     title: Text(title, style: LumiStyle.body(size: 15, color: LumiStyle.plum)),
     subtitle: Text(subtitle, style: LumiStyle.body(size: 12)),
     trailing: const Icon(Icons.chevron_right_rounded),
-    onTap: () => context.push(route),
+    onTap: () {
+      context.push(route);
+    },
   );
 }

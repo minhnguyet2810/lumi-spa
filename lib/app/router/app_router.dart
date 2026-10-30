@@ -10,6 +10,7 @@ import '../../features/home/presentation/screens/notifications_screen.dart';
 import '../../features/profile/presentation/screens/edit_profile_screen.dart';
 import '../../features/profile/presentation/screens/membership_screen.dart';
 import '../../features/profile/presentation/screens/settings_screen.dart';
+import '../../features/profile/presentation/screens/notification_settings_screen.dart';
 
 abstract final class AppRouter {
   static final router = GoRouter(
@@ -45,6 +46,12 @@ abstract final class AppRouter {
       GoRoute(
         path: '/settings',
         builder: (context, state) => const SettingsScreen(),
+        routes: [
+          GoRoute(
+            path: 'notifications',
+            builder: (context, state) => const NotificationSettingsScreen(),
+          ),
+        ],
       ),
     ],
   );

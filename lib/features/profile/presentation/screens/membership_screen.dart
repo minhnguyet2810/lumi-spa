@@ -58,6 +58,7 @@ class _MembershipScreenState extends State<MembershipScreen> {
                   child: const Text('Thử lại'),
                 ),
               ),
+            const SizedBox(height: 16),
             _benefitsCard(membership?.tier),
           ],
         );
@@ -155,20 +156,184 @@ class _MembershipScreenState extends State<MembershipScreen> {
         Text('Quyền lợi', style: LumiStyle.heading(size: 25)),
         const SizedBox(height: 4),
         Text(
-          tier == null
-              ? 'Thông tin hạng chưa khả dụng'
-              : 'Dành cho hạng $tier',
-          style: LumiStyle.body(size: 13),
+          tier == null ? 'Đặc quyền dành cho thành viên' : 'Hạng $tier',
+          style: LumiStyle.body(size: 13, color: LumiStyle.muted),
         ),
         const SizedBox(height: 12),
-        _benefit(Icons.spa_outlined, 'Ưu đãi dịch vụ làm đẹp'),
-        _benefit(Icons.event_available_outlined, 'Ưu tiên cập nhật lịch hẹn'),
-        _benefit(Icons.card_giftcard_outlined, 'Quà tặng trong các dịp đặc biệt'),
-        const SizedBox(height: 8),
-        Text(
-          'Quyền lợi thực tế tùy thuộc vào hạng và chính sách hiện hành của LUMI.',
-          style: LumiStyle.body(size: 12),
+        _benefit(
+          Icons.event_available_outlined,
+          'Chủ động xem và quản lý lịch hẹn tại LUMI',
         ),
+        _benefit(
+          Icons.spa_outlined,
+          'Khám phá liệu trình và ưu đãi phù hợp',
+        ),
+        _benefit(
+          Icons.stars_outlined,
+          'Theo dõi điểm tích lũy khi được hệ thống cập nhật',
+        ),
+        const SizedBox(height: 10),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton(
+            onPressed: () => _showOtherTierBenefits(tier),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: LumiStyle.plum,
+              side: const BorderSide(color: LumiStyle.line),
+              padding: const EdgeInsets.symmetric(vertical: 13),
+            ),
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text('Xem quyền lợi các hạng thành viên khác'),
+                SizedBox(width: 6),
+                Icon(Icons.arrow_forward_rounded, size: 17),
+              ],
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+
+  void _showOtherTierBenefits(String? currentTier) {
+    const tierBenefits = <({String name, IconData icon, List<String> benefits})>[
+      (
+        name: 'Member',
+        icon: Icons.spa_outlined,
+        benefits: [
+          'Quản lý lịch hẹn và thông tin chăm sóc cá nhân',
+          'Cập nhật điểm tích lũy khi hệ thống ghi nhận',
+          'Nhận thông tin dịch vụ và hoạt động mới của LUMI',
+        ],
+      ),
+      (
+        name: 'Silver',
+        icon: Icons.workspace_premium_outlined,
+        benefits: [
+          'Các tiện ích của hạng Member',
+          'Ưu tiên tiếp cận một số chương trình dành cho hội viên',
+          'Quà tặng hoặc ưu đãi trong dịp sinh nhật',
+        ],
+      ),
+      (
+        name: 'Gold',
+        icon: Icons.military_tech_outlined,
+        benefits: [
+          'Các tiện ích của hạng Silver',
+          'Ưu tiên lựa chọn khung giờ cho liệu trình',
+          'Ưu đãi chọn lọc cho dịch vụ chăm sóc',
+        ],
+      ),
+      (
+        name: 'Platinum',
+        icon: Icons.diamond_outlined,
+        benefits: [
+          'Các tiện ích của hạng Gold',
+          'Hỗ trợ tư vấn và sắp xếp lịch hẹn ưu tiên',
+          'Trải nghiệm quà tặng dành riêng cho hội viên',
+        ],
+      ),
+    ];
+
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      backgroundColor: LumiStyle.ivory,
+      builder: (context) => SafeArea(
+        child: FractionallySizedBox(
+          heightFactor: 0.88,
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
+            children: [
+              Text(
+                'Các hạng thành viên',
+                style: LumiStyle.heading(size: 30),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Khám phá những đặc quyền được gợi ý cho từng cấp độ hội viên.',
+                style: LumiStyle.body(size: 14),
+              ),
+              const SizedBox(height: 16),
+              for (final (index, tier) in tierBenefits.indexed) ...[
+                _tierBenefitsCard(
+                  tier,
+                  isCurrentTier:
+                      currentTier?.toLowerCase() == tier.name.toLowerCase(),
+                ),
+                if (index < tierBenefits.length - 1)
+                  const SizedBox(height: 12),
+              ],
+              const SizedBox(height: 14),
+              Text(
+                'Các hạng và quyền lợi trong danh sách này mang tính minh họa. '
+                'Hạng hiện tại và điểm của bạn chỉ hiển thị theo dữ liệu backend; '
+                'chính sách chính thức sẽ theo thông báo của LUMI.',
+                style: LumiStyle.body(size: 12),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _tierBenefitsCard(
+    ({String name, IconData icon, List<String> benefits}) tier, {
+    required bool isCurrentTier,
+  }) => _card(
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(tier.icon, color: LumiStyle.rose),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                tier.name,
+                style: LumiStyle.body(
+                  size: 17,
+                  color: LumiStyle.plum,
+                ).copyWith(fontWeight: FontWeight.w700),
+              ),
+            ),
+            if (isCurrentTier)
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
+                decoration: BoxDecoration(
+                  color: LumiStyle.blushSurface,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  'Hạng hiện tại',
+                  style: LumiStyle.body(size: 11, color: LumiStyle.rose),
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        for (final benefit in tier.benefits)
+          Padding(
+            padding: const EdgeInsets.only(top: 7),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Icon(
+                  Icons.check_rounded,
+                  size: 17,
+                  color: LumiStyle.rose,
+                ),
+                const SizedBox(width: 8),
+                Expanded(child: Text(benefit, style: LumiStyle.body(size: 13))),
+              ],
+            ),
+          ),
       ],
     ),
   );

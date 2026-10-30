@@ -24,20 +24,20 @@ async function requireAuth(req, res, next) {
         try {
           const payloadStr = Buffer.from(parts[1], 'base64url').toString('utf8');
           const payload = JSON.parse(payloadStr);
-          if (payload && (payload.user_id || payload.sub)) {
+          if (payload && (payload.user_id || payload.sub || payload.uid)) {
             decoded = {
               ...payload,
-              uid: payload.user_id || payload.sub,
+              uid: payload.user_id || payload.sub || payload.uid,
             };
           }
         } catch (_) {
           const b64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
           const payloadStr = Buffer.from(b64, 'base64').toString('utf8');
           const payload = JSON.parse(payloadStr);
-          if (payload && (payload.user_id || payload.sub)) {
+          if (payload && (payload.user_id || payload.sub || payload.uid)) {
             decoded = {
               ...payload,
-              uid: payload.user_id || payload.sub,
+              uid: payload.user_id || payload.sub || payload.uid,
             };
           }
         }

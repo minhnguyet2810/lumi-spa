@@ -3,6 +3,8 @@ const db = require('../firebase');
 const { FieldValue } = require('firebase-admin/firestore');
 const { requireAuth, requireAdmin } = require('../admin_auth');
 const { devBookings } = require('../dev_store');
+const mailService = require('../services/mail_service');
+const pushService = require('../services/push_service');
 
 const router = express.Router();
 
@@ -71,6 +73,7 @@ router.patch('/bookings/:id/confirm', async (req, res) => {
     }
     const bookingRef = db.collection('bookings').doc(req.params.id);
 
+    let confirmedBooking = null;
     await db.runTransaction(async tx => {
       const snapshot = await tx.get(bookingRef);
 
@@ -81,6 +84,7 @@ router.patch('/bookings/:id/confirm', async (req, res) => {
       }
 
       const booking = snapshot.data();
+      confirmedBooking = { id: snapshot.id, ...booking };
 
       if (booking.status !== 'pending') {
         const error = new Error('Chỉ có thể xác nhận lịch đang chờ.');
@@ -122,6 +126,78 @@ router.patch('/bookings/:id/confirm', async (req, res) => {
         confirmedBy: req.user.uid,
       });
     });
+
+    if (confirmedBooking) {
+      (async () => {
+        try {
+          let recipientEmail = confirmedBooking.userEmail;
+          if (!recipientEmail && confirmedBooking.userId) {
+            try {
+              const uDoc = await db.collection('users').doc(confirmedBooking.userId).get();
+              if (uDoc.exists) recipientEmail = uDoc.data().email;
+            } catch (_) {}
+          }
+
+          let staffName = '';
+          if (confirmedBooking.staffId) {
+            try {
+              const sDoc = await db.collection('staff').doc(confirmedBooking.staffId).get();
+              if (sDoc.exists) staffName = sDoc.data().name;
+            } catch (_) {}
+          }
+
+          let roomName = '';
+          if (confirmedBooking.roomId) {
+            try {
+              const rDoc = await db.collection('rooms').doc(confirmedBooking.roomId).get();
+              if (rDoc.exists) roomName = rDoc.data().name;
+            } catch (_) {}
+          }
+
+          const startAtDate = confirmedBooking.startAt?.toDate ? confirmedBooking.startAt.toDate() : confirmedBooking.startAt;
+
+          await mailService.sendBookingConfirmedEmail({
+            to: recipientEmail,
+            customerName: confirmedBooking.contactName,
+            customerPhone: confirmedBooking.contactPhone,
+            bookingId: confirmedBooking.id,
+            serviceName: confirmedBooking.serviceName,
+            startAt: startAtDate,
+            durationMinutes: confirmedBooking.durationMinutes,
+            price: confirmedBooking.price,
+            staffName,
+            roomName,
+          });
+
+          if (confirmedBooking.userId) {
+            await db.collection('notifications').add({
+              userId: confirmedBooking.userId,
+              title: 'Lịch hẹn đã được xác nhận ✨',
+              message: 'Lịch hẹn "' + (confirmedBooking.serviceName || '') + '" đã được Lễ tân xác nhận. Hân hạnh đón tiếp quý khách!',
+              type: 'appointment',
+              isRead: false,
+              createdAt: FieldValue.serverTimestamp(),
+            });
+
+            const startDateObj = startAtDate ? new Date(startAtDate) : new Date();
+            const dateStr = startDateObj.toISOString().split('T')[0];
+            const hourStr = startDateObj.getHours();
+
+            await pushService.sendBookingConfirmedPush({
+              userId: confirmedBooking.userId,
+              bookingId: confirmedBooking.id,
+              serviceName: confirmedBooking.serviceName || 'Dịch vụ Spa',
+              date: dateStr,
+              hour: hourStr,
+              staffName,
+              roomName,
+            });
+          }
+        } catch (mailErr) {
+          console.error('[Admin] Failed to send confirm notification/email:', mailErr.message);
+        }
+      })();
+    }
 
     return res.json({
       success: true,

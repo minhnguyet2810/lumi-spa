@@ -3,6 +3,8 @@ const { Timestamp, FieldValue } = require('firebase-admin/firestore');
 const db = require('../firebase');
 const { requireAuth } = require('../auth');
 const { reserveBookingResources } = require('../booking_transactions');
+const mailService = require('../services/mail_service');
+const pushService = require('../services/push_service');
 
 const router = express.Router();
 
@@ -225,6 +227,7 @@ router.post('/', async (req, res) => {
       const devItem = {
         id: `book_${Date.now()}`,
         userId: req.user.uid,
+          userEmail: req.user.email || null,
         contactName: contactName.trim(),
         contactPhone: contactPhone.trim(),
         serviceId,
@@ -265,6 +268,37 @@ router.post('/', async (req, res) => {
         durationMinutes,
         categoryId,
       });
+
+      const bId = result?.bookingId || bookingRef.id;
+      mailService.sendBookingCreatedEmail({
+        to: req.user.email,
+        customerName: contactName.trim(),
+        customerPhone: contactPhone.trim(),
+        bookingId: bId,
+        serviceName: service.name || serviceName || serviceId,
+        startAt,
+        durationMinutes,
+        price,
+      }).catch(err => console.error('Booking mail error:', err));
+
+      pushService.sendBookingCreatedPush({
+        userId: req.user.uid,
+        bookingId: bId,
+        serviceName: service.name || serviceName || serviceId,
+        date,
+        hour,
+      }).catch(err => console.error('Booking push error:', err));
+
+      if (db.hasCredentials) {
+        db.collection('notifications').add({
+          userId: req.user.uid,
+          title: 'Đã gửi yêu cầu đặt lịch hẹn 🌸',
+          message: 'Lịch hẹn "' + (service.name || serviceName || serviceId) + '" (' + date + ' lúc ' + hour + ':00) đang chờ lễ tân xác nhận.',
+          type: 'appointment',
+          isRead: false,
+          createdAt: FieldValue.serverTimestamp(),
+        }).catch(() => {});
+      }
 
       return res.status(201).json({
         success: true,

@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -36,17 +39,99 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   static const ink = Color(0xFF503B42);
   static const muted = Color(0xFF765F67);
 
-  // Dữ liệu thật sẽ được đưa vào đây khi tích hợp Firebase/API.
-  // Không tạo thông báo giả.
   final List<LumiNotification> _notifications = [];
-
   final Set<String> _readIds = {};
   bool _unreadOnly = false;
+  bool _isLoading = true;
+  StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _subscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _subscribeNotifications();
+  }
+
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    super.dispose();
+  }
+
+  void _subscribeNotifications() {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      setState(() => _isLoading = false);
+      return;
+    }
+
+    _subscription = FirebaseFirestore.instance
+        .collection('notifications')
+        .where('userId', isEqualTo: user.uid)
+        .snapshots()
+        .listen(
+      (snapshot) {
+        if (!mounted) return;
+
+        final list = snapshot.docs.map((doc) {
+          final data = doc.data();
+          DateTime createdAt = DateTime.now();
+          if (data['createdAt'] is Timestamp) {
+            createdAt = (data['createdAt'] as Timestamp).toDate();
+          } else if (data['createdAt'] is String) {
+            createdAt = DateTime.tryParse(data['createdAt'] as String) ?? DateTime.now();
+          }
+
+          LumiNotificationType type = LumiNotificationType.system;
+          final typeStr = data['type']?.toString();
+          if (typeStr == 'appointment') {
+            type = LumiNotificationType.appointment;
+          } else if (typeStr == 'order') {
+            type = LumiNotificationType.order;
+          } else if (typeStr == 'promotion') {
+            type = LumiNotificationType.promotion;
+          }
+
+          return LumiNotification(
+            id: doc.id,
+            title: data['title']?.toString() ?? 'Thông báo LUMI SPA',
+            message: data['message']?.toString() ?? '',
+            createdAt: createdAt,
+            type: type,
+            isRead: data['isRead'] == true,
+          );
+        }).toList();
+
+        list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+        setState(() {
+          _notifications.clear();
+          _notifications.addAll(list);
+          _isLoading = false;
+        });
+      },
+      onError: (err) {
+        debugPrint('Notifications stream error: $err');
+        if (mounted) setState(() => _isLoading = false);
+      },
+    );
+  }
 
   bool _isRead(LumiNotification item) =>
       item.isRead || _readIds.contains(item.id);
 
   void _markAllRead() {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      for (final n in _notifications) {
+        if (!_isRead(n)) {
+          FirebaseFirestore.instance
+              .collection('notifications')
+              .doc(n.id)
+              .update({'isRead': true})
+              .catchError((_) {});
+        }
+      }
+    }
     setState(() {
       _readIds.addAll(_notifications.map((item) => item.id));
     });
@@ -145,16 +230,18 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             ),
             const SizedBox(height: 18),
             Expanded(
-              child: visible.isEmpty
-                  ? _emptyState()
-                  : ListView.separated(
-                      padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
-                      itemCount: visible.length,
-                      separatorBuilder: (_, _) => const SizedBox(height: 12),
-                      itemBuilder: (context, index) {
-                        return _notificationCard(visible[index]);
-                      },
-                    ),
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator(color: rose))
+                  : visible.isEmpty
+                      ? _emptyState()
+                      : ListView.separated(
+                          padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
+                          itemCount: visible.length,
+                          separatorBuilder: (_, _) => const SizedBox(height: 12),
+                          itemBuilder: (context, index) {
+                            return _notificationCard(visible[index]);
+                          },
+                        ),
             ),
           ],
         ),
@@ -274,7 +361,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         borderRadius: BorderRadius.circular(18),
         onTap: () {
           setState(() => _readIds.add(item.id));
-          // Điều hướng đến lịch hẹn/đơn hàng sẽ nối sau.
+          FirebaseFirestore.instance
+              .collection('notifications')
+              .doc(item.id)
+              .update({'isRead': true})
+              .catchError((_) {});
         },
         child: Padding(
           padding: const EdgeInsets.all(16),

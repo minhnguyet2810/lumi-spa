@@ -2,6 +2,8 @@ const express = require('express');
 const { FieldValue } = require('firebase-admin/firestore');
 const db = require('../firebase');
 const { requireAuth } = require('../auth');
+const mailService = require('../services/mail_service');
+const pushService = require('../services/push_service');
 
 const router = express.Router();
 router.use(requireAuth);
@@ -217,8 +219,53 @@ router.post('/', async (req, res) => {
         updatedAt: FieldValue.serverTimestamp(),
       });
 
-      return { id: orderRef.id, total };
+      return { id: orderRef.id, total, subtotal, shippingFee, items: orderItems };
     });
+
+    (async () => {
+      try {
+        let customerEmail = req.user.email;
+        if (!customerEmail && req.user.uid) {
+          try {
+            const uDoc = await db.collection('users').doc(req.user.uid).get();
+            if (uDoc.exists) customerEmail = uDoc.data().email;
+          } catch (_) {}
+        }
+
+        await mailService.sendOrderSuccessEmail({
+          to: customerEmail,
+          customerName: req.user.name || phone.trim(),
+          orderId: result.id,
+          items: result.items,
+          subtotal: result.subtotal,
+          shippingFee: result.shippingFee,
+          total: result.total,
+          shippingAddress: shippingAddress.trim(),
+          phone: phone.trim(),
+          paymentMethod: 'COD',
+        });
+
+        if (req.user.uid) {
+          await db.collection('notifications').add({
+            userId: req.user.uid,
+            title: 'Đặt hàng thành công 🛍️',
+            message: 'Đơn hàng #' + result.id + ' trị giá ' + result.total.toLocaleString('vi-VN') + ' đ đã được tiếp nhận.',
+            type: 'order',
+            isRead: false,
+            createdAt: FieldValue.serverTimestamp(),
+          });
+
+          await pushService.sendOrderSuccessPush({
+            userId: req.user.uid,
+            orderId: result.id,
+            itemCount: result.items?.length || 1,
+            totalAmount: result.total,
+          });
+        }
+      } catch (err) {
+        console.error('[Order] Failed to send order email/notification:', err.message);
+      }
+    })();
 
     return res.status(201).json({
       success: true,

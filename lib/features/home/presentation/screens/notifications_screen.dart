@@ -1,25 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
-enum LumiNotificationType { appointment, order, promotion, system }
-
-class LumiNotification {
-  const LumiNotification({
-    required this.id,
-    required this.title,
-    required this.message,
-    required this.createdAt,
-    required this.type,
-    this.isRead = false,
-  });
-
-  final String id;
-  final String title;
-  final String message;
-  final DateTime createdAt;
-  final LumiNotificationType type;
-  final bool isRead;
-}
+import '../../../../core/data/lumi_account_repository.dart';
+import '../../../../core/theme/lumi_style.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -29,81 +11,110 @@ class NotificationsScreen extends StatefulWidget {
 }
 
 class _NotificationsScreenState extends State<NotificationsScreen> {
-  static const cream = Color(0xFFFFFAF8);
-  static const blush = Color(0xFFF4E4E8);
-  static const rose = Color(0xFFB56F86);
-  static const blue = Color(0xFFDDECEF);
-  static const ink = Color(0xFF503B42);
-  static const muted = Color(0xFF765F67);
-
-  // Dữ liệu thật sẽ được đưa vào đây khi tích hợp Firebase/API.
-  // Không tạo thông báo giả.
-  final List<LumiNotification> _notifications = [];
-
-  final Set<String> _readIds = {};
+  late Future<List<LumiNotificationItem>> _notificationsFuture;
+  final Set<String> _locallyReadIds = {};
   bool _unreadOnly = false;
+  bool _markingAll = false;
+  String? _actionError;
 
-  bool _isRead(LumiNotification item) =>
-      item.isRead || _readIds.contains(item.id);
+  @override
+  void initState() {
+    super.initState();
+    _notificationsFuture = LumiAccountRepository.fetchNotifications();
+  }
 
-  void _markAllRead() {
+  void _reload() {
     setState(() {
-      _readIds.addAll(_notifications.map((item) => item.id));
+      _actionError = null;
+      _notificationsFuture = LumiAccountRepository.fetchNotifications();
     });
   }
 
-  IconData _iconFor(LumiNotificationType type) {
-    switch (type) {
-      case LumiNotificationType.appointment:
-        return Icons.calendar_month_outlined;
-      case LumiNotificationType.order:
-        return Icons.shopping_bag_outlined;
-      case LumiNotificationType.promotion:
-        return Icons.local_offer_outlined;
-      case LumiNotificationType.system:
-        return Icons.notifications_none_rounded;
+  bool _isRead(LumiNotificationItem item) =>
+      item.isRead || _locallyReadIds.contains(item.id);
+
+  Future<void> _markRead(LumiNotificationItem item) async {
+    if (_isRead(item)) return;
+    setState(() {
+      _locallyReadIds.add(item.id);
+      _actionError = null;
+    });
+    try {
+      await LumiAccountRepository.markNotificationRead(item.id);
+    } catch (error) {
+      if (!mounted) return;
+      setState(() => _locallyReadIds.remove(item.id));
+      _showError(error.toString());
     }
   }
 
+  Future<void> _markAllRead(List<LumiNotificationItem> items) async {
+    if (_markingAll) return;
+    final unread = items.where((item) => !_isRead(item)).toList();
+    if (unread.isEmpty) return;
+    setState(() {
+      _markingAll = true;
+      _actionError = null;
+      _locallyReadIds.addAll(unread.map((item) => item.id));
+    });
+    try {
+      await LumiAccountRepository.markAllNotificationsRead();
+      _reload();
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _locallyReadIds.removeAll(unread.map((item) => item.id));
+        _actionError = error.toString();
+      });
+    } finally {
+      if (mounted) setState(() => _markingAll = false);
+    }
+  }
+
+  void _showError(String error) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(error), action: SnackBarAction(
+        label: 'Thử lại',
+        onPressed: _reload,
+      )),
+    );
+  }
+
   @override
-  Widget build(BuildContext context) {
-    final visible = _notifications
-        .where((item) => !_unreadOnly || !_isRead(item))
-        .toList();
-
-    final unreadCount = _notifications.where((item) => !_isRead(item)).length;
-
-    return Scaffold(
-      backgroundColor: cream,
-      appBar: AppBar(
-        backgroundColor: cream,
-        surfaceTintColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          tooltip: 'Quay lại',
-          onPressed: () => Navigator.of(context).pop(),
-          icon: const Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: ink,
-            size: 21,
-          ),
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(
+      title: Text('Thông báo', style: LumiStyle.heading(size: 30)),
+      actions: [
+        IconButton(
+          tooltip: 'Tải lại',
+          onPressed: _reload,
+          icon: const Icon(Icons.refresh_rounded),
         ),
-        title: Text(
-          'Thông báo',
-          style: GoogleFonts.dmSans(
-            fontSize: 22,
-            fontWeight: FontWeight.w700,
-            color: ink,
-          ),
-        ),
-        centerTitle: false,
-      ),
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      ],
+    ),
+    body: FutureBuilder<List<LumiNotificationItem>>(
+      future: _notificationsFuture,
+      builder: (context, snapshot) {
+        final items = snapshot.data ?? const <LumiNotificationItem>[];
+        final unreadCount = items.where((item) => !_isRead(item)).length;
+        final visible = items
+            .where((item) => !_unreadOnly || !_isRead(item))
+            .toList()
+          ..sort((a, b) {
+            final aDate = a.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+            final bDate = b.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+            return bDate.compareTo(aDate);
+          });
+        final loading = snapshot.connectionState == ConnectionState.waiting;
+
+        if (snapshot.hasError && snapshot.data == null) {
+          return _errorState(snapshot.error.toString());
+        }
+
+        return Column(
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 14, 20, 16),
+              padding: const EdgeInsets.fromLTRB(20, 12, 12, 14),
               child: Row(
                 children: [
                   Expanded(
@@ -111,18 +122,17 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       unreadCount == 0
                           ? 'Cập nhật dành cho bạn'
                           : '$unreadCount thông báo chưa đọc',
-                      style: GoogleFonts.dmSans(fontSize: 15, color: muted),
+                      style: LumiStyle.body(size: 14),
                     ),
                   ),
                   if (unreadCount > 0)
                     TextButton(
-                      onPressed: _markAllRead,
+                      onPressed: _markingAll ? null : () => _markAllRead(items),
                       child: Text(
-                        'Đánh dấu đã đọc',
-                        style: GoogleFonts.dmSans(
-                          color: rose,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
+                        _markingAll ? 'Đang cập nhật...' : 'Đánh dấu đã đọc',
+                        style: LumiStyle.body(
+                          size: 13,
+                          color: LumiStyle.rose,
                         ),
                       ),
                     ),
@@ -133,162 +143,141 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Row(
                 children: [
-                  _filterChip('Tất cả', !_unreadOnly, () {
-                    setState(() => _unreadOnly = false);
-                  }),
+                  _filterChip('Tất cả', !_unreadOnly),
                   const SizedBox(width: 10),
-                  _filterChip('Chưa đọc', _unreadOnly, () {
-                    setState(() => _unreadOnly = true);
-                  }),
+                  _filterChip('Chưa đọc', _unreadOnly),
                 ],
               ),
             ),
-            const SizedBox(height: 18),
+            if (_actionError != null)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
+                child: Text(
+                  _actionError!,
+                  style: LumiStyle.body(size: 13, color: LumiStyle.rose),
+                ),
+              ),
             Expanded(
-              child: visible.isEmpty
+              child: loading && snapshot.data == null
+                  ? const Center(
+                      child: CircularProgressIndicator(color: LumiStyle.rose),
+                    )
+                  : visible.isEmpty
                   ? _emptyState()
-                  : ListView.separated(
-                      padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
-                      itemCount: visible.length,
-                      separatorBuilder: (_, _) => const SizedBox(height: 12),
-                      itemBuilder: (context, index) {
-                        return _notificationCard(visible[index]);
-                      },
-                    ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _filterChip(String label, bool selected, VoidCallback onPressed) {
-    return Material(
-      color: selected ? rose : blush,
-      borderRadius: BorderRadius.circular(24),
-      child: InkWell(
-        onTap: onPressed,
-        borderRadius: BorderRadius.circular(24),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 13),
-          child: Text(
-            label,
-            style: GoogleFonts.dmSans(
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-              color: selected ? Colors.white : ink,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _emptyState() {
-    return Center(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(28, 20, 28, 50),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 110,
-              height: 110,
-              decoration: const BoxDecoration(
-                color: blue,
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.notifications_none_rounded,
-                size: 48,
-                color: Color(0xFF638A94),
-              ),
-            ),
-            const SizedBox(height: 25),
-            Text(
-              _unreadOnly
-                  ? 'Bạn đã xem hết thông báo'
-                  : 'Chưa có thông báo nào',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.dmSans(
-                fontSize: 22,
-                fontWeight: FontWeight.w700,
-                color: ink,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              _unreadOnly
-                  ? 'Những thông báo chưa đọc sẽ xuất hiện tại đây.'
-                  : 'Lịch hẹn, ưu đãi và những cập nhật mới '
-                        'từ LUMI sẽ được gửi đến bạn tại đây.',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.dmSans(
-                fontSize: 16,
-                height: 1.55,
-                color: muted,
-              ),
-            ),
-            const SizedBox(height: 28),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 15),
-              decoration: BoxDecoration(
-                color: blush,
-                borderRadius: BorderRadius.circular(18),
-              ),
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.favorite_border_rounded,
-                    color: rose,
-                    size: 23,
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      'LUMI luôn đồng hành cùng hành trình '
-                      'chăm sóc bản thân của bạn.',
-                      style: GoogleFonts.dmSans(
-                        fontSize: 14,
-                        height: 1.45,
-                        color: ink,
+                  : RefreshIndicator(
+                      color: LumiStyle.rose,
+                      onRefresh: () async => _reload(),
+                      child: ListView.separated(
+                        padding: const EdgeInsets.fromLTRB(20, 18, 20, 28),
+                        itemCount: visible.length,
+                        separatorBuilder: (_, _) => const SizedBox(height: 10),
+                        itemBuilder: (context, index) =>
+                            _notificationCard(visible[index]),
                       ),
                     ),
-                  ),
-                ],
-              ),
             ),
           ],
-        ),
+        );
+      },
+    ),
+  );
+
+  Widget _filterChip(String label, bool selected) => ChoiceChip(
+    label: Text(label),
+    selected: selected,
+    onSelected: (_) => setState(() => _unreadOnly = label == 'Chưa đọc'),
+    selectedColor: LumiStyle.rose,
+    backgroundColor: LumiStyle.blushSurface,
+    labelStyle: LumiStyle.body(
+      size: 13,
+      color: selected ? Colors.white : LumiStyle.plum,
+    ),
+    side: BorderSide.none,
+  );
+
+  Widget _errorState(String message) => Center(
+    child: Padding(
+      padding: const EdgeInsets.all(28),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.cloud_off_outlined, color: LumiStyle.rose, size: 44),
+          const SizedBox(height: 14),
+          Text('Không tải được thông báo', style: LumiStyle.heading(size: 28)),
+          const SizedBox(height: 8),
+          Text(message, textAlign: TextAlign.center, style: LumiStyle.body()),
+          const SizedBox(height: 16),
+          OutlinedButton(onPressed: _reload, child: const Text('Thử lại')),
+        ],
       ),
-    );
-  }
+    ),
+  );
 
-  Widget _notificationCard(LumiNotification item) {
+  Widget _emptyState() => Center(
+    child: SingleChildScrollView(
+      padding: const EdgeInsets.all(28),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 96,
+            height: 96,
+            decoration: const BoxDecoration(
+              color: LumiStyle.blushSurface,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.notifications_none_rounded,
+              size: 44,
+              color: LumiStyle.rose,
+            ),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            _unreadOnly ? 'Bạn đã xem hết thông báo' : 'Chưa có thông báo nào',
+            textAlign: TextAlign.center,
+            style: LumiStyle.heading(size: 28),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            _unreadOnly
+                ? 'Thông báo chưa đọc sẽ xuất hiện tại đây.'
+                : 'Lịch hẹn, ưu đãi và cập nhật mới từ LUMI sẽ được gửi đến bạn tại đây.',
+            textAlign: TextAlign.center,
+            style: LumiStyle.body(),
+          ),
+          const SizedBox(height: 16),
+          TextButton.icon(
+            onPressed: _reload,
+            icon: const Icon(Icons.refresh_rounded),
+            label: const Text('Làm mới'),
+          ),
+        ],
+      ),
+    ),
+  );
+
+  Widget _notificationCard(LumiNotificationItem item) {
     final read = _isRead(item);
-
     return Material(
-      color: read ? Colors.white : blush,
-      borderRadius: BorderRadius.circular(18),
+      color: read ? LumiStyle.surface : LumiStyle.blushSurface,
+      borderRadius: BorderRadius.circular(16),
       child: InkWell(
-        borderRadius: BorderRadius.circular(18),
-        onTap: () {
-          setState(() => _readIds.add(item.id));
-          // Điều hướng đến lịch hẹn/đơn hàng sẽ nối sau.
-        },
+        borderRadius: BorderRadius.circular(16),
+        onTap: () => _markRead(item),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                width: 46,
-                height: 46,
+                width: 44,
+                height: 44,
                 decoration: BoxDecoration(
-                  color: blue,
-                  borderRadius: BorderRadius.circular(14),
+                  color: LumiStyle.ivory,
+                  borderRadius: BorderRadius.circular(13),
                 ),
-                child: Icon(_iconFor(item.type), color: ink),
+                child: Icon(_iconFor(item.type), color: LumiStyle.plum),
               ),
               const SizedBox(width: 13),
               Expanded(
@@ -297,33 +286,56 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   children: [
                     Text(
                       item.title,
-                      style: GoogleFonts.dmSans(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: ink,
-                      ),
+                      style: LumiStyle.body(
+                        size: 15,
+                        color: LumiStyle.plum,
+                      ).copyWith(fontWeight: FontWeight.w700),
                     ),
-                    const SizedBox(height: 6),
-                    Text(
-                      item.message,
-                      style: GoogleFonts.dmSans(
-                        fontSize: 14,
-                        height: 1.45,
-                        color: muted,
-                      ),
-                    ),
+                    if (item.message.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(item.message, style: LumiStyle.body(size: 13)),
+                    ],
+                    const SizedBox(height: 7),
+                    Text(_formatTime(item.createdAt), style: LumiStyle.body(size: 11)),
                   ],
                 ),
               ),
               if (!read)
                 const Padding(
                   padding: EdgeInsets.only(left: 8, top: 5),
-                  child: CircleAvatar(radius: 5, backgroundColor: rose),
+                  child: CircleAvatar(radius: 4, backgroundColor: LumiStyle.rose),
                 ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  IconData _iconFor(String type) {
+    switch (type.toLowerCase()) {
+      case 'appointment':
+      case 'booking':
+        return Icons.calendar_month_outlined;
+      case 'order':
+      case 'purchase':
+        return Icons.shopping_bag_outlined;
+      case 'promotion':
+      case 'promo':
+        return Icons.local_offer_outlined;
+      default:
+        return Icons.notifications_none_rounded;
+    }
+  }
+
+  String _formatTime(DateTime? date) {
+    if (date == null) return 'Thời gian không khả dụng';
+    final local = date.toLocal();
+    final difference = DateTime.now().difference(local);
+    if (difference.inMinutes < 1) return 'Vừa xong';
+    if (difference.inHours < 1) return '${difference.inMinutes} phút trước';
+    if (difference.inDays < 1) return '${difference.inHours} giờ trước';
+    if (difference.inDays < 7) return '${difference.inDays} ngày trước';
+    return '${local.day.toString().padLeft(2, '0')}/${local.month.toString().padLeft(2, '0')}/${local.year}';
   }
 }

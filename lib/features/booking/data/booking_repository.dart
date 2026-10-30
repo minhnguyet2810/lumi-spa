@@ -21,6 +21,18 @@ class BookingRepository {
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  static final List<BookingItem> _localBookings = [];
+
+  void _mergeLocalBookings(List<BookingItem> remoteList) {
+    for (final item in remoteList) {
+      final idx = _localBookings.indexWhere((b) => b.id == item.id);
+      if (idx != -1) {
+        _localBookings[idx] = item;
+      } else {
+        _localBookings.add(item);
+      }
+    }
+  }
 
   CollectionReference<Map<String, dynamic>> get _bookingsCol =>
       _firestore.collection('bookings');
@@ -57,21 +69,31 @@ class BookingRepository {
           .where('userId', isEqualTo: userId)
           .get();
 
-      if (snapshot.docs.isNotEmpty) {
-        final list = snapshot.docs.map((doc) => BookingItem.fromFirestore(doc)).toList();
-        list.sort((a, b) {
-          final dateA = a.startAt ?? DateTime(0);
-          final dateB = b.startAt ?? DateTime(0);
-          return dateB.compareTo(dateA);
-        });
-        return list;
-      }
+      final list = snapshot.docs.map((doc) => BookingItem.fromFirestore(doc)).toList();
+      list.sort((a, b) {
+        final dateA = a.startAt ?? DateTime(0);
+        final dateB = b.startAt ?? DateTime(0);
+        return dateB.compareTo(dateA);
+      });
+      return list;
     } catch (e) {
       debugPrint('Firestore fetch error, fallback to API: $e');
     }
 
     // Fallback qua Backend API
-    return BookingApiService.instance.getMyBookings();
+    try {
+      final list = await BookingApiService.instance.getMyBookings();
+      _mergeLocalBookings(list);
+      return list;
+    } catch (e) {
+      debugPrint('API fetch error: $e');
+      if (_localBookings.isNotEmpty) {
+        return _localBookings
+            .where((b) => b.userId == userId || b.userId == null || (b.userId?.isEmpty ?? false))
+            .toList();
+      }
+      rethrow;
+    }
   }
 
   /// Lấy danh sách tất cả booking trong một ngày từ Firestore để tính toán slot
@@ -200,6 +222,8 @@ class BookingRepository {
         contactName: contactName,
         contactPhone: contactPhone,
       );
+      _localBookings.removeWhere((b) => b.id == result.id);
+      _localBookings.insert(0, result);
       return result;
     } on BookingApiException catch (apiEx) {
       // Nếu là lỗi conflict từ server (409)
@@ -285,6 +309,24 @@ class BookingRepository {
 
   /// HỦY LỊCH HẸN: Gọi backend API để giải phóng resource_slots, fallback Firestore update
   Future<void> cancelBooking(String bookingId) async {
+    final idx = _localBookings.indexWhere((b) => b.id == bookingId);
+    if (idx != -1) {
+      final current = _localBookings[idx];
+      _localBookings[idx] = BookingItem(
+        id: current.id,
+        userId: current.userId,
+        serviceId: current.serviceId,
+        serviceName: current.serviceName,
+        price: current.price,
+        durationMinutes: current.durationMinutes,
+        contactName: current.contactName,
+        contactPhone: current.contactPhone,
+        startAt: current.startAt,
+        status: 'cancelled',
+        createdAt: current.createdAt,
+        cancelledAt: DateTime.now(),
+      );
+    }
     try {
       await BookingApiService.instance.cancelBooking(bookingId);
     } catch (e) {

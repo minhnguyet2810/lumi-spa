@@ -213,6 +213,7 @@ class _LumiAppointmentsScreenState extends State<LumiAppointmentsScreen> {
       await BookingRepository.instance.cancelBooking(bookingId);
       if (mounted) {
         Navigator.of(context, rootNavigator: true).pop(); // dismiss loading
+        _fetchBookings();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Đã hủy lịch hẹn thành công.'),
@@ -416,6 +417,30 @@ class _LumiAppointmentsScreenState extends State<LumiAppointmentsScreen> {
             style: GoogleFonts.dmSans(fontSize: 13, color: muted, height: 1.4),
           ),
           const SizedBox(height: 18),
+          if (_errorMessage?.contains('đăng nhập') == true || _errorMessage?.contains('Phiên') == true) ...[
+            SizedBox(
+              width: double.infinity,
+              height: 46,
+              child: FilledButton.icon(
+                onPressed: widget.onLogin,
+                icon: const Icon(Icons.login_rounded, size: 18),
+                label: Text(
+                  'ĐĂNG NHẬP LẠI',
+                  style: GoogleFonts.dmSans(
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                style: FilledButton.styleFrom(
+                  backgroundColor: rose,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+          ],
           OutlinedButton.icon(
             onPressed: _fetchBookings,
             icon: const Icon(Icons.refresh_rounded, size: 18, color: rose),

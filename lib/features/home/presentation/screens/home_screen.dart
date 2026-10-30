@@ -14,6 +14,7 @@ import '../../../../core/theme/lumi_style.dart';
 
 import 'lumi_appointments_screen.dart';
 import '../../../../core/data/lumi_catalog_repository.dart';
+import '../../../profile/presentation/screens/profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -35,7 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
   late Future<List<Map<String, dynamic>>> _servicesFuture;
   late Future<List<Map<String, dynamic>>> _productsFuture;
 
-  static const _pink = Color(0xFFD98B99);
+  static const _pink = LumiStyle.rose;
   static const _softPink = Color(0xFFF2BDCB);
   static const _blue = Color(0xFF8AA6BF);
   static const _ink = Color(0xFF493C46);
@@ -1219,86 +1220,18 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _profile() {
-    if (!_isLoggedIn) {
-      return _protectedPage(
-        eyebrow: 'TÀI KHOẢN',
-        title: 'Không gian\ncủa riêng bạn.',
-        description:
-            'Đăng nhập để quản lý tài khoản, '
-            'lịch sử mua hàng và thông tin cá nhân.',
-        icon: Icons.person_outline,
-        action: 'quản lý tài khoản',
-      );
-    }
-
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(26, 32, 26, 32),
-      children: [
-        Text(
-          'TÀI KHOẢN',
-          style: GoogleFonts.dmSans(
-            fontSize: 11,
-            color: _rose,
-            letterSpacing: 2.1,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(height: 10),
-        Text('Xin chào,\n$_memberName.', style: LumiStyle.heading(size: 46)),
-        const SizedBox(height: 14),
-        Text(
-          'Không gian cá nhân của bạn tại LUMI.',
-          style: LumiStyle.body(size: 15),
-        ),
-        const SizedBox(height: 32),
-        _profileTile(
-          Icons.calendar_month_outlined,
-          'Lịch hẹn của tôi',
-          () => setState(() => _tab = 3),
-        ),
-        _profileTile(
-          Icons.shopping_bag_outlined,
-          'Đơn hàng của tôi',
-          () => _showComingSoon('Quản lý đơn hàng'),
-        ),
-        _profileTile(
-          Icons.favorite_border,
-          'Yêu thích',
-          () => _showComingSoon('Danh sách yêu thích'),
-        ),
-        const SizedBox(height: 35),
-        _filledButton(
-          _loggingOut ? 'ĐANG ĐĂNG XUẤT...' : 'ĐĂNG XUẤT',
-          _loggingOut ? null : _logout,
-        ),
-        const SizedBox(height: 12),
-        Text(
-          'Bạn đang sử dụng tài khoản demo. '
-          'Xác thực tài khoản thật sẽ được tích hợp sau.',
-          style: LumiStyle.body(size: 12),
-        ),
-      ],
-    );
-  }
-
-  Widget _profileTile(IconData icon, String title, VoidCallback onTap) {
-    return Column(
-      children: [
-        const Divider(height: 20),
-        ListTile(
-          contentPadding: EdgeInsets.zero,
-          leading: Icon(icon, color: _plum),
-          title: Text(
-            title,
-            style: GoogleFonts.dmSans(fontSize: 15, color: _plum),
-          ),
-          trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: _rose),
-          onTap: onTap,
-        ),
-      ],
-    );
-  }
+  Widget _profile() => ProfileScreen(
+    isLoggedIn: _isLoggedIn,
+    isLoggingOut: _loggingOut,
+    onLogin: () {
+      context.push('/login').then((_) {
+        if (mounted) _loadSession();
+      });
+    },
+    onLogout: _logout,
+    onAppointments: () => setState(() => _tab = 3),
+    onSupport: () => _showComingSoon('Hỗ trợ và liên hệ'),
+  );
 
   Widget _luxuryNavItem(
     int index,
@@ -1378,7 +1311,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       backgroundColor: _canvas,
-      appBar: AppBar(
+      appBar: _tab == 4
+          ? null
+          : AppBar(
         backgroundColor: _canvas,
         elevation: 0,
         scrolledUnderElevation: 0,
@@ -1389,7 +1324,7 @@ class _HomeScreenState extends State<HomeScreen> {
             fontSize: 35,
             fontWeight: FontWeight.w600,
             color: _ink,
-          ),
+                ),
         ),
         actions: [
           // LUMI V4.1: Context-aware action for each tab.

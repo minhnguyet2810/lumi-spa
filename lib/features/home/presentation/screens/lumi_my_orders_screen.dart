@@ -59,6 +59,7 @@ class _LumiMyOrdersScreenState extends State<LumiMyOrdersScreen> {
   final List<String> statuses = [
     'Tất cả',
     'Chờ xác nhận',
+    'Đã xác nhận',
     'Đang giao',
     'Đã giao',
     'Đã hủy',
@@ -82,6 +83,9 @@ class _LumiMyOrdersScreenState extends State<LumiMyOrdersScreen> {
     switch (status) {
       case 'Đã giao':
         return Colors.green.shade700;
+      case 'Đã xác nhận':
+      case 'Đã duyệt':
+        return const Color(0xFF2563EB);
       case 'Đã hủy':
         return Colors.red.shade700;
       case 'Đang giao':

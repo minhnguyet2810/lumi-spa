@@ -10,7 +10,8 @@ class LumiOrderStore {
         return 'Chờ xác nhận';
       case 'confirmed':
       case 'processing':
-        return 'Chờ xác nhận';
+      case 'approved':
+        return 'Đã xác nhận';
       case 'shipping':
       case 'delivering':
         return 'Đang giao';

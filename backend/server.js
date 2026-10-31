@@ -693,6 +693,133 @@ app.post('/api/admin-orders/:id/status', handleAdminOrderStatus);
 app.patch('/api/admin-orders/:id/status', handleAdminOrderStatus);
 app.post('/api/orders/:id/notify-status', handleAdminOrderStatus);
 
+// ==========================================
+// ADMIN USER APIS (Qu?n lý Thông tin Ngu?i dùng)
+// ==========================================
+
+// GET /api/admin-users
+// L?y danh sách toàn b? ngu?i dùng kèm th?ng kê s? l?ch h?n và don hàng
+app.get('/api/admin-users', async (req, res) => {
+  try {
+    const { q, role } = req.query;
+    let users = [];
+
+    if (db.hasCredentials) {
+      const snap = await db.collection('users').get();
+      users = snap.docs.map(doc => ({
+        id: doc.id,
+        ...serialize(doc.data()),
+      }));
+
+      const [bookingsSnap, ordersSnap] = await Promise.all([
+        db.collection('bookings').get(),
+        db.collection('orders').get(),
+      ]);
+
+      const bookings = bookingsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      const orders = ordersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+      users = users.map(user => {
+        const uid = user.id || user.uid;
+        const userBookings = bookings.filter(b => b.userId === uid);
+        const userOrders = orders.filter(o => o.userId === uid);
+        const totalSpent = userOrders
+          .filter(o => !['cancelled', 'rejected'].includes((o.status || '').toLowerCase()))
+          .reduce((sum, o) => sum + (Number(o.total) || 0), 0);
+
+        return {
+          ...user,
+          bookingCount: userBookings.length,
+          orderCount: userOrders.length,
+          totalSpent,
+        };
+      });
+    }
+
+    users.sort((a, b) => {
+      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return dateB - dateA;
+    });
+
+    const stats = {
+      totalUsers: users.length,
+      activeUsers: users.filter(u => (u.bookingCount > 0 || u.orderCount > 0)).length,
+      adminCount: users.filter(u => (u.role || '').toLowerCase() === 'admin').length,
+      customerCount: users.filter(u => (u.role || '').toLowerCase() !== 'admin').length,
+    };
+
+    if (role && role !== 'all') {
+      const r = role.toLowerCase();
+      if (r === 'admin') {
+        users = users.filter(u => (u.role || '').toLowerCase() === 'admin');
+      } else if (r === 'user') {
+        users = users.filter(u => (u.role || '').toLowerCase() !== 'admin');
+      }
+    }
+
+    if (q && q.trim()) {
+      const term = q.trim().toLowerCase();
+      users = users.filter(u => {
+        const nameMatch = (u.displayName || u.name || '').toLowerCase().includes(term);
+        const emailMatch = (u.email || '').toLowerCase().includes(term);
+        const phoneMatch = (u.phone || u.phoneNumber || '').toLowerCase().includes(term);
+        const idMatch = (u.id || u.uid || '').toLowerCase().includes(term);
+        return nameMatch || emailMatch || phoneMatch || idMatch;
+      });
+    }
+
+    return res.json({
+      success: true,
+      count: users.length,
+      stats,
+      data: users,
+    });
+  } catch (err) {
+    console.error('Error fetching admin users:', err);
+    return res.status(500).json({ success: false, message: 'Không th? t?i danh sách ngu?i dùng.' });
+  }
+});
+
+// POST /api/admin-dev/clear-test-data
+// D?n d?p don hàng và l?ch h?n th? nghi?m (reset test state)
+app.post('/api/admin-dev/clear-test-data', async (req, res) => {
+  try {
+    const { target = 'all' } = req.body || {};
+    let deletedOrders = 0;
+    let deletedBookings = 0;
+
+    if (db.hasCredentials) {
+      if (target === 'all' || target === 'orders') {
+        const ordersSnap = await db.collection('orders').get();
+        for (const doc of ordersSnap.docs) {
+          await doc.ref.delete();
+          deletedOrders++;
+        }
+      }
+
+      if (target === 'all' || target === 'bookings') {
+        const bookingsSnap = await db.collection('bookings').get();
+        for (const doc of bookingsSnap.docs) {
+          await doc.ref.delete();
+          deletedBookings++;
+        }
+      }
+    }
+
+    return res.json({
+      success: true,
+      message: `Ðã d?n d?p thành công ${deletedOrders} don hàng và ${deletedBookings} l?ch h?n test!`,
+      deletedOrders,
+      deletedBookings,
+    });
+  } catch (err) {
+    console.error('Error clearing test data:', err);
+    return res.status(500).json({ success: false, message: 'L?i khi d?n d?p d? li?u test: ' + err.message });
+  }
+});
+
+
 // Start server only when run directly.
 if (require.main === module) {
   app.listen(PORT, '0.0.0.0', () => {

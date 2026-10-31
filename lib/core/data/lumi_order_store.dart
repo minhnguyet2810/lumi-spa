@@ -1,32 +1,8 @@
 import 'dart:convert';
 
 class LumiOrderStore {
-  static final List<Map<String, String>> orders = [
-    {
-      'id': 'LUMI-123456',
-      'date': '29/10/2026',
-      'total': '450.000 đ',
-      'status': 'Chờ xác nhận',
-      'customerName': 'Khách hàng LUMI',
-      'phone': '0912345678',
-      'address': 'Số 123 Đường Nguyễn Trãi, Quận 1, TP. HCM',
-      'note': 'Giao trong giờ hành chính',
-      'paymentMethod': 'Thanh toán khi nhận hàng',
-      'items': '[]',
-    },
-    {
-      'id': 'LUMI-987654',
-      'date': '20/10/2026',
-      'total': '680.000 đ',
-      'status': 'Đã giao',
-      'customerName': 'Khách hàng LUMI',
-      'phone': '0987654321',
-      'address': 'Số 45 Lê Lợi, Quận 1, TP. HCM',
-      'note': '',
-      'paymentMethod': 'Thanh toán khi nhận hàng',
-      'items': '[]',
-    },
-  ];
+  /// Danh sách đơn hàng cục bộ - khởi tạo rỗng để người dùng chỉ thấy đơn thực tế
+  static final List<Map<String, String>> orders = [];
 
   static String mapStatus(String raw) {
     switch (raw.toLowerCase()) {

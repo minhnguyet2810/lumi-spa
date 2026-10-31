@@ -602,5 +602,6 @@ module.exports = {
   sendBookingCreatedEmail,
   sendBookingConfirmedEmail,
   sendOrderSuccessEmail,
+  sendOrderStatusUpdatedEmail,
 };
 

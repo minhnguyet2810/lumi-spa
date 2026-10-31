@@ -234,5 +234,6 @@ module.exports = {
   sendBookingCreatedPush,
   sendBookingConfirmedPush,
   sendOrderSuccessPush,
+  sendOrderStatusUpdatedPush,
 };
 

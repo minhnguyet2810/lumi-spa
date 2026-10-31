@@ -12,6 +12,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const db = require('./firebase');
+const { FieldValue } = require('firebase-admin/firestore');
 const adminRoutes = require('./routes/admin');
 const notificationRoutes = require('./routes/notifications');
 const membershipRoutes = require('./routes/membership');
@@ -694,11 +695,11 @@ app.patch('/api/admin-orders/:id/status', handleAdminOrderStatus);
 app.post('/api/orders/:id/notify-status', handleAdminOrderStatus);
 
 // ==========================================
-// ADMIN USER APIS (Qu?n lý Thông tin Ngu?i dùng)
+// ADMIN USER APIS (Qu?n lï¿½ Thï¿½ng tin Ngu?i dï¿½ng)
 // ==========================================
 
 // GET /api/admin-users
-// L?y danh sách toàn b? ngu?i dùng kèm th?ng kê s? l?ch h?n và don hàng
+// L?y danh sï¿½ch toï¿½n b? ngu?i dï¿½ng kï¿½m th?ng kï¿½ s? l?ch h?n vï¿½ don hï¿½ng
 app.get('/api/admin-users', async (req, res) => {
   try {
     const { q, role } = req.query;
@@ -777,12 +778,12 @@ app.get('/api/admin-users', async (req, res) => {
     });
   } catch (err) {
     console.error('Error fetching admin users:', err);
-    return res.status(500).json({ success: false, message: 'Không th? t?i danh sách ngu?i dùng.' });
+    return res.status(500).json({ success: false, message: 'Khï¿½ng th? t?i danh sï¿½ch ngu?i dï¿½ng.' });
   }
 });
 
 // POST /api/admin-dev/clear-test-data
-// D?n d?p don hàng và l?ch h?n th? nghi?m (reset test state)
+// D?n d?p don hï¿½ng vï¿½ l?ch h?n th? nghi?m (reset test state)
 app.post('/api/admin-dev/clear-test-data', async (req, res) => {
   try {
     const { target = 'all' } = req.body || {};
@@ -809,7 +810,7 @@ app.post('/api/admin-dev/clear-test-data', async (req, res) => {
 
     return res.json({
       success: true,
-      message: `Ðã d?n d?p thành công ${deletedOrders} don hàng và ${deletedBookings} l?ch h?n test!`,
+      message: `ï¿½ï¿½ d?n d?p thï¿½nh cï¿½ng ${deletedOrders} don hï¿½ng vï¿½ ${deletedBookings} l?ch h?n test!`,
       deletedOrders,
       deletedBookings,
     });

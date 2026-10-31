@@ -14,7 +14,8 @@ class LumiCheckoutScreen extends StatefulWidget {
   final List<LumiCartItem> cartItems;
 
   @override
-  State<LumiCheckoutScreen> createState() => _LumiCheckoutScreenState();
+  State<LumiCheckoutScreen> createState() =>
+      _LumiCheckoutScreenState();
 }
 
 class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
@@ -25,6 +26,10 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
   static const blush = Color(0xFFF4E4E8);
   static const blue = Color(0xFFDDECEF);
 
+  static const bankName = 'Vietinbank';
+  static const bankAccount = '104882453416';
+  static const bankOwner = 'Nha Doan LUMI SPA';
+
   final _formKey = GlobalKey<FormState>();
 
   final _nameController = TextEditingController();
@@ -33,6 +38,7 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
   final _noteController = TextEditingController();
 
   bool _isSubmitting = false;
+  String _paymentMethod = 'cod';
 
   num get subtotal {
     return widget.cartItems.fold<num>(
@@ -71,6 +77,26 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
     return item.product['name']?.toString() ?? 'Sản phẩm LUMI';
   }
 
+  String? _getProductImage(LumiCartItem item) {
+    final imageUrl = item.product['imageUrl']?.toString();
+
+    if (imageUrl != null && imageUrl.trim().isNotEmpty) {
+      return imageUrl.trim();
+    }
+
+    final imageUrls = item.product['imageUrls'];
+
+    if (imageUrls is List && imageUrls.isNotEmpty) {
+      final first = imageUrls.first;
+
+      if (first is String && first.trim().isNotEmpty) {
+        return first.trim();
+      }
+    }
+
+    return null;
+  }
+
   InputDecoration _inputDecoration({
     required String label,
     required IconData icon,
@@ -79,10 +105,15 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
     return InputDecoration(
       labelText: label,
       hintText: hint,
-      prefixIcon: Icon(icon, color: rose),
+      prefixIcon: Icon(
+        icon,
+        color: rose,
+      ),
       filled: true,
       fillColor: Colors.white,
-      labelStyle: GoogleFonts.dmSans(color: muted),
+      labelStyle: GoogleFonts.dmSans(
+        color: muted,
+      ),
       hintStyle: GoogleFonts.dmSans(
         color: muted.withValues(alpha: .65),
       ),
@@ -133,26 +164,6 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
     );
   }
 
-  String? _getProductImage(LumiCartItem item) {
-    final imageUrl = item.product['imageUrl']?.toString();
-
-    if (imageUrl != null && imageUrl.trim().isNotEmpty) {
-      return imageUrl.trim();
-    }
-
-    final imageUrls = item.product['imageUrls'];
-
-    if (imageUrls is List && imageUrls.isNotEmpty) {
-      final first = imageUrls.first;
-
-      if (first is String && first.trim().isNotEmpty) {
-        return first.trim();
-      }
-    }
-
-    return null;
-  }
-
   Widget _productItem(LumiCartItem item) {
     final imageUrl = _getProductImage(item);
 
@@ -199,7 +210,8 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
           const SizedBox(width: 12),
           Expanded(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment:
+                  CrossAxisAlignment.start,
               children: [
                 Text(
                   _productName(item),
@@ -244,7 +256,8 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment:
+            MainAxisAlignment.spaceBetween,
         children: [
           Text(
             title,
@@ -271,12 +284,185 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
     );
   }
 
+  Widget _paymentOption({
+    required String value,
+    required String title,
+    required String subtitle,
+    required IconData icon,
+  }) {
+    final isSelected = _paymentMethod == value;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(
+          color: isSelected ? rose : blush,
+          width: isSelected ? 1.5 : 1,
+        ),
+      ),
+      child: RadioListTile<String>(
+        value: value,
+        title: Text(
+          title,
+          style: GoogleFonts.dmSans(
+            color: ink,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        subtitle: Text(
+          subtitle,
+          style: GoogleFonts.dmSans(
+            color: muted,
+            fontSize: 13,
+          ),
+        ),
+        secondary: Icon(
+          icon,
+          color: isSelected ? rose : muted,
+          size: 28,
+        ),
+        activeColor: rose,
+        selected: isSelected,
+        enabled: !_isSubmitting,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: 4,
+        ),
+      ),
+    );
+  }
+
+  Widget _bankInfoRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 9),
+      child: Row(
+        crossAxisAlignment:
+            CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 105,
+            child: Text(
+              label,
+              style: GoogleFonts.dmSans(
+                color: muted,
+                fontSize: 13,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: GoogleFonts.dmSans(
+                color: ink,
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _bankTransferInfo() {
+    if (_paymentMethod != 'bank') {
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(top: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: blue,
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: Column(
+        crossAxisAlignment:
+            CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Container(
+              width: 210,
+              height: 210,
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Image.asset(
+                'assets/images/lumi_bank_qr.jpg',
+                fit: BoxFit.contain,
+                errorBuilder: (_, _, _) {
+                  return const Center(
+                    child: Icon(
+                      Icons.qr_code_2,
+                      color: rose,
+                      size: 80,
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Thông tin chuyển khoản',
+            style: GoogleFonts.dmSans(
+              color: ink,
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 12),
+          _bankInfoRow('Ngân hàng', bankName),
+          _bankInfoRow('Số tài khoản', bankAccount),
+          _bankInfoRow('Chủ tài khoản', bankOwner),
+          _bankInfoRow(
+            'Số tiền',
+            _money(grandTotal),
+          ),
+          _bankInfoRow(
+            'Nội dung',
+            'LUMI THANH TOAN',
+          ),
+          const SizedBox(height: 5),
+          Text(
+            'Sau khi chuyển khoản, vui lòng giữ lại ảnh '
+            'chụp giao dịch để đối chiếu khi cần.',
+            style: GoogleFonts.dmSans(
+              color: muted,
+              fontSize: 12,
+              height: 1.4,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String? _validatePhone(String? value) {
+    final phone = value?.trim() ?? '';
+
+    if (phone.isEmpty) {
+      return 'Vui lòng nhập số điện thoại';
+    }
+
+    if (!RegExp(r'^0\d{9}$').hasMatch(phone)) {
+      return 'Số điện thoại phải gồm 10 số và bắt đầu bằng 0';
+    }
+
+    return null;
+  }
+
   Future<void> _placeOrder() async {
     if (_isSubmitting) {
       return;
     }
 
-    final isValid = _formKey.currentState?.validate() ?? false;
+    final isValid =
+        _formKey.currentState?.validate() ?? false;
 
     if (!isValid) {
       return;
@@ -325,6 +511,9 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
       address: _addressController.text.trim(),
       note: _noteController.text.trim(),
       items: items,
+      paymentMethod: _paymentMethod == 'bank'
+          ? 'Chuyển khoản ngân hàng'
+          : 'Thanh toán khi nhận hàng',
     );
 
     LumiShopCatalog.clearCart();
@@ -338,23 +527,12 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
         builder: (_) => LumiOrderSuccessScreen(
           orderId: orderId,
           total: orderTotal,
+          paymentMethod: _paymentMethod == 'bank'
+              ? 'Chuyển khoản ngân hàng'
+              : 'Thanh toán khi nhận hàng',
         ),
       ),
     );
-  }
-
-  String? _validatePhone(String? value) {
-    final phone = value?.trim() ?? '';
-
-    if (phone.isEmpty) {
-      return 'Vui lòng nhập số điện thoại';
-    }
-
-    if (!RegExp(r'^0\d{9}$').hasMatch(phone)) {
-      return 'Số điện thoại phải gồm 10 số và bắt đầu bằng 0';
-    }
-
-    return null;
   }
 
   Widget _submitButton() {
@@ -362,7 +540,9 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
       width: double.infinity,
       height: 56,
       child: FilledButton.icon(
-        onPressed: _isSubmitting ? null : _placeOrder,
+        onPressed: _isSubmitting
+            ? null
+            : _placeOrder,
         icon: _isSubmitting
             ? const SizedBox(
                 width: 20,
@@ -372,7 +552,9 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
                   color: Colors.white,
                 ),
               )
-            : const Icon(Icons.check_circle_outline),
+            : const Icon(
+                Icons.check_circle_outline,
+              ),
         label: Text(
           _isSubmitting
               ? 'ĐANG XỬ LÝ...'
@@ -384,7 +566,8 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
         ),
         style: FilledButton.styleFrom(
           backgroundColor: rose,
-          disabledBackgroundColor: rose.withValues(alpha: .65),
+          disabledBackgroundColor:
+              rose.withValues(alpha: .65),
           foregroundColor: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
@@ -436,7 +619,8 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
                   const SizedBox(height: 14),
                   TextFormField(
                     controller: _nameController,
-                    textCapitalization: TextCapitalization.words,
+                    textCapitalization:
+                        TextCapitalization.words,
                     decoration: _inputDecoration(
                       label: 'Họ và tên',
                       icon: Icons.person_outline,
@@ -511,51 +695,40 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
                     Icons.payment_outlined,
                   ),
                   const SizedBox(height: 14),
-                  Container(
-                    padding: const EdgeInsets.all(15),
-                    decoration: BoxDecoration(
-                      color: blush.withValues(alpha: .55),
-                      borderRadius: BorderRadius.circular(15),
-                      border: Border.all(color: rose),
-                    ),
-                    child: Row(
+                  RadioGroup<String>(
+                    groupValue: _paymentMethod,
+                    onChanged: _isSubmitting
+                        ? (_) {}
+                        : (selectedValue) {
+                            if (selectedValue == null) {
+                              return;
+                            }
+
+                            setState(() {
+                              _paymentMethod = selectedValue;
+                            });
+                          },
+                    child: Column(
                       children: [
-                        const Icon(
-                          Icons.local_atm_outlined,
-                          color: rose,
-                          size: 28,
+                        _paymentOption(
+                          value: 'cod',
+                          title: 'Thanh toán khi nhận hàng',
+                          subtitle:
+                              'COD - trả tiền mặt khi nhận sản phẩm',
+                          icon: Icons.local_atm_outlined,
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment:
-                                CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Thanh toán khi nhận hàng',
-                                style: GoogleFonts.dmSans(
-                                  color: ink,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'COD - trả tiền mặt khi nhận sản phẩm',
-                                style: GoogleFonts.dmSans(
-                                  color: muted,
-                                  fontSize: 13,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const Icon(
-                          Icons.radio_button_checked,
-                          color: rose,
+                        const SizedBox(height: 12),
+                        _paymentOption(
+                          value: 'bank',
+                          title: 'Chuyển khoản ngân hàng',
+                          subtitle:
+                              'Chuyển khoản trước khi nhận hàng',
+                          icon: Icons.account_balance_outlined,
                         ),
                       ],
                     ),
                   ),
+                  _bankTransferInfo(),
                   const SizedBox(height: 26),
                   _sectionTitle(
                     'Tóm tắt đơn hàng',
@@ -572,9 +745,14 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
                     child: Column(
                       children: [
                         _priceRow('Tạm tính', subtotal),
-                        _priceRow('Phí giao hàng', shippingFee),
+                        _priceRow(
+                          'Phí giao hàng',
+                          shippingFee,
+                        ),
                         const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 7),
+                          padding: EdgeInsets.symmetric(
+                            vertical: 7,
+                          ),
                           child: Divider(),
                         ),
                         _priceRow(

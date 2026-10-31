@@ -8,10 +8,12 @@ class LumiOrderSuccessScreen extends StatelessWidget {
     super.key,
     required this.orderId,
     required this.total,
+    required this.paymentMethod,
   });
 
   final String orderId;
   final num total;
+  final String paymentMethod;
 
   static const rose = Color(0xFFB56F86);
   static const ink = Color(0xFF503B42);
@@ -134,7 +136,7 @@ class LumiOrderSuccessScreen extends StatelessWidget {
                       const Divider(height: 25),
                       _infoRow(
                         'Trạng thái',
-                        'Chờ xác nhận',
+                         paymentMethod,
                       ),
                     ],
                   ),

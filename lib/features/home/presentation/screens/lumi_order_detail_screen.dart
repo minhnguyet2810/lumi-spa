@@ -5,7 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/data/lumi_order_store.dart';
 
-class LumiOrderDetailScreen extends StatelessWidget {
+class LumiOrderDetailScreen extends StatefulWidget {
   const LumiOrderDetailScreen({
     super.key,
     required this.order,
@@ -13,6 +13,13 @@ class LumiOrderDetailScreen extends StatelessWidget {
 
   final Map<String, String> order;
 
+  @override
+  State<LumiOrderDetailScreen> createState() =>
+      _LumiOrderDetailScreenState();
+}
+
+class _LumiOrderDetailScreenState
+    extends State<LumiOrderDetailScreen> {
   static const rose = Color(0xFFB56F86);
   static const ink = Color(0xFF503B42);
   static const muted = Color(0xFF78676B);
@@ -20,8 +27,34 @@ class LumiOrderDetailScreen extends StatelessWidget {
   static const blush = Color(0xFFF4E4E8);
   static const blue = Color(0xFFDDECEF);
 
-  List<Map<String, dynamic>> _items() {
-    final rawItems = order['items'] ?? '[]';
+  late String currentStatus;
+
+  @override
+  void initState() {
+    super.initState();
+    currentStatus =
+        widget.order['status'] ?? 'Chờ xác nhận';
+  }
+
+  String _money(num value) {
+    final digits = value.toInt().toString();
+
+    return '${digits.replaceAllMapped(
+      RegExp(r'\B(?=(\d{3})+(?!\d))'),
+      (match) => '.',
+    )} đ';
+  }
+
+  num _toNumber(dynamic value) {
+    if (value is num) {
+      return value;
+    }
+
+    return num.tryParse(value?.toString() ?? '') ?? 0;
+  }
+
+  List<Map<String, dynamic>> _orderItems() {
+    final rawItems = widget.order['items'] ?? '[]';
 
     try {
       final decoded = jsonDecode(rawItems);
@@ -39,19 +72,6 @@ class LumiOrderDetailScreen extends StatelessWidget {
     return [];
   }
 
-  String _money(dynamic value) {
-    final number = value is num
-        ? value
-        : num.tryParse(value?.toString() ?? '') ?? 0;
-
-    final digits = number.toInt().toString();
-
-    return '${digits.replaceAllMapped(
-      RegExp(r'\B(?=(\d{3})+(?!\d))'),
-      (match) => '.',
-    )} đ';
-  }
-
   Color _statusColor(String status) {
     switch (status) {
       case 'Đã giao':
@@ -65,13 +85,41 @@ class LumiOrderDetailScreen extends StatelessWidget {
     }
   }
 
-  Widget _infoRow(String label, String value) {
+  Widget _sectionTitle(
+    String title,
+    IconData icon,
+  ) {
+    return Row(
+      children: [
+        Icon(
+          icon,
+          color: rose,
+          size: 21,
+        ),
+        const SizedBox(width: 8),
+        Text(
+          title,
+          style: GoogleFonts.dmSans(
+            color: ink,
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _infoRow(
+    String label,
+    String value,
+  ) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 7),
+      padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
+          SizedBox(
+            width: 125,
             child: Text(
               label,
               style: GoogleFonts.dmSans(
@@ -87,7 +135,7 @@ class LumiOrderDetailScreen extends StatelessWidget {
               style: GoogleFonts.dmSans(
                 color: ink,
                 fontSize: 14,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
@@ -96,11 +144,9 @@ class LumiOrderDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _section({
-    required String title,
-    required IconData icon,
-    required Widget child,
-  }) {
+  Widget _orderSummary() {
+    final statusColor = _statusColor(currentStatus);
+
     return Container(
       padding: const EdgeInsets.all(17),
       decoration: BoxDecoration(
@@ -109,58 +155,138 @@ class LumiOrderDetailScreen extends StatelessWidget {
         border: Border.all(color: blush),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(
-                icon,
+              const Icon(
+                Icons.receipt_long_outlined,
                 color: rose,
-                size: 21,
+                size: 25,
               ),
-              const SizedBox(width: 8),
-              Text(
-                title,
-                style: GoogleFonts.dmSans(
-                  color: ink,
-                  fontSize: 17,
-                  fontWeight: FontWeight.w700,
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  widget.order['id'] ?? '',
+                  style: GoogleFonts.dmSans(
+                    color: ink,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: statusColor.withValues(alpha: .12),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  currentStatus,
+                  style: GoogleFonts.dmSans(
+                    color: statusColor,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ],
           ),
-          const Divider(height: 25),
-          child,
+          const Divider(height: 28),
+          _infoRow(
+            'Ngày đặt',
+            widget.order['date'] ?? '',
+          ),
+          _infoRow(
+            'Tổng tiền',
+            widget.order['total'] ?? '',
+          ),
+          _infoRow(
+            'Thanh toán',
+            widget.order['paymentMethod'] ??
+                'Thanh toán khi nhận hàng',
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _customerInformation() {
+    return Container(
+      padding: const EdgeInsets.all(17),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: blush),
+      ),
+      child: Column(
+        children: [
+          _infoRow(
+            'Người nhận',
+            widget.order['customerName'] ?? '',
+          ),
+          _infoRow(
+            'Số điện thoại',
+            widget.order['phone'] ?? '',
+          ),
+          _infoRow(
+            'Địa chỉ',
+            widget.order['address'] ?? '',
+          ),
+          if ((widget.order['note'] ?? '').trim().isNotEmpty)
+            _infoRow(
+              'Ghi chú',
+              widget.order['note'] ?? '',
+            ),
         ],
       ),
     );
   }
 
   Widget _productCard(Map<String, dynamic> item) {
-    final name = item['name']?.toString() ?? 'Sản phẩm LUMI';
-    final quantity = item['quantity'] ?? 1;
-    final price = item['price'] ?? 0;
+    final name = item['name']?.toString() ??
+        'Sản phẩm LUMI';
+
+    final quantity = _toNumber(
+      item['quantity'],
+    ).toInt();
+
+    final price = _toNumber(
+      item['price'],
+    );
+
+    final total = price * quantity;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(13),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: blush.withValues(alpha: .45),
-        borderRadius: BorderRadius.circular(13),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: blush),
       ),
       child: Row(
         children: [
-          const CircleAvatar(
-            backgroundColor: blue,
-            child: Icon(
+          Container(
+            width: 52,
+            height: 52,
+            decoration: BoxDecoration(
+              color: blue,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(
               Icons.spa_outlined,
               color: rose,
+              size: 27,
             ),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment:
+                  CrossAxisAlignment.start,
               children: [
                 Text(
                   name,
@@ -180,15 +306,23 @@ class LumiOrderDetailScreen extends StatelessWidget {
                     fontSize: 13,
                   ),
                 ),
+                const SizedBox(height: 3),
+                Text(
+                  'Đơn giá: ${_money(price)}',
+                  style: GoogleFonts.dmSans(
+                    color: muted,
+                    fontSize: 12,
+                  ),
+                ),
               ],
             ),
           ),
           const SizedBox(width: 8),
           Text(
-            _money(price),
+            _money(total),
             style: GoogleFonts.dmSans(
               color: rose,
-              fontSize: 13,
+              fontSize: 14,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -197,46 +331,63 @@ class LumiOrderDetailScreen extends StatelessWidget {
     );
   }
 
-  Future<void> _confirmCancel(BuildContext context) async {
+  Widget _productsSection() {
+    final items = _orderItems();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _sectionTitle(
+          'Sản phẩm trong đơn',
+          Icons.shopping_bag_outlined,
+        ),
+        const SizedBox(height: 12),
+        if (items.isEmpty)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: blush),
+            ),
+            child: Text(
+              'Thông tin sản phẩm chưa được cập nhật.',
+              style: GoogleFonts.dmSans(
+                color: muted,
+                fontSize: 14,
+              ),
+            ),
+          )
+        else
+          ...items.map(_productCard),
+      ],
+    );
+  }
+
+  Future<void> _cancelOrder() async {
     final shouldCancel = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          backgroundColor: cream,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18),
-          ),
-          title: Text(
-            'Hủy đơn hàng?',
-            style: GoogleFonts.dmSans(
-              color: ink,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          content: Text(
+          title: const Text('Hủy đơn hàng?'),
+          content: const Text(
             'Bạn có chắc chắn muốn hủy đơn hàng này không?',
-            style: GoogleFonts.dmSans(
-              color: muted,
-              height: 1.5,
-            ),
           ),
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(dialogContext).pop(false);
+                Navigator.pop(dialogContext, false);
               },
-              child: Text(
-                'Không',
-                style: GoogleFonts.dmSans(color: muted),
-              ),
+              child: const Text('Không'),
             ),
             FilledButton(
-              onPressed: () {
-                Navigator.of(dialogContext).pop(true);
-              },
               style: FilledButton.styleFrom(
-                backgroundColor: Colors.red.shade700,
+                backgroundColor: Colors.redAccent,
               ),
+              onPressed: () {
+                Navigator.pop(dialogContext, true);
+              },
               child: const Text('Hủy đơn'),
             ),
           ],
@@ -244,28 +395,57 @@ class LumiOrderDetailScreen extends StatelessWidget {
       },
     );
 
-    if (shouldCancel != true || !context.mounted) {
+    if (shouldCancel != true || !mounted) {
       return;
     }
 
-    LumiOrderStore.cancelOrder(order['id'] ?? '');
+    final orderId = widget.order['id'] ?? '';
+
+    LumiOrderStore.cancelOrder(orderId);
+
+    setState(() {
+      currentStatus = 'Đã hủy';
+    });
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Đã hủy đơn hàng thành công.'),
+        content: Text('Đơn hàng đã được hủy'),
       ),
     );
+  }
 
-    Navigator.of(context).pop();
+  Widget _cancelButton() {
+    final canCancel =
+        currentStatus == 'Chờ xác nhận';
+
+    if (!canCancel) {
+      return const SizedBox.shrink();
+    }
+
+    return SizedBox(
+      width: double.infinity,
+      height: 52,
+      child: OutlinedButton.icon(
+        onPressed: _cancelOrder,
+        icon: const Icon(
+          Icons.cancel_outlined,
+        ),
+        label: const Text('HỦY ĐƠN HÀNG'),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: Colors.redAccent,
+          side: const BorderSide(
+            color: Colors.redAccent,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final status = order['status'] ?? 'Chờ xác nhận';
-    final statusColor = _statusColor(status);
-    final canCancel = status == 'Chờ xác nhận';
-    final items = _items();
-
     return Scaffold(
       backgroundColor: cream,
       appBar: AppBar(
@@ -281,160 +461,57 @@ class LumiOrderDetailScreen extends StatelessWidget {
         ),
       ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 15, 20, 30),
+        padding: const EdgeInsets.fromLTRB(
+          20,
+          10,
+          20,
+          35,
+        ),
         children: [
+          _orderSummary(),
+          const SizedBox(height: 20),
+          _sectionTitle(
+            'Thông tin nhận hàng',
+            Icons.location_on_outlined,
+          ),
+          const SizedBox(height: 12),
+          _customerInformation(),
+          const SizedBox(height: 20),
+          _productsSection(),
+          const SizedBox(height: 22),
           Container(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: blue,
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(17),
             ),
-            child: Column(
+            child: Row(
+              crossAxisAlignment:
+                  CrossAxisAlignment.start,
               children: [
-                Icon(
-                  status == 'Đã hủy'
-                      ? Icons.cancel_outlined
-                      : Icons.local_shipping_outlined,
-                  color: statusColor,
-                  size: 42,
+                const Icon(
+                  Icons.info_outline,
+                  color: rose,
                 ),
-                const SizedBox(height: 10),
-                Text(
-                  status,
-                  style: GoogleFonts.dmSans(
-                    color: statusColor,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 5),
-                Text(
-                  'Trạng thái đơn hàng hiện tại',
-                  style: GoogleFonts.dmSans(
-                    color: muted,
-                    fontSize: 13,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-          _section(
-            title: 'Thông tin đơn hàng',
-            icon: Icons.receipt_long_outlined,
-            child: Column(
-              children: [
-                _infoRow(
-                  'Mã đơn hàng',
-                  order['id'] ?? '',
-                ),
-                _infoRow(
-                  'Ngày đặt',
-                  order['date'] ?? '',
-                ),
-                _infoRow(
-                  'Phương thức thanh toán',
-                  'COD',
-                ),
-                _infoRow(
-                  'Tổng tiền',
-                  order['total'] ?? '',
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 15),
-          _section(
-            title: 'Thông tin người nhận',
-            icon: Icons.person_outline,
-            child: Column(
-              children: [
-                _infoRow(
-                  'Họ và tên',
-                  order['customerName'] ?? '',
-                ),
-                _infoRow(
-                  'Số điện thoại',
-                  order['phone'] ?? '',
-                ),
-                _infoRow(
-                  'Địa chỉ',
-                  order['address'] ?? '',
-                ),
-                _infoRow(
-                  'Ghi chú',
-                  order['note'] ?? '',
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 15),
-          _section(
-            title: 'Sản phẩm',
-            icon: Icons.shopping_bag_outlined,
-            child: items.isEmpty
-                ? Text(
-                    'Chưa có thông tin sản phẩm.',
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    currentStatus == 'Đã hủy'
+                        ? 'Đơn hàng này đã được hủy.'
+                        : 'LUMI sẽ liên hệ với bạn để xác nhận '
+                          'đơn hàng trong thời gian sớm nhất.',
                     style: GoogleFonts.dmSans(
-                      color: muted,
-                      fontSize: 14,
+                      color: ink,
+                      fontSize: 13,
+                      height: 1.5,
                     ),
-                  )
-                : Column(
-                    children: items
-                        .map(_productCard)
-                        .toList(),
-                  ),
-          ),
-          if (canCancel) ...[
-            const SizedBox(height: 25),
-            SizedBox(
-              width: double.infinity,
-              height: 52,
-              child: OutlinedButton(
-                onPressed: () => _confirmCancel(context),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.red.shade700,
-                  side: BorderSide(
-                    color: Colors.red.shade300,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
                   ),
                 ),
-                child: const Text('HỦY ĐƠN HÀNG'),
-              ),
+              ],
             ),
-          ],
-          if (status == 'Đã hủy') ...[
-            const SizedBox(height: 20),
-            Container(
-              padding: const EdgeInsets.all(15),
-              decoration: BoxDecoration(
-                color: Colors.red.shade50,
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.info_outline,
-                    color: Colors.red.shade700,
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      'Đơn hàng này đã được hủy và không thể tiếp tục xử lý.',
-                      style: GoogleFonts.dmSans(
-                        color: Colors.red.shade700,
-                        fontSize: 13,
-                        height: 1.4,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+          ),
+          const SizedBox(height: 22),
+          _cancelButton(),
         ],
       ),
     );

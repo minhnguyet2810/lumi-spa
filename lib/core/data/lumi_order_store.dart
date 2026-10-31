@@ -11,6 +11,7 @@ class LumiOrderStore {
       'phone': '',
       'address': '',
       'note': '',
+      'paymentMethod': 'Thanh toán khi nhận hàng',
       'items': '[]',
     },
     {
@@ -22,6 +23,7 @@ class LumiOrderStore {
       'phone': '',
       'address': '',
       'note': '',
+      'paymentMethod': 'Thanh toán khi nhận hàng',
       'items': '[]',
     },
   ];
@@ -35,6 +37,7 @@ class LumiOrderStore {
     required String address,
     required String note,
     required List<Map<String, dynamic>> items,
+    required String paymentMethod,
     String status = 'Chờ xác nhận',
   }) {
     orders.insert(0, {
@@ -46,6 +49,7 @@ class LumiOrderStore {
       'phone': phone,
       'address': address,
       'note': note,
+      'paymentMethod': paymentMethod,
       'items': jsonEncode(items),
     });
   }

@@ -165,7 +165,10 @@ class BookingItem {
       case 'pending':
         return 'Chờ xác nhận';
       case 'confirmed':
-        return 'Đã xác nhận';
+      case 'approved':
+        return 'Đã duyệt';
+      case 'rejected':
+        return 'Đã từ chối';
       case 'completed':
         return 'Đã hoàn thành';
       case 'cancelled':

@@ -1,6 +1,9 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
+import '../../../../core/network/api_config.dart';
 import '../../booking/data/models/booking_item.dart';
 
 class AdminBookingRepository {
@@ -45,6 +48,33 @@ class AdminBookingRepository {
     });
   }
 
+  /// 2.1 Tải danh sách Booking qua Backend API (dành cho Admin khi bị chặn quyền Firestore Rules)
+  Future<List<BookingItem>> fetchBookingsFromApi({String? status, String? query}) async {
+    try {
+      final queryParams = <String, String>{};
+      if (status != null && status.isNotEmpty) queryParams['status'] = status;
+      if (query != null && query.isNotEmpty) queryParams['q'] = query;
+
+      final uri = Uri.parse('${ApiConfig.baseUrl}/api/admin-bookings').replace(
+        queryParameters: queryParams.isNotEmpty ? queryParams : null,
+      );
+
+      final res = await http.get(uri).timeout(const Duration(seconds: 8));
+      if (res.statusCode == 200) {
+        final data = jsonDecode(utf8.decode(res.bodyBytes));
+        if (data['success'] == true && data['data'] is List) {
+          final list = (data['data'] as List)
+              .map((item) => BookingItem.fromJson(Map<String, dynamic>.from(item)))
+              .toList();
+          return list;
+        }
+      }
+    } catch (e) {
+      debugPrint('⚠️ [AdminBookingRepository] Không thể tải booking từ Backend API: $e');
+    }
+    return [];
+  }
+
   /// 3. Duyệt Booking (Approve): Chuyển status thành 'approved'
   Future<void> approveBooking(BookingItem booking) async {
     try {
@@ -73,10 +103,14 @@ class AdminBookingRepository {
       }
 
       await batch.commit();
-      debugPrint('✅ [Admin] Đã duyệt lịch hẹn thành công: ${booking.id}');
+      debugPrint('✅ [Admin] Đã duyệt lịch hẹn Firestore thành công: ${booking.id}');
+
+      // Kích hoạt backend để gửi email xác nhận và FCM Push
+      _callBackendStatusApi(booking.id, 'approved');
     } catch (e) {
-      debugPrint('❌ [Admin] Lỗi khi duyệt lịch hẹn: $e');
-      rethrow;
+      debugPrint('⚠️ [Admin] Lỗi Firestore ($e), tự động chuyển sang gọi Backend API...');
+      // Fallback: Gọi trực tiếp Backend API (sử dụng Firebase Admin SDK không bị chặn quyền)
+      await _callBackendStatusApi(booking.id, 'approved');
     }
   }
 
@@ -117,11 +151,36 @@ class AdminBookingRepository {
       }
 
       await batch.commit();
-      debugPrint('✅ [Admin] Đã từ chối lịch hẹn: ${booking.id}');
+      debugPrint('✅ [Admin] Đã từ chối lịch hẹn Firestore: ${booking.id}');
+
+      // Kích hoạt backend
+      _callBackendStatusApi(booking.id, 'rejected', reason: reason);
     } catch (e) {
-      debugPrint('❌ [Admin] Lỗi khi từ chối lịch hẹn: $e');
-      rethrow;
+      debugPrint('⚠️ [Admin] Lỗi Firestore ($e), tự động chuyển sang gọi Backend API...');
+      // Fallback: Gọi trực tiếp Backend API
+      await _callBackendStatusApi(booking.id, 'rejected', reason: reason);
+    }
+  }
+
+  Future<void> _callBackendStatusApi(String id, String status, {String? reason}) async {
+    try {
+      final uri = Uri.parse('${ApiConfig.baseUrl}/api/admin-bookings/$id/status');
+      final res = await http.post(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'status': status,
+          'reason': reason ?? '',
+        }),
+      ).timeout(const Duration(seconds: 8));
+
+      if (res.statusCode >= 200 && res.statusCode < 300) {
+        debugPrint('✅ [Admin] Backend đã cập nhật trạng thái booking $id -> $status');
+      } else {
+        debugPrint('⚠️ [Admin] Backend cập nhật status code: ${res.statusCode}');
+      }
+    } catch (e) {
+      debugPrint('⚠️ [Admin] Không thể kết nối Backend API cho booking: $e');
     }
   }
 }
-

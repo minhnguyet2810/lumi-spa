@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/lumi_style.dart';
 import '../../../booking/data/models/booking_item.dart';
@@ -22,10 +23,134 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
   int _selectedFilter = 0; // 0: Chờ duyệt (Pending), 1: Tất cả, 2: Đã duyệt, 3: Đã từ chối
   bool? _forceTableView; // null: auto-detect by screen width
 
+  List<BookingItem>? _fallbackApiBookings;
+  bool _isFetchingFallback = false;
+  bool _fallbackFailed = false;
+
   @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  Future<void> _fetchFallbackApi() async {
+    if (_isFetchingFallback) return;
+    setState(() {
+      _isFetchingFallback = true;
+      _fallbackFailed = false;
+    });
+
+    try {
+      final list = await AdminBookingRepository.instance.fetchBookingsFromApi();
+      if (!mounted) return;
+      setState(() {
+        _fallbackApiBookings = list;
+        _isFetchingFallback = false;
+        _fallbackFailed = list.isEmpty;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _isFetchingFallback = false;
+        _fallbackFailed = true;
+      });
+    }
+  }
+
+  void _showRulesGuideDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: LumiStyle.ivory,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          'Cấu hình Firestore Security Rules',
+          style: GoogleFonts.cormorantGaramond(
+            fontSize: 22,
+            fontWeight: FontWeight.w700,
+            color: LumiStyle.plum,
+          ),
+        ),
+        content: SizedBox(
+          width: 520,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Khi chưa đăng nhập tài khoản Firebase hoặc Security Rules bị khóa, Firestore sẽ báo lỗi [permission-denied].',
+                  style: GoogleFonts.dmSans(fontSize: 13, height: 1.4),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  '👉 Các bước khắc phục:',
+                  style: GoogleFonts.dmSans(fontSize: 13, fontWeight: FontWeight.w700, color: LumiStyle.plum),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  '1. Truy cập Firebase Console -> Firestore Database -> Thẻ Rules.\n'
+                  '2. Dán nội dung quy tắc bên dưới và nhấn "Publish" (Xuất bản).\n'
+                  '3. Hệ thống sẽ ngay lập tức cho phép đọc/ghi real-time!',
+                  style: GoogleFonts.dmSans(fontSize: 12, height: 1.5, color: LumiStyle.muted),
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.04),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.black12),
+                  ),
+                  child: SelectableText(
+                    '''rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /bookings/{id} { allow read, write: if true; }
+    match /orders/{id} { allow read, write: if true; }
+    match /notifications/{id} { allow read, write: if true; }
+    match /{document=**} { allow read, write: if true; }
+  }
+}''',
+                    style: GoogleFonts.spaceMono(fontSize: 11),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Clipboard.setData(const ClipboardData(
+                text: '''rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /bookings/{id} { allow read, write: if true; }
+    match /orders/{id} { allow read, write: if true; }
+    match /notifications/{id} { allow read, write: if true; }
+    match /{document=**} { allow read, write: if true; }
+  }
+}''',
+              ));
+              Navigator.of(ctx).pop();
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Đã sao chép nội dung Rules vào bộ nhớ tạm!')),
+              );
+            },
+            child: Text(
+              'Sao chép Rules',
+              style: GoogleFonts.dmSans(fontWeight: FontWeight.w700, color: LumiStyle.rose),
+            ),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            style: FilledButton.styleFrom(backgroundColor: LumiStyle.plum),
+            child: Text('Đóng', style: GoogleFonts.dmSans()),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _handleApprove(BookingItem booking) async {
@@ -78,6 +203,10 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
           behavior: SnackBarBehavior.floating,
         ),
       );
+      // Refresh API fallback if active
+      if (_fallbackApiBookings != null) {
+        _fetchFallbackApi();
+      }
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -103,11 +232,14 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Đã từ chối đơn #${booking.id.substring(0, 8).toUpperCase()}'),
-          backgroundColor: Colors.red.shade800,
+          content: Text('Đã từ chối đơn #${booking.id.substring(0, 8).toUpperCase()}!'),
+          backgroundColor: Colors.grey.shade800,
           behavior: SnackBarBehavior.floating,
         ),
       );
+      if (_fallbackApiBookings != null) {
+        _fetchFallbackApi();
+      }
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -121,32 +253,95 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
   }
 
   void _showDetail(BookingItem booking) {
-    showDialog<void>(
+    showDialog(
       context: context,
       builder: (_) => AdminBookingDetailDialog(
         booking: booking,
-        onApprove: () => _handleApprove(booking),
-        onReject: () => _handleReject(booking),
+        onApprove: () {
+          Navigator.of(context).pop();
+          _handleApprove(booking);
+        },
+        onReject: () {
+          Navigator.of(context).pop();
+          _handleReject(booking);
+        },
+      ),
+    );
+  }
+
+  Widget _buildFallbackNoticeBanner() {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFFBEB),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFFDE68A)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.cloud_sync_rounded, color: Color(0xFFB45309), size: 22),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Đang đồng bộ dữ liệu qua Backend API (Port 3000)',
+                  style: GoogleFonts.dmSans(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 13,
+                    color: const Color(0xFF92400E),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Firestore Security Rules hiện chặn quyền đọc trực tiếp từ máy khách.',
+                  style: GoogleFonts.dmSans(
+                    fontSize: 12,
+                    color: const Color(0xFFB45309),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          OutlinedButton(
+            onPressed: _showRulesGuideDialog,
+            style: OutlinedButton.styleFrom(
+              side: const BorderSide(color: Color(0xFFB45309)),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              minimumSize: Size.zero,
+            ),
+            child: Text(
+              'Cách sửa Rules',
+              style: GoogleFonts.dmSans(
+                fontWeight: FontWeight.w700,
+                fontSize: 11,
+                color: const Color(0xFF92400E),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.sizeOf(context).width;
-    final isLargeScreen = screenWidth >= 800;
-    final useTableView = _forceTableView ?? isLargeScreen;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final useTableView = _forceTableView ?? (screenWidth >= 768);
 
     return Scaffold(
       backgroundColor: LumiStyle.ivory,
       appBar: widget.showAppBar ? AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: LumiStyle.ivory,
         elevation: 0,
-        surfaceTintColor: Colors.transparent,
+        centerTitle: false,
         title: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(7),
+              padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 color: LumiStyle.blushSurface,
                 borderRadius: BorderRadius.circular(10),
@@ -169,7 +364,6 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
           ],
         ),
         actions: [
-          // Nút chuyển đổi View: Table <-> Cards
           IconButton(
             tooltip: useTableView ? 'Xem dạng Thẻ (Cards)' : 'Xem dạng Bảng (Table)',
             onPressed: () {
@@ -186,41 +380,89 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
         ],
       ) : null,
       body: StreamBuilder<List<BookingItem>>(
-        // Lắng nghe real-time từ Cloud Firestore
         stream: AdminBookingRepository.instance.streamAllBookings(),
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
+          List<BookingItem> allBookings = [];
+          bool isUsingFallback = false;
+
+          if (snapshot.connectionState == ConnectionState.waiting && _fallbackApiBookings == null) {
             return const Center(
               child: CircularProgressIndicator(color: LumiStyle.rose),
             );
           }
 
           if (snapshot.hasError) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.error_outline_rounded, size: 48, color: Colors.red.shade400),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Lỗi kết nối Firestore',
-                      style: GoogleFonts.cormorantGaramond(fontSize: 22, fontWeight: FontWeight.w700),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      snapshot.error.toString(),
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.dmSans(fontSize: 12, color: LumiStyle.muted),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }
+            if (_fallbackApiBookings != null) {
+              allBookings = _fallbackApiBookings!;
+              isUsingFallback = true;
+            } else {
+              // Kích hoạt nạp dự phòng qua Backend API
+              if (!_isFetchingFallback && !_fallbackFailed) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  _fetchFallbackApi();
+                });
+              }
 
-          final allBookings = snapshot.data ?? [];
+              if (_isFetchingFallback) {
+                return Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const CircularProgressIndicator(color: LumiStyle.rose),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Phát hiện lỗi Firestore Rules. Đang chuyển sang nạp qua Backend API...',
+                        style: GoogleFonts.dmSans(fontSize: 13, color: LumiStyle.muted),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.error_outline_rounded, size: 48, color: Colors.red.shade400),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Lỗi kết nối Firestore',
+                        style: GoogleFonts.cormorantGaramond(fontSize: 22, fontWeight: FontWeight.w700),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        snapshot.error.toString(),
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.dmSans(fontSize: 12, color: LumiStyle.muted),
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          FilledButton.icon(
+                            onPressed: _fetchFallbackApi,
+                            style: FilledButton.styleFrom(backgroundColor: LumiStyle.rose),
+                            icon: const Icon(Icons.cloud_download_rounded, size: 16),
+                            label: Text('Tải qua Backend API', style: GoogleFonts.dmSans()),
+                          ),
+                          const SizedBox(width: 12),
+                          OutlinedButton.icon(
+                            onPressed: _showRulesGuideDialog,
+                            icon: const Icon(Icons.security_rounded, size: 16),
+                            label: Text('Cách sửa Rules', style: GoogleFonts.dmSans()),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }
+          } else {
+            allBookings = snapshot.data ?? [];
+          }
 
           // Thống kê nhanh
           final pendingCount = allBookings.where((b) => b.status == 'pending').length;
@@ -252,6 +494,8 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
           return ListView(
             padding: const EdgeInsets.all(20),
             children: [
+              if (isUsingFallback) _buildFallbackNoticeBanner(),
+
               // 1. Thẻ KPI Thống kê nhanh
               _buildKpiSection(
                 pendingCount: pendingCount,
@@ -289,16 +533,14 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
                   alignment: Alignment.center,
                   child: Column(
                     children: [
-                      Icon(Icons.inbox_outlined, size: 54, color: LumiStyle.muted.withValues(alpha: 0.5)),
+                      Icon(Icons.inbox_outlined, size: 54, color: LumiStyle.line),
                       const SizedBox(height: 12),
                       Text(
-                        _selectedFilter == 0
-                            ? 'Hiện không có lịch hẹn nào đang chờ duyệt!'
-                            : 'Không tìm thấy lịch hẹn phù hợp.',
+                        'Không tìm thấy lịch hẹn phù hợp',
                         style: GoogleFonts.cormorantGaramond(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w700,
-                          color: LumiStyle.plum,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: LumiStyle.muted,
                         ),
                       ),
                     ],
@@ -319,52 +561,48 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
   }) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final isNarrow = constraints.maxWidth < 600;
-        final cards = [
-          _kpiCard(
-            title: 'Chờ duyệt',
-            count: pendingCount,
-            icon: Icons.hourglass_top_rounded,
-            color: Colors.amber.shade800,
-            bgColor: Colors.amber.shade50,
-          ),
-          _kpiCard(
-            title: 'Đã duyệt',
-            count: approvedCount,
-            icon: Icons.check_circle_outline_rounded,
-            color: Colors.green.shade800,
-            bgColor: Colors.green.shade50,
-          ),
-          _kpiCard(
-            title: 'Đã từ chối',
-            count: rejectedCount,
-            icon: Icons.cancel_outlined,
-            color: Colors.red.shade800,
-            bgColor: Colors.red.shade50,
-          ),
-          _kpiCard(
-            title: 'Tổng đơn',
-            count: totalCount,
-            icon: Icons.receipt_long_outlined,
-            color: LumiStyle.plum,
-            bgColor: LumiStyle.blushSurface,
-          ),
-        ];
+        final isSmall = constraints.maxWidth < 600;
+        final cardWidth = isSmall
+            ? (constraints.maxWidth - 12) / 2
+            : (constraints.maxWidth - 36) / 4;
 
-        if (isNarrow) {
-          return GridView.count(
-            crossAxisCount: 2,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            crossAxisSpacing: 10,
-            mainAxisSpacing: 10,
-            childAspectRatio: 2.1,
-            children: cards,
-          );
-        }
-
-        return Row(
-          children: cards.map((c) => Expanded(child: Padding(padding: const EdgeInsets.symmetric(horizontal: 5), child: c))).toList(),
+        return Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: [
+            _kpiCard(
+              title: 'Chờ duyệt',
+              count: pendingCount,
+              icon: Icons.hourglass_top_rounded,
+              color: Colors.amber.shade800,
+              bgColor: Colors.amber.shade50,
+              width: cardWidth,
+            ),
+            _kpiCard(
+              title: 'Đã duyệt',
+              count: approvedCount,
+              icon: Icons.check_circle_outline_rounded,
+              color: Colors.green.shade800,
+              bgColor: Colors.green.shade50,
+              width: cardWidth,
+            ),
+            _kpiCard(
+              title: 'Đã từ chối',
+              count: rejectedCount,
+              icon: Icons.cancel_outlined,
+              color: Colors.red.shade800,
+              bgColor: Colors.red.shade50,
+              width: cardWidth,
+            ),
+            _kpiCard(
+              title: 'Tổng số lịch',
+              count: totalCount,
+              icon: Icons.calendar_month_rounded,
+              color: LumiStyle.plum,
+              bgColor: LumiStyle.blushSurface,
+              width: cardWidth,
+            ),
+          ],
         );
       },
     );
@@ -376,13 +614,22 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
     required IconData icon,
     required Color color,
     required Color bgColor,
+    required double width,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      width: width,
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: LumiStyle.line),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
         children: [
@@ -398,7 +645,6 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
                   title,
@@ -408,12 +654,12 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
                     color: LumiStyle.muted,
                   ),
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: 4),
                 Text(
-                  count.toString(),
-                  style: GoogleFonts.dmSans(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w800,
+                  '$count',
+                  style: GoogleFonts.cormorantGaramond(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w700,
                     color: color,
                   ),
                 ),
@@ -429,45 +675,47 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // 1. Search Bar
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: LumiStyle.line),
-          ),
-          child: TextField(
-            controller: _searchController,
-            onChanged: (_) => setState(() {}),
-            style: GoogleFonts.dmSans(fontSize: 13),
-            decoration: InputDecoration(
-              hintText: 'Tìm kiếm theo Mã đơn, Tên khách hàng, Số điện thoại, Dịch vụ...',
-              hintStyle: GoogleFonts.dmSans(fontSize: 13, color: LumiStyle.muted),
-              prefixIcon: const Icon(Icons.search_rounded, color: LumiStyle.rose, size: 20),
-              suffixIcon: _searchController.text.isNotEmpty
-                  ? IconButton(
-                      icon: const Icon(Icons.clear_rounded, size: 18),
-                      onPressed: () {
-                        _searchController.clear();
-                        setState(() {});
-                      },
-                    )
-                  : null,
-              border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        TextField(
+          controller: _searchController,
+          onChanged: (_) => setState(() {}),
+          decoration: InputDecoration(
+            hintText: 'Tìm kiếm theo tên khách, SĐT, dịch vụ hoặc mã lịch hẹn...',
+            hintStyle: GoogleFonts.dmSans(fontSize: 13, color: LumiStyle.muted),
+            prefixIcon: const Icon(Icons.search, color: LumiStyle.rose, size: 20),
+            suffixIcon: _searchController.text.isNotEmpty
+                ? IconButton(
+                    icon: const Icon(Icons.clear, size: 18),
+                    onPressed: () {
+                      _searchController.clear();
+                      setState(() {});
+                    },
+                  )
+                : null,
+            filled: true,
+            fillColor: Colors.white,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: LumiStyle.line),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: LumiStyle.line),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: LumiStyle.rose, width: 1.5),
             ),
           ),
         ),
-        const SizedBox(height: 14),
-
-        // 2. Filter Chips
+        const SizedBox(height: 12),
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: Row(
             children: [
-              _filterTab(0, 'Chờ duyệt ($pendingCount)', Icons.hourglass_empty_rounded),
+              _filterTab(0, 'Chờ duyệt ($pendingCount)', Icons.hourglass_top_rounded),
               const SizedBox(width: 8),
-              _filterTab(1, 'Tất cả ($totalCount)', Icons.list_alt_rounded),
+              _filterTab(1, 'Tất cả ($totalCount)', Icons.all_inbox_rounded),
               const SizedBox(width: 8),
               _filterTab(2, 'Đã duyệt ($approvedCount)', Icons.check_circle_outline_rounded),
               const SizedBox(width: 8),
@@ -526,4 +774,3 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
     );
   }
 }
-

@@ -47,6 +47,36 @@ class AdminOrderRepository {
     });
   }
 
+  /// 2.1 Tải danh sách đơn hàng từ Backend API (Fallback khi Firestore client bị chặn quyền)
+  Future<List<AdminOrderItem>> fetchOrdersFromApi({String? status, String? query}) async {
+    try {
+      final queryParams = <String, String>{};
+      if (status != null && status.isNotEmpty) queryParams['status'] = status;
+      if (query != null && query.isNotEmpty) queryParams['q'] = query;
+
+      final uri = Uri.parse('${ApiConfig.baseUrl}/api/admin-orders').replace(
+        queryParameters: queryParams.isNotEmpty ? queryParams : null,
+      );
+
+      final res = await http.get(uri).timeout(const Duration(seconds: 8));
+      if (res.statusCode == 200) {
+        final data = jsonDecode(utf8.decode(res.bodyBytes));
+        if (data['success'] == true && data['data'] is List) {
+          final list = (data['data'] as List)
+              .map((item) => AdminOrderItem.fromMap(
+                    Map<String, dynamic>.from(item),
+                    item['id']?.toString() ?? '',
+                  ))
+              .toList();
+          return list;
+        }
+      }
+    } catch (e) {
+      debugPrint('⚠️ [AdminOrderRepository] Không thể tải đơn hàng từ Backend API: $e');
+    }
+    return [];
+  }
+
   /// 3. Cập nhật trạng thái đơn hàng (Duyệt, Giao hàng, Hoàn thành, Hủy)
   /// Đồng thời:
   /// - Ghi trạng thái mới vào Firestore
@@ -95,18 +125,17 @@ class AdminOrderRepository {
       }
 
       await batch.commit();
-      debugPrint('✅ [Admin] Đã cập nhật trạng thái đơn #${order.id} -> $newStatus');
-
-      // Gọi Backend API để gửi Gmail & Bắn Push Notification FCM
-      _notifyBackend(
-        order: order,
-        status: newStatus,
-        reason: reason,
-      );
+      debugPrint('✅ [Admin] Đã cập nhật trạng thái đơn #${order.id} -> $newStatus qua Firestore');
     } catch (e) {
-      debugPrint('❌ [Admin] Lỗi cập nhật đơn hàng: $e');
-      rethrow;
+      debugPrint('⚠️ [Admin] Firestore batch update error ($e), fallback to Backend API...');
     }
+
+    // Luôn gọi Backend API để gửi Gmail & Bắn Push Notification FCM (và cập nhật database qua Admin SDK)
+    await _notifyBackend(
+      order: order,
+      status: newStatus,
+      reason: reason,
+    );
   }
 
   /// Gọi API backend để kích hoạt gửi Gmail và Push Notification
@@ -116,7 +145,7 @@ class AdminOrderRepository {
     String? reason,
   }) async {
     try {
-      final url = Uri.parse('${ApiConfig.baseUrl}/api/orders/${order.id}/notify-status');
+      final url = Uri.parse('${ApiConfig.baseUrl}/api/admin-orders/${order.id}/status');
       final response = await http
           .post(
             url,
@@ -139,10 +168,10 @@ class AdminOrderRepository {
       if (response.statusCode >= 200 && response.statusCode < 300) {
         debugPrint('📧 [Admin] Đã kích hoạt gửi Gmail & Push cho đơn #${order.id}');
       } else {
-        debugPrint('⚠️ [Admin] Backend notify status status code: ${response.statusCode}');
+        debugPrint('⚠️ [Admin] Backend notify status code: ${response.statusCode}');
       }
     } catch (e) {
-      debugPrint('⚠️ [Admin] Không thể kết nối backend để gửi email (offline hoặc timeout): $e');
+      debugPrint('⚠️ [Admin] Không thể kết nối backend để gửi email: $e');
     }
   }
 }

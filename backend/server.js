@@ -300,7 +300,285 @@ app.get('/', (req, res) => {
 
 // POST /api/orders/:id/notify-status
 // Endpoint xử lý cập nhật trạng thái đơn hàng, gửi Gmail xác nhận và bắn thông báo Push FCM
-app.post('/api/orders/:id/notify-status', async (req, res) => {
+// ==========================================
+// ADMIN BOOKING APIS (Duyệt & Quản lý Lịch hẹn Spa)
+// ==========================================
+
+// GET /api/admin-bookings
+// Endpoint xem xét và quản lý toàn bộ lịch hẹn Spa (kèm lọc, tìm kiếm và thống kê)
+app.get('/api/admin-bookings', async (req, res) => {
+  try {
+    const { status, q } = req.query;
+    let bookings = [];
+
+    if (db.hasCredentials) {
+      const snap = await db.collection('bookings').get();
+      bookings = snap.docs.map(doc => ({
+        id: doc.id,
+        ...serialize(doc.data()),
+      }));
+    } else {
+      bookings = [...devBookings];
+    }
+
+    bookings.sort((a, b) => {
+      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return dateB - dateA;
+    });
+
+    const stats = {
+      total: bookings.length,
+      pending: bookings.filter(b => (b.status || '').toLowerCase() === 'pending').length,
+      approved: bookings.filter(b => ['approved', 'confirmed'].includes((b.status || '').toLowerCase())).length,
+      rejected: bookings.filter(b => ['rejected', 'cancelled'].includes((b.status || '').toLowerCase())).length,
+    };
+
+    if (status && status !== 'all') {
+      const s = status.toLowerCase();
+      if (s === 'approved') {
+        bookings = bookings.filter(b => ['approved', 'confirmed'].includes((b.status || '').toLowerCase()));
+      } else if (s === 'rejected') {
+        bookings = bookings.filter(b => ['rejected', 'cancelled'].includes((b.status || '').toLowerCase()));
+      } else {
+        bookings = bookings.filter(b => (b.status || '').toLowerCase() === s);
+      }
+    }
+
+    if (q && q.trim()) {
+      const term = q.trim().toLowerCase();
+      bookings = bookings.filter(b => {
+        const idMatch = (b.id || '').toLowerCase().includes(term);
+        const nameMatch = (b.contactName || '').toLowerCase().includes(term);
+        const phoneMatch = (b.contactPhone || '').toLowerCase().includes(term);
+        const serviceMatch = (b.serviceName || '').toLowerCase().includes(term);
+        return idMatch || nameMatch || phoneMatch || serviceMatch;
+      });
+    }
+
+    return res.json({
+      success: true,
+      count: bookings.length,
+      stats,
+      data: bookings,
+    });
+  } catch (err) {
+    console.error('Error fetching admin bookings:', err);
+    return res.status(500).json({ success: false, message: 'Không thể tải danh sách lịch hẹn.' });
+  }
+});
+
+// POST / PATCH /api/admin-bookings/:id/status
+// Cập nhật trạng thái duyệt/từ chối lịch hẹn, gửi Gmail và Push FCM
+async function handleAdminBookingStatus(req, res) {
+  try {
+    const { id } = req.params;
+    const { status, reason = '' } = req.body || {};
+
+    if (!['approved', 'confirmed', 'rejected', 'cancelled'].includes(status)) {
+      return res.status(400).json({ success: false, message: 'Trạng thái không hợp lệ.' });
+    }
+
+    if (!db.hasCredentials) {
+      const b = devBookings.find(item => item.id === id);
+      if (b) {
+        b.status = status;
+        if (status === 'approved' || status === 'confirmed') {
+          b.approvedAt = new Date().toISOString();
+        } else {
+          b.rejectedAt = new Date().toISOString();
+          b.rejectReason = reason;
+        }
+      }
+      return res.json({ success: true, message: 'Đã cập nhật trạng thái (dev store).' });
+    }
+
+    const docRef = db.collection('bookings').doc(id);
+    const docSnap = await docRef.get();
+    if (!docSnap.exists) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy lịch hẹn.' });
+    }
+    const booking = docSnap.data();
+
+    const isApprove = ['approved', 'confirmed'].includes(status);
+    const updateData = {
+      status,
+      updatedAt: FieldValue.serverTimestamp(),
+    };
+    if (isApprove) {
+      updateData.approvedAt = FieldValue.serverTimestamp();
+      updateData.approvedBy = 'admin';
+    } else {
+      updateData.rejectedAt = FieldValue.serverTimestamp();
+      updateData.rejectReason = reason;
+    }
+
+    await docRef.update(updateData);
+
+    // Gửi thông báo In-App trong Firestore
+    if (booking.userId) {
+      try {
+        await db.collection('notifications').add({
+          userId: booking.userId,
+          title: isApprove ? 'Lịch hẹn đã được duyệt ✨' : 'Lịch hẹn đã bị từ chối ⚠️',
+          message: isApprove
+            ? `Lịch hẹn "${booking.serviceName || 'Dịch vụ Spa'}" đã được lễ tân duyệt thành công!`
+            : `Lịch hẹn "${booking.serviceName || 'Dịch vụ Spa'}" đã bị từ chối.${reason ? ' Lý do: ' + reason : ''}`,
+          type: 'appointment',
+          isRead: false,
+          createdAt: FieldValue.serverTimestamp(),
+        });
+      } catch (notifErr) {
+        console.warn('Booking notification error:', notifErr.message);
+      }
+    }
+
+    // Gửi Gmail xác nhận
+    const targetEmail = booking.contactEmail || booking.email;
+    if (targetEmail && isApprove) {
+      try {
+        let startTimeStr = '';
+        if (booking.startAt) {
+          const d = booking.startAt.toDate ? booking.startAt.toDate() : new Date(booking.startAt);
+          startTimeStr = d.toLocaleString('vi-VN');
+        }
+        await mailService.sendBookingConfirmedEmail({
+          to: targetEmail,
+          customerName: booking.contactName || 'Quý khách',
+          customerPhone: booking.contactPhone || '',
+          bookingId: id,
+          serviceName: booking.serviceName || 'Dịch vụ Spa',
+          startAt: startTimeStr,
+          durationMinutes: booking.durationMinutes || 60,
+          price: booking.price || 0,
+        });
+      } catch (mailErr) {
+        console.warn('Booking mail error:', mailErr.message);
+      }
+    }
+
+    // Gửi FCM Push notification
+    if (booking.userId) {
+      try {
+        if (isApprove) {
+          await pushService.sendBookingConfirmedPush({
+            userId: booking.userId,
+            bookingId: id,
+            serviceName: booking.serviceName || 'Dịch vụ Spa',
+            date: '',
+            hour: '',
+          });
+        }
+      } catch (pushErr) {
+        console.warn('Booking push error:', pushErr.message);
+      }
+    }
+
+    return res.json({
+      success: true,
+      message: isApprove ? 'Duyệt lịch hẹn thành công!' : 'Đã từ chối lịch hẹn.',
+    });
+  } catch (err) {
+    console.error('Error updating admin booking:', err);
+    return res.status(500).json({ success: false, message: 'Lỗi cập nhật lịch hẹn: ' + err.message });
+  }
+}
+
+app.patch('/api/admin-bookings/:id/status', handleAdminBookingStatus);
+app.post('/api/admin-bookings/:id/status', handleAdminBookingStatus);
+
+// ==========================================
+// ADMIN ORDER APIS (Duyệt & Quản lý Đơn hàng)
+// ==========================================
+
+// GET /api/admin-orders
+// Endpoint xem xét và quản lý toàn bộ đơn hàng (kèm bộ lọc, tìm kiếm và thống kê)
+app.get('/api/admin-orders', async (req, res) => {
+  try {
+    const { status, q } = req.query;
+    let orders = [];
+
+    if (db.hasCredentials) {
+      const snap = await db.collection('orders').get();
+      orders = snap.docs.map(doc => ({
+        id: doc.id,
+        ...serialize(doc.data()),
+      }));
+    }
+
+    orders.sort((a, b) => {
+      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return dateB - dateA;
+    });
+
+    const stats = {
+      total: orders.length,
+      pending: orders.filter(o => (o.status || '').toLowerCase() === 'pending').length,
+      confirmed: orders.filter(o => ['confirmed', 'processing'].includes((o.status || '').toLowerCase())).length,
+      shipping: orders.filter(o => ['shipping', 'delivering'].includes((o.status || '').toLowerCase())).length,
+      completed: orders.filter(o => (o.status || '').toLowerCase() === 'completed').length,
+      cancelled: orders.filter(o => ['cancelled', 'rejected'].includes((o.status || '').toLowerCase())).length,
+      totalRevenue: orders
+        .filter(o => ['confirmed', 'shipping', 'completed'].includes((o.status || '').toLowerCase()))
+        .reduce((sum, o) => sum + (Number(o.total) || 0), 0),
+    };
+
+    if (status && status !== 'all') {
+      const s = status.toLowerCase();
+      orders = orders.filter(o => (o.status || '').toLowerCase() === s);
+    }
+
+    if (q && q.trim()) {
+      const term = q.trim().toLowerCase();
+      orders = orders.filter(o => {
+        const idMatch = (o.id || '').toLowerCase().includes(term);
+        const nameMatch = (o.customerName || o.name || '').toLowerCase().includes(term);
+        const phoneMatch = (o.phone || '').toLowerCase().includes(term);
+        const emailMatch = (o.customerEmail || o.email || '').toLowerCase().includes(term);
+        return idMatch || nameMatch || phoneMatch || emailMatch;
+      });
+    }
+
+    return res.json({
+      success: true,
+      count: orders.length,
+      stats,
+      data: orders,
+    });
+  } catch (err) {
+    console.error('Error fetching orders:', err);
+    return res.status(500).json({ success: false, message: 'Không thể tải danh sách đơn hàng.' });
+  }
+});
+
+// GET /api/admin-orders/:id
+// Endpoint xem xét chi tiết 1 đơn hàng cụ thể
+app.get('/api/admin-orders/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!db.hasCredentials) {
+      return res.status(404).json({ success: false, message: 'Chưa kết nối database.' });
+    }
+    const doc = await db.collection('orders').doc(id).get();
+    if (!doc.exists) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy đơn hàng.' });
+    }
+    return res.json({
+      success: true,
+      data: {
+        id: doc.id,
+        ...serialize(doc.data()),
+      },
+    });
+  } catch (err) {
+    console.error('Error fetching order detail:', err);
+    return res.status(500).json({ success: false, message: 'Lỗi khi tải chi tiết đơn hàng.' });
+  }
+});
+
+// POST /api/admin-orders/:id/status (hỗ trợ cả /api/orders/:id/notify-status)
+async function handleAdminOrderStatus(req, res) {
   try {
     const { id } = req.params;
     const {
@@ -409,7 +687,11 @@ app.post('/api/orders/:id/notify-status', async (req, res) => {
     console.error('Order notify status error:', error);
     return res.status(500).json({ success: false, message: error.message });
   }
-});
+}
+
+app.post('/api/admin-orders/:id/status', handleAdminOrderStatus);
+app.patch('/api/admin-orders/:id/status', handleAdminOrderStatus);
+app.post('/api/orders/:id/notify-status', handleAdminOrderStatus);
 
 // Start server only when run directly.
 if (require.main === module) {

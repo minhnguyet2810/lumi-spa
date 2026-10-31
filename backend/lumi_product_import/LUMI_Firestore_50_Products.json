@@ -1,0 +1,802 @@
+[
+  {
+    "id": "lumi-001",
+    "name": "Lumi Micellar Cleansing Water",
+    "category": "Làm sạch & Cân bằng",
+    "size": "300ml",
+    "ingredients": "Chiết xuất hoa cúc La Mã, Babassu Oil Polyglyceryl",
+    "description": "Tẩy trang dịu nhẹ, hút sạch bụi mịn PM2.5 và lớp makeup mà không khô rát",
+    "price": 320000,
+    "currency": "VND",
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=900&auto=format&fit=crop"
+    ],
+    "isActive": true,
+    "sortOrder": 1,
+    "imageUrl": "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=900&auto=format&fit=crop"
+  },
+  {
+    "id": "lumi-002",
+    "name": "Lumi Pure Cleansing Oil",
+    "category": "Làm sạch & Cân bằng",
+    "size": "200ml",
+    "ingredients": "Dầu Hạt Nho, Dầu Jojoba, Vitamin E tự nhiên",
+    "description": "Nhũ hóa nhanh, hòa tan bã nhờn sâu trong lỗ chân lông, giảm mụn đầu đen",
+    "price": 450000,
+    "currency": "VND",
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1608248597359-00f7243c2c19?w=900&auto=format&fit=crop"
+    ],
+    "isActive": true,
+    "sortOrder": 2,
+    "imageUrl": "https://images.unsplash.com/photo-1608248597359-00f7243c2c19?w=900&auto=format&fit=crop"
+  },
+  {
+    "id": "lumi-003",
+    "name": "Lumi Gentle Foam Cleanser",
+    "category": "Làm sạch & Cân bằng",
+    "size": "150ml",
+    "ingredients": "Chiết xuất Yến Mạch, Betaine, pH 5.5",
+    "description": "Tạo bọt mịn làm sạch nhẹ dịu, giữ màng ẩm tự nhiên cho da nhạy cảm",
+    "price": 350000,
+    "currency": "VND",
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1556228722-d0b5de75d776?w=900&auto=format&fit=crop"
+    ],
+    "isActive": true,
+    "sortOrder": 3,
+    "imageUrl": "https://images.unsplash.com/photo-1556228722-d0b5de75d776?w=900&auto=format&fit=crop"
+  },
+  {
+    "id": "lumi-004",
+    "name": "Lumi Salicylic Gel Cleanser",
+    "category": "Làm sạch & Cân bằng",
+    "size": "200ml",
+    "ingredients": "2% BHA (Salicylic Acid), Tràm Trà (Tea Tree), Kẽm PCA",
+    "description": "Làm sạch sâu lỗ chân lông, kiềm dầu, ngăn ngừa mụn viêm hình thành",
+    "price": 380000,
+    "currency": "VND",
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1567928815116-24ba00508dc2?w=900&auto=format&fit=crop"
+    ],
+    "isActive": true,
+    "sortOrder": 4,
+    "imageUrl": "https://images.unsplash.com/photo-1567928815116-24ba00508dc2?w=900&auto=format&fit=crop"
+  },
+  {
+    "id": "lumi-005",
+    "name": "Lumi Enzyme Powder Wash",
+    "category": "Làm sạch & Cân bằng",
+    "size": "70g",
+    "ingredients": "Papain (Enzyme đu đủ), Chiết xuất Cám Gạo",
+    "description": "Tẩy sừng sinh học vi điểm dạng bột, giúp da mịn màng tức thì",
+    "price": 420000,
+    "currency": "VND",
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=900&auto=format&fit=crop"
+    ],
+    "isActive": true,
+    "sortOrder": 5,
+    "imageUrl": "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=900&auto=format&fit=crop"
+  },
+  {
+    "id": "lumi-006",
+    "name": "Lumi Soothing Floral Toner",
+    "category": "Làm sạch & Cân bằng",
+    "size": "200ml",
+    "ingredients": "Nước cất Hoa Hồng hữu cơ, Chiết xuất Rau Má cô đặc",
+    "description": "Cân bằng pH, làm dịu da ửng đỏ sau khi rửa mặt hoặc nặn mụn",
+    "price": 340000,
+    "currency": "VND",
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?w=900&auto=format&fit=crop"
+    ],
+    "isActive": true,
+    "sortOrder": 6,
+    "imageUrl": "https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?w=900&auto=format&fit=crop"
+  },
+  {
+    "id": "lumi-007",
+    "name": "Lumi Clarifying Pore Toner",
+    "category": "Làm sạch & Cân bằng",
+    "size": "200ml",
+    "ingredients": "Chiết xuất Cây Phỉ (Witch Hazel), Niacinamide 2%",
+    "description": "Kiểm soát bóng nhờn vùng chữ T, hỗ trợ se khít lỗ chân lông",
+    "price": 360000,
+    "currency": "VND",
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1617897903246-719242758050?w=900&auto=format&fit=crop"
+    ],
+    "isActive": true,
+    "sortOrder": 7,
+    "imageUrl": "https://images.unsplash.com/photo-1617897903246-719242758050?w=900&auto=format&fit=crop"
+  },
+  {
+    "id": "lumi-008",
+    "name": "Lumi Microbiome Essence Toner",
+    "category": "Làm sạch & Cân bằng",
+    "size": "150ml",
+    "ingredients": "Men vi sinh Galactomyces, Bifida Ferment Lysate",
+    "description": "Củng cố hệ vi sinh trên da, phục hồi hàng rào ẩm cho da yếu tổn thương",
+    "price": 480000,
+    "currency": "VND",
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?w=900&auto=format&fit=crop"
+    ],
+    "isActive": true,
+    "sortOrder": 8,
+    "imageUrl": "https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?w=900&auto=format&fit=crop"
+  },
+  {
+    "id": "lumi-009",
+    "name": "Lumi Mineral Thermal Mist",
+    "category": "Làm sạch & Cân bằng",
+    "size": "150ml",
+    "ingredients": "Nước khoáng nhiệt, Kẽm, Magie sinh học",
+    "description": "Cấp cứu hạ nhiệt làn da kích ứng, đỏ rát do nắng hoặc sau peel",
+    "price": 260000,
+    "currency": "VND",
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1616683693504-3ea7e9ad6fec?w=900&auto=format&fit=crop"
+    ],
+    "isActive": true,
+    "sortOrder": 9,
+    "imageUrl": "https://images.unsplash.com/photo-1616683693504-3ea7e9ad6fec?w=900&auto=format&fit=crop"
+  },
+  {
+    "id": "lumi-010",
+    "name": "Lumi Micro-Peel Exfoliating Gel",
+    "category": "Làm sạch & Cân bằng",
+    "size": "100ml",
+    "ingredients": "Cellulose thực vật, Chiết xuất Táo xanh",
+    "description": "Tẩy da chết dạng kỳ vật lý dịu nhẹ, lấy đi lớp sừng mà không gây xước da",
+    "price": 320000,
+    "currency": "VND",
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=900&auto=format&fit=crop"
+    ],
+    "isActive": true,
+    "sortOrder": 10,
+    "imageUrl": "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=900&auto=format&fit=crop"
+  },
+  {
+    "id": "lumi-011",
+    "name": "Lumi Hydra B5 Ampoule",
+    "category": "Tinh chất đặc trị & Tế bào gốc",
+    "size": "50ml",
+    "ingredients": "Hyaluronic Acid đa tầng (Multi-HA), Vitamin B5 5%",
+    "description": "Cấp ẩm tầng sâu, bơm căng mọng làn da khô sần, bong tróc",
+    "price": 590000,
+    "currency": "VND",
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=900&auto=format&fit=crop"
+    ],
+    "isActive": true,
+    "sortOrder": 11,
+    "imageUrl": "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=900&auto=format&fit=crop"
+  },
+  {
+    "id": "lumi-012",
+    "name": "Lumi Cica Repair Serum",
+    "category": "Tinh chất đặc trị & Tế bào gốc",
+    "size": "30ml",
+    "ingredients": "85% Rau Má tươi, Madecassoside, Allantoin",
+    "description": "Cắt cơn đỏ rát ngứa, thúc đẩy lành mô sẹo non sau nặn mụn",
+    "price": 480000,
+    "currency": "VND",
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=900&auto=format&fit=crop"
+    ],
+    "isActive": true,
+    "sortOrder": 12,
+    "imageUrl": "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=900&auto=format&fit=crop"
+  },
+  {
+    "id": "lumi-013",
+    "name": "Lumi Glow Booster 15% Vitamin C",
+    "category": "Tinh chất đặc trị & Tế bào gốc",
+    "size": "30ml",
+    "ingredients": "15% 3-O-Ethyl Ascorbic Acid (Vitamin C bền vững), Ferulic Acid",
+    "description": "Chống oxy hóa mạnh mẽ, mờ thâm mụn mới, làm đều màu và sáng da",
+    "price": 650000,
+    "currency": "VND",
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1617897903246-719242758050?w=900&auto=format&fit=crop"
+    ],
+    "isActive": true,
+    "sortOrder": 13,
+    "imageUrl": "https://images.unsplash.com/photo-1617897903246-719242758050?w=900&auto=format&fit=crop"
+  },
+  {
+    "id": "lumi-014",
+    "name": "Lumi Advanced Niacinamide 10% + Zinc 1%",
+    "category": "Tinh chất đặc trị & Tế bào gốc",
+    "size": "30ml",
+    "ingredients": "Niacinamide 10%, Zinc PCA 1%, N-Acetyl Glucosamine",
+    "description": "Điều tiết dầu nhờn quá mức, thu nhỏ kích thước lỗ chân lông rõ rệt",
+    "price": 520000,
+    "currency": "VND",
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=900&auto=format&fit=crop"
+    ],
+    "isActive": true,
+    "sortOrder": 14,
+    "imageUrl": "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=900&auto=format&fit=crop"
+  },
+  {
+    "id": "lumi-015",
+    "name": "Lumi Anti-Acne SOS Serum",
+    "category": "Tinh chất đặc trị & Tế bào gốc",
+    "size": "15ml",
+    "ingredients": "Tinh dầu Tràm Trà tinh khiết, Biosulfur (Lưu huỳnh sinh học)",
+    "description": "Chấm mụn viêm, mụn mủ; gom cồi khô nhanh chỉ sau 24–48h",
+    "price": 350000,
+    "currency": "VND",
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1556229010-6c3f2c9ca5f8?w=900&auto=format&fit=crop"
+    ],
+    "isActive": true,
+    "sortOrder": 15,
+    "imageUrl": "https://images.unsplash.com/photo-1556229010-6c3f2c9ca5f8?w=900&auto=format&fit=crop"
+  },
+  {
+    "id": "lumi-016",
+    "name": "Lumi Peptide Firming Ampoule",
+    "category": "Tinh chất đặc trị & Tế bào gốc",
+    "size": "30ml",
+    "ingredients": "Phức hợp 5 loại Peptides (Matrixyl 3000, Copper Tripeptide-1)",
+    "description": "Kích thích tăng sinh nguyên bào sợi, săn chắc và nâng đỡ cơ mặt",
+    "price": 780000,
+    "currency": "VND",
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?w=900&auto=format&fit=crop"
+    ],
+    "isActive": true,
+    "sortOrder": 16,
+    "imageUrl": "https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?w=900&auto=format&fit=crop"
+  },
+  {
+    "id": "lumi-017",
+    "name": "Lumi Renewal Retinol 0.5% Serum",
+    "category": "Tinh chất đặc trị & Tế bào gốc",
+    "size": "30ml",
+    "ingredients": "0.5% Encapsulated Retinol (Retinol bọc vi nang), Squalane",
+    "description": "Tái tạo biểu bì, giảm nếp nhăn li ti và làm mịn bề mặt da mà ít kích ứng",
+    "price": 720000,
+    "currency": "VND",
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1608248597359-00f7243c2c19?w=900&auto=format&fit=crop"
+    ],
+    "isActive": true,
+    "sortOrder": 17,
+    "imageUrl": "https://images.unsplash.com/photo-1608248597359-00f7243c2c19?w=900&auto=format&fit=crop"
+  },
+  {
+    "id": "lumi-018",
+    "name": "Lumi Bio-Placenta Youth Serum",
+    "category": "Tinh chất đặc trị & Tế bào gốc",
+    "size": "30ml",
+    "ingredients": "Tinh chất Nhau Thai Cừu thủy phân, Yếu tố tăng trưởng EGF/IGF",
+    "description": "Tăng độ đàn hồi, ngăn ngừa lão hóa tầng sâu và làm mờ rãnh nhăn",
+    "price": 850000,
+    "currency": "VND",
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=900&auto=format&fit=crop"
+    ],
+    "isActive": true,
+    "sortOrder": 18,
+    "imageUrl": "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=900&auto=format&fit=crop"
+  },
+  {
+    "id": "lumi-019",
+    "name": "Lumi Tranexamic Acid 3% Pigment Serum",
+    "category": "Tinh chất đặc trị & Tế bào gốc",
+    "size": "30ml",
+    "ingredients": "3% Tranexamic Acid, Kojic Acid, Alpha-Arbutin",
+    "description": "Đánh bay nám mảng nông, đốm tàn nhang và vết thâm đỏ PIE/PIH dai dẳng",
+    "price": 690000,
+    "currency": "VND",
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1616683693504-3ea7e9ad6fec?w=900&auto=format&fit=crop"
+    ],
+    "isActive": true,
+    "sortOrder": 19,
+    "imageUrl": "https://images.unsplash.com/photo-1616683693504-3ea7e9ad6fec?w=900&auto=format&fit=crop"
+  },
+  {
+    "id": "lumi-020",
+    "name": "Lumi EGF Stem Cell Essence",
+    "category": "Tinh chất đặc trị & Tế bào gốc",
+    "size": "5 ống x 5ml",
+    "ingredients": "Yếu tố tăng trưởng biểu bì tái tổ hợp EGF, Dịch nuôi cấy tế bào gốc thực vật",
+    "description": "Đặc trị phục hồi cấp tốc sau liệu trình lăn kim, laser, phi kim",
+    "price": 950000,
+    "currency": "VND",
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=900&auto=format&fit=crop"
+    ],
+    "isActive": true,
+    "sortOrder": 20,
+    "imageUrl": "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=900&auto=format&fit=crop"
+  },
+  {
+    "id": "lumi-021",
+    "name": "Lumi Aqua Gel Cream",
+    "category": "Dưỡng ẩm & Khóa dưỡng",
+    "size": "50ml",
+    "ingredients": "Nước Băng Bắc Cực, Sodium Hyaluronate, Nha Đam",
+    "description": "Chất gel mỏng tan trên da, cấp nước khóa ẩm thoáng nhẹ không gây mụn",
+    "price": 450000,
+    "currency": "VND",
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=900&auto=format&fit=crop"
+    ],
+    "isActive": true,
+    "sortOrder": 21,
+    "imageUrl": "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=900&auto=format&fit=crop"
+  },
+  {
+    "id": "lumi-022",
+    "name": "Lumi Barrier Ceramides Cream",
+    "category": "Dưỡng ẩm & Khóa dưỡng",
+    "size": "50g",
+    "ingredients": "3 loại Ceramide thiết yếu (EOP, NP, AP), Cholesterol, Axit Béo",
+    "description": "Khôi phục lớp màng lipid bị rách nát do dùng treatment sai cách",
+    "price": 550000,
+    "currency": "VND",
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?w=900&auto=format&fit=crop"
+    ],
+    "isActive": true,
+    "sortOrder": 22,
+    "imageUrl": "https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?w=900&auto=format&fit=crop"
+  },
+  {
+    "id": "lumi-023",
+    "name": "Lumi Calming Recovery Balm",
+    "category": "Dưỡng ẩm & Khóa dưỡng",
+    "size": "40ml",
+    "ingredients": "Panthenol 10%, Đồng - Kẽm - Magie sinh học",
+    "description": "Kem sáp phục hồi cấp tốc da sau peel hóa học, giảm bong tróc rát buốt",
+    "price": 490000,
+    "currency": "VND",
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1556228722-d0b5de75d776?w=900&auto=format&fit=crop"
+    ],
+    "isActive": true,
+    "sortOrder": 23,
+    "imageUrl": "https://images.unsplash.com/photo-1556228722-d0b5de75d776?w=900&auto=format&fit=crop"
+  },
+  {
+    "id": "lumi-024",
+    "name": "Lumi Brightening Tone-up Cream",
+    "category": "Dưỡng ẩm & Khóa dưỡng",
+    "size": "50g",
+    "ingredients": "Chiết xuất Ngọc Trai, Glutathione, Niacinamide",
+    "description": "Dưỡng trắng lâu dài và tạo hiệu ứng nâng tông trong trẻo tức thì ban ngày",
+    "price": 480000,
+    "currency": "VND",
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=900&auto=format&fit=crop"
+    ],
+    "isActive": true,
+    "sortOrder": 24,
+    "imageUrl": "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=900&auto=format&fit=crop"
+  },
+  {
+    "id": "lumi-025",
+    "name": "Lumi Peptide Rich Night Cream",
+    "category": "Dưỡng ẩm & Khóa dưỡng",
+    "size": "50g",
+    "ingredients": "Collagen Thủy Phân, Adenosine, Bơ Hạt Mỡ",
+    "description": "Nuôi dưỡng phục hồi chuyên sâu ban đêm, ngăn ngừa chảy xệ cơ mặt",
+    "price": 620000,
+    "currency": "VND",
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?w=900&auto=format&fit=crop"
+    ],
+    "isActive": true,
+    "sortOrder": 25,
+    "imageUrl": "https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?w=900&auto=format&fit=crop"
+  },
+  {
+    "id": "lumi-026",
+    "name": "Lumi Daily Sebum Control Lotion",
+    "category": "Dưỡng ẩm & Khóa dưỡng",
+    "size": "80ml",
+    "ingredients": "Silica khoáng, Trà xanh hữu cơ, Kẽm Gluconate",
+    "description": "Sữa dưỡng ẩm kiềm bóng dầu suốt cả ngày, thông thoáng nang lông",
+    "price": 420000,
+    "currency": "VND",
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=900&auto=format&fit=crop"
+    ],
+    "isActive": true,
+    "sortOrder": 26,
+    "imageUrl": "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=900&auto=format&fit=crop"
+  },
+  {
+    "id": "lumi-027",
+    "name": "Lumi Sleeping Beauty Mask",
+    "category": "Dưỡng ẩm & Khóa dưỡng",
+    "size": "80ml",
+    "ingredients": "Chiết xuất Quả Mọng Đỏ (Berry Complex), Trehalose",
+    "description": "Mặt nạ ngủ thạch trong suốt nạp năng lượng, giúp da rạng rỡ sau giấc ngủ",
+    "price": 390000,
+    "currency": "VND",
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?w=900&auto=format&fit=crop"
+    ],
+    "isActive": true,
+    "sortOrder": 27,
+    "imageUrl": "https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?w=900&auto=format&fit=crop"
+  },
+  {
+    "id": "lumi-028",
+    "name": "Lumi Botanical Face Oil",
+    "category": "Dưỡng ẩm & Khóa dưỡng",
+    "size": "30ml",
+    "ingredients": "Dầu Argan Ma-rốc ép lạnh, Tinh dầu Tầm Xuân (Rosehip)",
+    "description": "Dầu dưỡng khóa ẩm sâu, phục hồi màng ẩm cho da siêu khô và da lão hóa",
+    "price": 560000,
+    "currency": "VND",
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1608248597359-00f7243c2c19?w=900&auto=format&fit=crop"
+    ],
+    "isActive": true,
+    "sortOrder": 28,
+    "imageUrl": "https://images.unsplash.com/photo-1608248597359-00f7243c2c19?w=900&auto=format&fit=crop"
+  },
+  {
+    "id": "lumi-029",
+    "name": "Lumi Multi-Active Eye Contour Cream",
+    "category": "Dưỡng ẩm & Khóa dưỡng",
+    "size": "15ml",
+    "ingredients": "Caffeine thực vật, Niacinamide, Palmitoyl Tripeptide",
+    "description": "Đánh tan bọng mắt, làm mờ quầng thâm và giảm nếp nhăn khóe mắt",
+    "price": 490000,
+    "currency": "VND",
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1556229010-6c3f2c9ca5f8?w=900&auto=format&fit=crop"
+    ],
+    "isActive": true,
+    "sortOrder": 29,
+    "imageUrl": "https://images.unsplash.com/photo-1556229010-6c3f2c9ca5f8?w=900&auto=format&fit=crop"
+  },
+  {
+    "id": "lumi-030",
+    "name": "Lumi Anti-Wrinkle Eye Serum Roller",
+    "category": "Dưỡng ẩm & Khóa dưỡng",
+    "size": "15ml",
+    "ingredients": "Acetyl Hexapeptide-8 (Argireline), Chiết xuất Dưa Leo",
+    "description": "Serum đầu lăn kim loại mát lạnh massage xua tan mệt mỏi vùng mắt",
+    "price": 450000,
+    "currency": "VND",
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=900&auto=format&fit=crop"
+    ],
+    "isActive": true,
+    "sortOrder": 30,
+    "imageUrl": "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=900&auto=format&fit=crop"
+  },
+  {
+    "id": "lumi-031",
+    "name": "Lumi Bio-Cellulose Soothing Mask",
+    "category": "Mặt nạ chăm sóc chuyên sâu",
+    "size": "Hộp 5 miếng",
+    "ingredients": "Nước dừa lên men sinh học, Rau Má, Rau Sam",
+    "description": "Ôm sát khuôn mặt như làn da thứ 2, làm dịu tức thì cơn sốt đỏ sau laser",
+    "price": 350000,
+    "currency": "VND",
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=900&auto=format&fit=crop"
+    ],
+    "isActive": true,
+    "sortOrder": 31,
+    "imageUrl": "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=900&auto=format&fit=crop"
+  },
+  {
+    "id": "lumi-032",
+    "name": "Lumi Collagen Hydrogel Sheet Mask",
+    "category": "Mặt nạ chăm sóc chuyên sâu",
+    "size": "Hộp 5 miếng",
+    "ingredients": "Collagen Thủy Phân 100.000ppm, Peptide",
+    "description": "Mặt nạ thạch dẻo mỏng dần khi dưỡng chất thẩm thấu hết vào biểu bì",
+    "price": 420000,
+    "currency": "VND",
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1567928815116-24ba00508dc2?w=900&auto=format&fit=crop"
+    ],
+    "isActive": true,
+    "sortOrder": 32,
+    "imageUrl": "https://images.unsplash.com/photo-1567928815116-24ba00508dc2?w=900&auto=format&fit=crop"
+  },
+  {
+    "id": "lumi-033",
+    "name": "Lumi Detox Green Clay Mask",
+    "category": "Mặt nạ chăm sóc chuyên sâu",
+    "size": "Hũ 100g",
+    "ingredients": "Đất sét xanh Montmorillonite Pháp, Tảo biển",
+    "description": "Hút cặn bẩn dư thừa, thanh lọc bã nhờn tích tụ sâu trong nang lông",
+    "price": 360000,
+    "currency": "VND",
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=900&auto=format&fit=crop"
+    ],
+    "isActive": true,
+    "sortOrder": 33,
+    "imageUrl": "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=900&auto=format&fit=crop"
+  },
+  {
+    "id": "lumi-034",
+    "name": "Lumi Herbal Tea Tree Mud Mask",
+    "category": "Mặt nạ chăm sóc chuyên sâu",
+    "size": "Hũ 100g",
+    "ingredients": "Bùn khoáng Biển Chết, Tinh dầu Tràm Trà, BHA",
+    "description": "Giảm sưng viêm mụn mủ, gom nhân mụn ẩn và ngăn mụn lây lan",
+    "price": 380000,
+    "currency": "VND",
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?w=900&auto=format&fit=crop"
+    ],
+    "isActive": true,
+    "sortOrder": 34,
+    "imageUrl": "https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?w=900&auto=format&fit=crop"
+  },
+  {
+    "id": "lumi-035",
+    "name": "Lumi Brightening Gold Foil Mask",
+    "category": "Mặt nạ chăm sóc chuyên sâu",
+    "size": "Hộp 5 miếng",
+    "ingredients": "Bột Vàng 24K nano, Vitamin C, Niacinamide",
+    "description": "Cấu trúc màng khóa nhiệt giúp dưỡng chất thẩm thấu tối đa, da sáng bóng",
+    "price": 480000,
+    "currency": "VND",
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=900&auto=format&fit=crop"
+    ],
+    "isActive": true,
+    "sortOrder": 35,
+    "imageUrl": "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=900&auto=format&fit=crop"
+  },
+  {
+    "id": "lumi-036",
+    "name": "Lumi Ultra-Shield SPF 50+ PA++++",
+    "category": "Chống nắng & Bảo vệ quang học",
+    "size": "50ml",
+    "ingredients": "Màng lọc lai quang phổ rộng Tinosorb S/M, Niacinamide",
+    "description": "Chống nắng bảo vệ toàn diện tia UVA/UVB và ánh sáng xanh",
+    "price": 460000,
+    "currency": "VND",
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=900&auto=format&fit=crop"
+    ],
+    "isActive": true,
+    "sortOrder": 36,
+    "imageUrl": "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=900&auto=format&fit=crop"
+  },
+  {
+    "id": "lumi-037",
+    "name": "Lumi Mineral Sun Cream for Sensitive",
+    "category": "Chống nắng & Bảo vệ quang học",
+    "size": "50ml",
+    "ingredients": "100% Thuần vật lý (Zinc Oxide 12%, Titanium Dioxide)",
+    "description": "Chống nắng dịu êm không kích ứng dành riêng cho da nhạy cảm sau lăn kim",
+    "price": 490000,
+    "currency": "VND",
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?w=900&auto=format&fit=crop"
+    ],
+    "isActive": true,
+    "sortOrder": 37,
+    "imageUrl": "https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?w=900&auto=format&fit=crop"
+  },
+  {
+    "id": "lumi-038",
+    "name": "Lumi Matte Finish Sun Gel",
+    "category": "Chống nắng & Bảo vệ quang học",
+    "size": "50ml",
+    "ingredients": "Màng lọc hóa học thế hệ mới, Silica hút dầu",
+    "description": "Chất gel trong suốt ráo mịn lập tức, không để lại vệt trắng, chống trôi nước",
+    "price": 420000,
+    "currency": "VND",
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1617897903246-719242758050?w=900&auto=format&fit=crop"
+    ],
+    "isActive": true,
+    "sortOrder": 38,
+    "imageUrl": "https://images.unsplash.com/photo-1617897903246-719242758050?w=900&auto=format&fit=crop"
+  },
+  {
+    "id": "lumi-039",
+    "name": "Lumi Tone-Up Pink Sunscreen",
+    "category": "Chống nắng & Bảo vệ quang học",
+    "size": "50ml",
+    "ingredients": "Chiết xuất Hoa Anh Đào, Calamine làm dịu, SPF 50+",
+    "description": "Nâng tông da hồng hào tự nhiên, tạo lớp finish rạng rỡ thay thế cushion",
+    "price": 450000,
+    "currency": "VND",
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=900&auto=format&fit=crop"
+    ],
+    "isActive": true,
+    "sortOrder": 39,
+    "imageUrl": "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=900&auto=format&fit=crop"
+  },
+  {
+    "id": "lumi-040",
+    "name": "Lumi UV Sun Cushion SPF 50+",
+    "category": "Chống nắng & Bảo vệ quang học",
+    "size": "Hộp 15g",
+    "ingredients": "Phức hợp Chống Nắng Khoáng, Chiết xuất Rau Má",
+    "description": "Phấn nước chống nắng tiện lợi dặm lại lớp bảo vệ trong ngày cho khách hàng",
+    "price": 480000,
+    "currency": "VND",
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=900&auto=format&fit=crop"
+    ],
+    "isActive": true,
+    "sortOrder": 40,
+    "imageUrl": "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=900&auto=format&fit=crop"
+  },
+  {
+    "id": "lumi-041",
+    "name": "Lumi Coffee & Sea Salt Body Polish",
+    "category": "Chăm sóc cơ thể & Dưỡng sinh",
+    "size": "250g",
+    "ingredients": "Hạt Cà Phê Robusta Đắk Lắk xay nhuyễn, Muối biển",
+    "description": "Tẩy sạch da chết toàn thân, làm mịn vùng da thô ráp ở khuỷu tay và đầu gối",
+    "price": 280000,
+    "currency": "VND",
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?w=900&auto=format&fit=crop"
+    ],
+    "isActive": true,
+    "sortOrder": 41,
+    "imageUrl": "https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?w=900&auto=format&fit=crop"
+  },
+  {
+    "id": "lumi-042",
+    "name": "Lumi White Radiance Body Lotion",
+    "category": "Chăm sóc cơ thể & Dưỡng sinh",
+    "size": "250ml",
+    "ingredients": "Alpha-Arbutin 2%, Niacinamide 5%, Chiết xuất Dâu Tằm",
+    "description": "Sữa dưỡng thể làm mờ sạm nám, dưỡng da body trắng mịn ngọc ngà",
+    "price": 460000,
+    "currency": "VND",
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1556228722-d0b5de75d776?w=900&auto=format&fit=crop"
+    ],
+    "isActive": true,
+    "sortOrder": 42,
+    "imageUrl": "https://images.unsplash.com/photo-1556228722-d0b5de75d776?w=900&auto=format&fit=crop"
+  },
+  {
+    "id": "lumi-043",
+    "name": "Lumi AHA 10% Smoothing Body Serum",
+    "category": "Chăm sóc cơ thể & Dưỡng sinh",
+    "size": "150ml",
+    "ingredients": "Lactic Acid 10%, BHA 0.5%, Ceramide",
+    "description": "Đặc trị sần sùi viêm nang lông, cải thiện mụn lưng và bắp tay",
+    "price": 450000,
+    "currency": "VND",
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=900&auto=format&fit=crop"
+    ],
+    "isActive": true,
+    "sortOrder": 43,
+    "imageUrl": "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=900&auto=format&fit=crop"
+  },
+  {
+    "id": "lumi-044",
+    "name": "Lumi Herbal Relaxing Massage Oil",
+    "category": "Chăm sóc cơ thể & Dưỡng sinh",
+    "size": "200ml",
+    "ingredients": "Tinh dầu Oải Hương, Gừng, Vỏ Cam Ngọt ép lạnh",
+    "description": "Dầu trượt massage giải tỏa căng cơ, lưu thông tuần hoàn và thư giãn thần kinh",
+    "price": 380000,
+    "currency": "VND",
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1608248597359-00f7243c2c19?w=900&auto=format&fit=crop"
+    ],
+    "isActive": true,
+    "sortOrder": 44,
+    "imageUrl": "https://images.unsplash.com/photo-1608248597359-00f7243c2c19?w=900&auto=format&fit=crop"
+  },
+  {
+    "id": "lumi-045",
+    "name": "Lumi Warm Ginger Foot Soak Salts",
+    "category": "Chăm sóc cơ thể & Dưỡng sinh",
+    "size": "Hũ 400g",
+    "ingredients": "Muối khoáng Epsom, Củ Gừng già sấy khô, Quế chi",
+    "description": "Ngâm chân ấm giải tỏa nhức mỏi khớp, đào thải độc tố và giúp ngủ sâu",
+    "price": 250000,
+    "currency": "VND",
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?w=900&auto=format&fit=crop"
+    ],
+    "isActive": true,
+    "sortOrder": 45,
+    "imageUrl": "https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?w=900&auto=format&fit=crop"
+  },
+  {
+    "id": "lumi-046",
+    "name": "Lumi Herbal Scalp Treatment Shampoo",
+    "category": "Chăm sóc cơ thể & Dưỡng sinh",
+    "size": "300ml",
+    "ingredients": "Dịch chiết Bồ Kết, Hà Thủ Ô, Cỏ Mần Trầu cô đặc",
+    "description": "Dầu gội dưỡng sinh sạch gàu, giảm rụng tóc và nuôi dưỡng chân tóc chắc khỏe",
+    "price": 340000,
+    "currency": "VND",
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=900&auto=format&fit=crop"
+    ],
+    "isActive": true,
+    "sortOrder": 46,
+    "imageUrl": "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=900&auto=format&fit=crop"
+  },
+  {
+    "id": "lumi-047",
+    "name": "Lumi Nourishing Hair Mask",
+    "category": "Chăm sóc cơ thể & Dưỡng sinh",
+    "size": "200ml",
+    "ingredients": "Tinh dầu Argan, Keratin thủy phân, Bơ Hạt Mỡ",
+    "description": "Kem ủ phục hồi ngọn tóc khô xơ chẻ ngọn do hóa chất và nhiệt độ",
+    "price": 360000,
+    "currency": "VND",
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?w=900&auto=format&fit=crop"
+    ],
+    "isActive": true,
+    "sortOrder": 47,
+    "imageUrl": "https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?w=900&auto=format&fit=crop"
+  },
+  {
+    "id": "lumi-048",
+    "name": "Lumi Scalp Clarifying Serum",
+    "category": "Chăm sóc cơ thể & Dưỡng sinh",
+    "size": "100ml",
+    "ingredients": "2% Salicylic Acid, Chiết xuất Bạc Hà mát lạnh",
+    "description": "Tẩy tế bào chết da đầu, kiềm bã nhờn chân tóc và thông thoáng nang tóc",
+    "price": 380000,
+    "currency": "VND",
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=900&auto=format&fit=crop"
+    ],
+    "isActive": true,
+    "sortOrder": 48,
+    "imageUrl": "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=900&auto=format&fit=crop"
+  },
+  {
+    "id": "lumi-049",
+    "name": "Lumi Ultra-Soft Hand & Cuticle Cream",
+    "category": "Chăm sóc cơ thể & Dưỡng sinh",
+    "size": "50ml",
+    "ingredients": "Dầu Hạnh Nhân Ngọt, Vitamin E, Sáp Ong tự nhiên",
+    "description": "Làm mềm vùng da tay khô ráp, nuôi dưỡng viền móng tay bóng khỏe",
+    "price": 190000,
+    "currency": "VND",
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1556229010-6c3f2c9ca5f8?w=900&auto=format&fit=crop"
+    ],
+    "isActive": true,
+    "sortOrder": 49,
+    "imageUrl": "https://images.unsplash.com/photo-1556229010-6c3f2c9ca5f8?w=900&auto=format&fit=crop"
+  },
+  {
+    "id": "lumi-050",
+    "name": "Lumi Sugar Lip Scrub & Butter Balm",
+    "category": "Chăm sóc cơ thể & Dưỡng sinh",
+    "size": "Hũ đôi 2x10g",
+    "ingredients": "Đường mía hạt mịn, Bơ Hạt Xoài, Hyaluronic Acid",
+    "description": "Bộ đôi tẩy da chết môi và sáp dưỡng ẩm căng bóng, hồng hào tự nhiên",
+    "price": 240000,
+    "currency": "VND",
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=900&auto=format&fit=crop"
+    ],
+    "isActive": true,
+    "sortOrder": 50,
+    "imageUrl": "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=900&auto=format&fit=crop"
+  }
+]

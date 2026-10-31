@@ -1,0 +1,30 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "lumi-spa",
+          "appId": "1:147383769123:android:68c90cacc313d56627f996",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "lumi-spa",
+          "configurations": {
+            "android": "1:147383769123:android:68c90cacc313d56627f996"
+          }
+        }
+      }
+    }
+  },
+  "functions": {
+    "source": "backend",
+    "runtime": "nodejs22"
+  },
+  "emulators": {
+    "firestore": {
+      "port": 8080
+    }
+  }
+}

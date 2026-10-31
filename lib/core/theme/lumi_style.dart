@@ -8,11 +8,11 @@ abstract final class LumiStyle {
   // Original public tokens retained to avoid breaking older screens.
   static const ivory = Color(0xFFFAF7F4);
   static const plum = Color(0xFF392F37);
-  static const rose = Color(0xFFD98B99);
+  static const rose = Color(0xFFB77C88);
   static const muted = Color(0xFF887D80);
 
   // Brand accents — use as accents, not full-screen color coverage.
-  static const dustyRose = Color(0xFFD98B99);
+  static const dustyRose = Color(0xFFB77C88);
   static const softPink = Color(0xFFF2BDCB);
   static const mutedBlue = Color(0xFF8AA6BF);
   static const aquaBlue = Color(0xFF79C7D9);
@@ -46,10 +46,10 @@ abstract final class LumiStyle {
       );
 
   static TextStyle body({double size = 15, Color color = muted}) =>
-      GoogleFonts.dmSans(fontSize: size, height: 1.5, color: color);
+      GoogleFonts.manrope(fontSize: size, height: 1.5, color: color);
 
   static TextStyle label({double size = 11, Color color = plum}) =>
-      GoogleFonts.dmSans(
+      GoogleFonts.manrope(
         fontSize: size,
         fontWeight: FontWeight.w600,
         letterSpacing: 1.5,

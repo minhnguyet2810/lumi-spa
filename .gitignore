@@ -65,3 +65,33 @@ ui-debug.log
 
 # Local secrets
 **/secrets/
+
+# LUMI SPA - local backups
+*.bak
+*.backup
+*.before_*
+.lumi_backups/
+**/.lumi_backups/
+
+# Local credentials and private keys
+**/*service-account*.json
+**/*service_account*.json
+**/*credentials*.json
+**/*private-key*.json
+**/*.p12
+**/*.p8
+**/*.key
+
+# Local temporary files
+.DS_Store
+
+# LUMI SPA - generated data backups
+lumi_services_backup_*.json
+
+# Local Flutter tooling preferences
+devtools_options.yaml
+
+# IDE & Tooling
+.vscode/
+.postman/
+postman/

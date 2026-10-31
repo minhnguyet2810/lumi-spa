@@ -9,7 +9,9 @@ import '../widgets/admin_booking_table.dart';
 import '../widgets/admin_reject_reason_dialog.dart';
 
 class AdminBookingScreen extends StatefulWidget {
-  const AdminBookingScreen({super.key});
+  const AdminBookingScreen({super.key, this.showAppBar = true});
+
+  final bool showAppBar;
 
   @override
   State<AdminBookingScreen> createState() => _AdminBookingScreenState();
@@ -137,7 +139,7 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
 
     return Scaffold(
       backgroundColor: LumiStyle.ivory,
-      appBar: AppBar(
+      appBar: widget.showAppBar ? AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
@@ -182,7 +184,7 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
           ),
           const SizedBox(width: 8),
         ],
-      ),
+      ) : null,
       body: StreamBuilder<List<BookingItem>>(
         // Lắng nghe real-time từ Cloud Firestore
         stream: AdminBookingRepository.instance.streamAllBookings(),

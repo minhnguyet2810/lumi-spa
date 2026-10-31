@@ -1,3 +1,8 @@
+import 'dart:convert';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:http/http.dart' as http;
+import '../../../../core/network/api_config.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -43,7 +48,7 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
   num get subtotal {
     return widget.cartItems.fold<num>(
       0,
-      (sum, item) => sum + item.total,
+      (total, item) => total + item.total,
     );
   }
 
@@ -502,19 +507,68 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
       };
     }).toList();
 
+    final user = FirebaseAuth.instance.currentUser;
+    final customerName = _nameController.text.trim();
+    final customerPhone = _phoneController.text.trim();
+    final customerAddress = _addressController.text.trim();
+    final customerNote = _noteController.text.trim();
+    final paymentMethodLabel = _paymentMethod == 'bank'
+        ? 'Chuyển khoản ngân hàng'
+        : 'Thanh toán khi nhận hàng (COD)';
+
     LumiOrderStore.addOrder(
       id: orderId,
       date: formattedDate,
       total: _money(orderTotal),
-      customerName: _nameController.text.trim(),
-      phone: _phoneController.text.trim(),
-      address: _addressController.text.trim(),
-      note: _noteController.text.trim(),
+      customerName: customerName,
+      phone: customerPhone,
+      address: customerAddress,
+      note: customerNote,
       items: items,
-      paymentMethod: _paymentMethod == 'bank'
-          ? 'Chuyển khoản ngân hàng'
-          : 'Thanh toán khi nhận hàng',
+      paymentMethod: paymentMethodLabel,
     );
+
+    try {
+      await FirebaseFirestore.instance.collection('orders').doc(orderId).set({
+        'id': orderId,
+        'orderId': orderId,
+        'customerName': customerName,
+        'customerEmail': user?.email ?? 'lumispa.project@gmail.com',
+        'phone': customerPhone,
+        'shippingAddress': customerAddress,
+        'note': customerNote,
+        'total': orderTotal,
+        'formattedTotal': _money(orderTotal),
+        'paymentMethod': paymentMethodLabel,
+        'status': 'pending',
+        'items': items,
+        'userId': user?.uid ?? '',
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+      debugPrint('✅ [Checkout] Đã lưu đơn hàng lên Firestore: $orderId');
+    } catch (e) {
+      debugPrint('⚠️ [Checkout] Lưu Firestore error: $e');
+    }
+
+    try {
+      final url = Uri.parse('${ApiConfig.baseUrl}/api/orders/$orderId/notify-status');
+      http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'status': 'pending',
+          'customerEmail': user?.email ?? 'lumispa.project@gmail.com',
+          'customerName': customerName,
+          'items': items,
+          'total': orderTotal,
+          'shippingAddress': customerAddress,
+          'phone': customerPhone,
+          'paymentMethod': paymentMethodLabel,
+          'userId': user?.uid ?? '',
+        }),
+      ).catchError((_) => http.Response('', 500));
+    } catch (_) {}
 
     LumiShopCatalog.clearCart();
 

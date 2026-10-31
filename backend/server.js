@@ -1,3 +1,5 @@
+const mailService = require('./services/mail_service');
+const pushService = require('./services/push_service');
 process.on('unhandledRejection', (reason) => {
   console.warn('Unhandled Rejection caught:', reason && (reason.message || reason));
 });
@@ -293,6 +295,120 @@ app.get('/', (req, res) => {
       '/api/banners',
     ],
   });
+});
+
+
+// POST /api/orders/:id/notify-status
+// Endpoint xử lý cập nhật trạng thái đơn hàng, gửi Gmail xác nhận và bắn thông báo Push FCM
+app.post('/api/orders/:id/notify-status', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      status,
+      reason = '',
+      customerEmail,
+      customerName,
+      items,
+      total,
+      shippingAddress,
+      phone,
+      paymentMethod,
+      userId,
+    } = req.body || {};
+
+    if (!status) {
+      return res.status(400).json({ success: false, message: 'Thiếu trạng thái status.' });
+    }
+
+    let orderDocData = null;
+    if (db.hasCredentials) {
+      try {
+        const orderRef = db.collection('orders').doc(id);
+        const docSnap = await orderRef.get();
+        if (docSnap.exists) {
+          orderDocData = docSnap.data();
+          await orderRef.update({
+            status,
+            cancelReason: reason || '',
+            updatedAt: FieldValue.serverTimestamp(),
+          });
+        }
+      } catch (dbErr) {
+        console.warn('[OrdersAPI] Firestore update warning:', dbErr.message);
+      }
+    }
+
+    const effectiveUserId = userId || orderDocData?.userId;
+    const effectiveEmail = customerEmail || orderDocData?.customerEmail || orderDocData?.email;
+    const effectiveName = customerName || orderDocData?.customerName;
+    const effectivePhone = phone || orderDocData?.phone;
+    const effectiveAddress = shippingAddress || orderDocData?.shippingAddress || orderDocData?.address;
+    const effectiveTotal = total ?? orderDocData?.total ?? 0;
+    const effectiveItems = items || orderDocData?.items || [];
+    const effectivePayment = paymentMethod || orderDocData?.paymentMethod || 'COD';
+
+    if (effectiveUserId && db.hasCredentials) {
+      const statusLabels = {
+        confirmed: 'đã được duyệt và đang chuẩn bị hàng ✨',
+        shipping: 'đang trên đường vận chuyển đến bạn 🚚',
+        completed: 'đã được giao thành công 🎉',
+        cancelled: 'đã bị hủy' + (reason ? ': ' + reason : '') + ' ⚠️',
+      };
+      const text = statusLabels[status] || ('đã chuyển sang trạng thái "' + status + '"');
+
+      try {
+        await db.collection('notifications').add({
+          userId: effectiveUserId,
+          title: status === 'cancelled' ? 'Đơn hàng đã bị hủy ⚠️' : 'Cập nhật đơn hàng 🛍️',
+          message: 'Đơn hàng #' + id + ' ' + text + '.',
+          type: 'order',
+          orderId: id,
+          isRead: false,
+          createdAt: FieldValue.serverTimestamp(),
+        });
+      } catch (notifErr) {
+        console.warn('[OrdersAPI] Notification add error:', notifErr.message);
+      }
+
+      try {
+        await pushService.sendOrderStatusUpdatedPush({
+          userId: effectiveUserId,
+          orderId: id,
+          status,
+          statusText: text,
+        });
+      } catch (pushErr) {
+        console.warn('[OrdersAPI] Push notification error:', pushErr.message);
+      }
+    }
+
+    let emailResult = null;
+    try {
+      emailResult = await mailService.sendOrderStatusUpdatedEmail({
+        to: effectiveEmail,
+        customerName: effectiveName,
+        orderId: id,
+        status,
+        reason,
+        items: effectiveItems,
+        total: effectiveTotal,
+        shippingAddress: effectiveAddress,
+        phone: effectivePhone,
+        paymentMethod: effectivePayment,
+      });
+    } catch (mailErr) {
+      console.error('[OrdersAPI] Mail send error:', mailErr.message);
+    }
+
+    return res.json({
+      success: true,
+      message: 'Cập nhật trạng thái đơn hàng thành công, đã gửi email và thông báo!',
+      emailSent: emailResult?.success ?? false,
+    });
+  } catch (error) {
+    console.error('Order notify status error:', error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
 });
 
 // Start server only when run directly.

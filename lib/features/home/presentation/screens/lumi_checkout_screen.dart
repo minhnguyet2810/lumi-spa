@@ -529,27 +529,47 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
     );
 
     try {
-      await FirebaseFirestore.instance.collection('orders').doc(orderId).set({
-        'id': orderId,
-        'orderId': orderId,
-        'customerName': customerName,
-        'customerEmail': user?.email ?? 'lumispa.project@gmail.com',
-        'phone': customerPhone,
-        'shippingAddress': customerAddress,
-        'note': customerNote,
-        'total': orderTotal,
-        'formattedTotal': _money(orderTotal),
-        'paymentMethod': paymentMethodLabel,
-        'status': 'pending',
-        'items': items,
-        'userId': user?.uid ?? '',
-        'createdAt': FieldValue.serverTimestamp(),
-        'updatedAt': FieldValue.serverTimestamp(),
-      });
-      debugPrint('✅ [Checkout] Đã lưu đơn hàng lên Firestore: $orderId');
-    } catch (e) {
-      debugPrint('⚠️ [Checkout] Lưu Firestore error: $e');
-    }
+  await FirebaseFirestore.instance
+      .collection('orders')
+      .doc(orderId)
+      .set({
+    'id': orderId,
+    'orderId': orderId,
+    'customerName': customerName,
+    'customerEmail': user?.email ?? '',
+    'phone': customerPhone,
+    'shippingAddress': customerAddress,
+    'note': customerNote,
+    'total': orderTotal,
+    'formattedTotal': _money(orderTotal),
+    'paymentMethod': paymentMethodLabel,
+    'status': 'pending',
+    'items': items,
+    'userId': user?.uid ?? '',
+    'createdAt': FieldValue.serverTimestamp(),
+    'updatedAt': FieldValue.serverTimestamp(),
+  });
+} catch (error) {
+  debugPrint('Lưu đơn hàng thất bại: $error');
+
+  if (!mounted) {
+    return;
+  }
+
+  setState(() {
+    _isSubmitting = false;
+  });
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(
+      content: Text(
+        'Không thể tạo đơn hàng. Vui lòng thử lại.',
+      ),
+    ),
+  );
+
+  return;
+}
 
     try {
       final url = Uri.parse('${ApiConfig.baseUrl}/api/orders/$orderId/notify-status');

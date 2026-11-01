@@ -1,0 +1,51 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // 1. Quản lý Lịch hẹn Spa (Bookings)
+    // Cho phép đọc và ghi để khách hàng đặt lịch và Admin duyệt lịch real-time
+    match /bookings/{bookingId} {
+      allow read, write: if true;
+    }
+
+    // 2. Quản lý Đơn hàng mỹ phẩm (Orders)
+    // Cho phép đọc và ghi để khách hàng mua sắm và Admin duyệt đơn real-time
+    match /orders/{orderId} {
+      allow read, write: if true;
+    }
+
+    // 3. Hệ thống Thông báo In-App (Notifications)
+    // Cho phép đọc và ghi thông báo trạng thái đơn hàng & lịch hẹn
+    match /notifications/{notifId} {
+      allow read, write: if true;
+    }
+
+    // 4. Danh mục Dịch vụ, Sản phẩm & Banner (Catalog)
+    // Khách hàng và Admin đều có quyền xem (read public)
+    match /services/{serviceId} {
+      allow read: if true;
+      allow write: if true;
+    }
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if true;
+    }
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow write: if true;
+    }
+    match /banners/{bannerId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // 5. Hồ sơ người dùng (Users)
+    match /users/{userId} {
+      allow read, write: if true;
+    }
+    match /users/{userId}/{document=**} {
+      allow read, write: if true;
+    }
+  }
+}
+

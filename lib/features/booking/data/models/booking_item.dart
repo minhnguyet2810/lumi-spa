@@ -8,7 +8,7 @@ class BookingItem {
   final String? categoryId;
   final num price;
   final int durationMinutes;
-  final String status; // 'pending' | 'confirmed' | 'completed' | 'cancelled'
+  final String status; // 'pending' | 'confirmed' | 'approved' | 'completed' | 'cancelled' | 'rejected'
   final String contactName;
   final String contactPhone;
   final DateTime? startAt;
@@ -135,37 +135,40 @@ class BookingItem {
     );
   }
 
-  /// Có thể hủy nếu trạng thái là pending hoặc confirmed, và thời gian chưa bắt đầu
+  /// Có thể hủy nếu trạng thái là pending hoặc confirmed/approved, và thời gian chưa bắt đầu
   bool get isCancellable {
-    if (status != 'pending' && status != 'confirmed') return false;
+    if (status != 'pending' && status != 'confirmed' && status != 'approved') return false;
     if (startAt == null) return false;
     return startAt!.isAfter(DateTime.now());
   }
 
-  /// Lịch sắp tới: chưa diễn ra hoặc đang diễn ra
+  /// Lịch sắp tới: chưa diễn ra hoặc đang diễn ra (bao gồm pending, confirmed, approved)
   bool get isUpcoming {
-    if (status != 'pending' && status != 'confirmed') return false;
+    if (status != 'pending' && status != 'confirmed' && status != 'approved') return false;
     if (startAt == null) return true;
     return startAt!.isAfter(DateTime.now().subtract(const Duration(minutes: 30)));
   }
 
-  /// Lịch sử: đã hoàn thành hoặc đã qua thời gian hẹn (nhưng chưa hủy)
+  /// Lịch sử: đã hoàn thành hoặc đã qua thời gian hẹn (nhưng chưa hủy/từ chối)
   bool get isHistory {
     if (status == 'completed') return true;
-    if (status == 'cancelled') return false;
+    if (status == 'cancelled' || status == 'rejected') return false;
     if (startAt == null) return false;
     return startAt!.isBefore(DateTime.now().subtract(const Duration(minutes: 30)));
   }
 
-  /// Đã hủy
-  bool get isCancelled => status == 'cancelled';
+  /// Đã hủy hoặc bị từ chối
+  bool get isCancelled => status == 'cancelled' || status == 'rejected';
 
   String get statusLabel {
     switch (status) {
       case 'pending':
         return 'Chờ xác nhận';
       case 'confirmed':
-        return 'Đã xác nhận';
+      case 'approved':
+        return 'Đã duyệt';
+      case 'rejected':
+        return 'Đã từ chối';
       case 'completed':
         return 'Đã hoàn thành';
       case 'cancelled':

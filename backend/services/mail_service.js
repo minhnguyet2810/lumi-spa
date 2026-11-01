@@ -455,9 +455,153 @@ async function sendOrderSuccessEmail({
   }
 }
 
+
+/**
+ * Gửi email khi Admin duyệt / cập nhật trạng thái đơn hàng (Confirmed / Shipping / Completed / Cancelled)
+ */
+async function sendOrderStatusUpdatedEmail({
+  to,
+  customerName,
+  orderId,
+  status,
+  reason,
+  items = [],
+  total = 0,
+  shippingAddress = '',
+  phone = '',
+  paymentMethod = 'COD',
+}) {
+  const recipient = to || process.env.GMAIL_USER;
+
+  let badgeHtml = '';
+  let headingTitle = '';
+  let subTitle = '';
+  let descNote = '';
+
+  switch (status) {
+    case 'confirmed':
+    case 'processing':
+      badgeHtml = '<span class="badge" style="background: #E6F4EA; color: #137333; font-weight: 700;">ĐÃ DUYỆT · ĐANG CHUẨN BỊ HÀNG</span>';
+      headingTitle = 'Đơn Hàng Đã Được Duyệt Thành Công';
+      subTitle = 'Nhân viên LUMI đang chuẩn bị và đóng gói sản phẩm cho bạn';
+      descNote = 'Đơn hàng của bạn đã được quản trị viên duyệt thành công. Chúng tôi đang kiểm tra đóng gói cẩn thận và sẽ bàn giao cho đơn vị vận chuyển sớm nhất.';
+      break;
+    case 'shipping':
+    case 'delivering':
+      badgeHtml = '<span class="badge" style="background: #E8F0FE; color: #1A73E8; font-weight: 700;">ĐANG VẬN CHUYỂN GIAO HÀNG</span>';
+      headingTitle = 'Đơn Hàng Đang Được Giao Đến Bạn';
+      subTitle = 'Kiện hàng đã được bàn giao cho đối tác vận chuyển';
+      descNote = 'Kiện hàng mỹ phẩm LUMI đang trên đường vận chuyển đến địa chỉ của bạn. Vui lòng chú ý điện thoại để nhận hàng.';
+      break;
+    case 'completed':
+      badgeHtml = '<span class="badge badge-confirmed">GIAO HÀNG THÀNH CÔNG</span>';
+      headingTitle = 'Giao Hàng Thành Công · Cảm Ơn Bạn!';
+      subTitle = 'Chúc bạn có những trải nghiệm chăm sóc da tuyệt vời';
+      descNote = 'Đơn hàng đã được giao thành công. Chúc bạn luôn rạng rỡ và hạnh phúc cùng các sản phẩm chăm sóc da cao cấp của LUMI SPA!';
+      break;
+    case 'cancelled':
+    case 'rejected':
+      badgeHtml = '<span class="badge badge-rejected">ĐƠN HÀNG ĐÃ HỦY</span>';
+      headingTitle = 'Thông Báo Hủy Đơn Hàng';
+      subTitle = 'Đơn hàng không thể tiếp tục xử lý';
+      descNote = reason ? ('Lý do hủy đơn: ' + reason) : 'Đơn hàng đã bị hủy theo yêu cầu hoặc do sự cố kỹ thuật. Chúng tôi rất tiếc vì sự bất tiện này.';
+      break;
+    default:
+      badgeHtml = '<span class="badge badge-pending">' + (status || '').toUpperCase() + '</span>';
+      headingTitle = 'Cập Nhật Trạng Thái Đơn Hàng';
+      subTitle = 'Đơn hàng #' + orderId + ' đã chuyển sang trạng thái mới';
+      descNote = 'Trạng thái hiện tại: ' + status;
+  }
+
+  const itemsRows = Array.isArray(items) && items.length > 0
+    ? items.map(it => {
+        const name = it.name || it.productName || 'Sản phẩm LUMI';
+        const qty = it.quantity || 1;
+        const price = formatVND(it.price || it.unitPrice || 0);
+        return '<tr>' +
+          '<td style="padding: 10px 12px; border-bottom: 1px solid #F4E8EA;">' + name + '</td>' +
+          '<td style="padding: 10px 12px; border-bottom: 1px solid #F4E8EA; text-align: center;">' + qty + '</td>' +
+          '<td style="padding: 10px 12px; border-bottom: 1px solid #F4E8EA; text-align: right;">' + price + '</td>' +
+        '</tr>';
+      }).join('')
+    : '<tr><td colspan="3" style="padding: 10px 12px; text-align: center; color: #78676B;">Chi tiết sản phẩm xem trong ứng dụng</td></tr>';
+
+  const content = `
+    <div style="text-align: center; margin-bottom: 20px;">
+      ${badgeHtml}
+    </div>
+    <div class="info-box">
+      <div class="info-row">
+        <span class="info-label">Mã đơn hàng:</span>
+        <span class="info-val">#${orderId}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Người nhận:</span>
+        <span class="info-val">${customerName || 'Quý khách'} (${phone || ''})</span>
+      </div>
+      ${shippingAddress ? `
+      <div class="info-row">
+        <span class="info-label">Địa chỉ giao hàng:</span>
+        <span class="info-val">${shippingAddress}</span>
+      </div>` : ''}
+      <div class="info-row">
+        <span class="info-label">Phương thức thanh toán:</span>
+        <span class="info-val">${paymentMethod || 'Thanh toán khi nhận hàng (COD)'}</span>
+      </div>
+      <div class="info-row" style="font-size: 16px; margin-top: 8px;">
+        <span class="info-label" style="font-weight: 700; color: #503B42;">Tổng tiền thanh toán:</span>
+        <span class="info-val" style="color: #B77C88; font-size: 18px; font-weight: 700;">${formatVND(total)}</span>
+      </div>
+    </div>
+
+    ${Array.isArray(items) && items.length > 0 ? `
+    <table class="table-container" style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+      <thead>
+        <tr style="background: #FDF4F5;">
+          <th style="padding: 10px 12px; text-align: left; font-size: 12px; color: #503B42;">Sản phẩm</th>
+          <th style="padding: 10px 12px; text-align: center; font-size: 12px; color: #503B42;">SL</th>
+          <th style="padding: 10px 12px; text-align: right; font-size: 12px; color: #503B42;">Đơn giá</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${itemsRows}
+      </tbody>
+    </table>` : ''}
+
+    <div style="background: #FDF4F5; border-left: 3px solid #B77C88; padding: 14px 18px; border-radius: 8px; margin-bottom: 20px; font-size: 13.5px; color: #503B42; line-height: 1.6;">
+      💬 ${descNote}
+    </div>
+
+    <p style="font-size: 13px; color: #78676B; text-align: center;">
+      Cần hỗ trợ đơn hàng? Liên hệ hotline CSKH LUMI SPA hoặc phản hồi trực tiếp email này.
+    </p>
+  `;
+
+  const html = BASE_TEMPLATE(
+    headingTitle,
+    subTitle,
+    content
+  );
+
+  try {
+    const info = await transporter.sendMail({
+      from: `"LUMI SPA & WELLNESS" <${process.env.GMAIL_USER}>`,
+      to: recipient,
+      subject: `🛍️ [LUMI SPA] Cập nhật đơn hàng #${orderId}: ${headingTitle}`,
+      html,
+    });
+    console.log(`[MailService] Sent order status update email to ${recipient}: ${info.messageId}`);
+    return { success: true, messageId: info.messageId };
+  } catch (err) {
+    console.error('[MailService] Failed to send order status email:', err.message);
+    return { success: false, error: err.message };
+  }
+}
+
 module.exports = {
   sendBookingCreatedEmail,
   sendBookingConfirmedEmail,
   sendOrderSuccessEmail,
+  sendOrderStatusUpdatedEmail,
 };
 

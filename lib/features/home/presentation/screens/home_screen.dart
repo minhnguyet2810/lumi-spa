@@ -3,8 +3,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'lumi_booking_screen.dart';
 import 'spa_catalog.dart';
 import 'lumi_shop_catalog.dart';
+import 'lumi_checkout_screen.dart';
 import 'notifications_screen.dart';
 import 'lumi_journal_screen.dart';
+import 'lumi_my_orders_screen.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -287,9 +289,13 @@ class _HomeScreenState extends State<HomeScreen> {
     if (_loadingSession) return;
 
     if (_isLoggedIn) {
-      _showComingSoon(action);
-      return;
-    }
+  if (action == 'Thanh toán đơn hàng') {
+    _openCheckout();
+  } else {
+    _showComingSoon(action);
+  }
+  return;
+}
 
     showModalBottomSheet<void>(
       context: context,
@@ -1334,9 +1340,20 @@ class _HomeScreenState extends State<HomeScreen> {
     },
   );
 
+  void _openCheckout() {
+  final cartItems = LumiShopCatalog.currentCart;
+
+  Navigator.of(context).push(
+    MaterialPageRoute<void>(
+      builder: (_) => LumiCheckoutScreen(
+        cartItems: cartItems,
+      ),
+    ),
+  );
+}
   Widget _shop() {
     return LumiShopCatalog(
-      onCheckout: () => _requireLogin('thanh toán đơn hàng'),
+      onCheckout: () => _requireLogin('Thanh toán đơn hàng'),
     );
   }
 
@@ -1407,6 +1424,13 @@ class _HomeScreenState extends State<HomeScreen> {
     onLogout: _logout,
     onAppointments: () => setState(() => _tab = 3),
     onSupport: () => _showComingSoon('Hỗ trợ và liên hệ'),
+    onOrders: () {
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => const LumiMyOrdersScreen(),
+        ),
+      );
+    },
   );
 
   Widget _luxuryNavItem(

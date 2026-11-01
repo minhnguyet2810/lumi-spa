@@ -10,11 +10,7 @@ class LumiApp extends StatelessWidget {
   Widget build(BuildContext context) => MaterialApp.router(
     title: 'LUMI SPA',
     debugShowCheckedModeBanner: false,
-    theme: ThemeData(
-      useMaterial3: true,
-      scaffoldBackgroundColor: LumiStyle.ivory,
-      colorScheme: ColorScheme.fromSeed(seedColor: LumiStyle.rose),
-    ),
+    theme: LumiStyle.theme,
     routerConfig: AppRouter.router,
   );
 }

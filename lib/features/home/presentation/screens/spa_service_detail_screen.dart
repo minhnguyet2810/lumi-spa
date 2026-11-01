@@ -15,12 +15,12 @@ class LumiSpaServiceDetailScreen extends StatelessWidget {
   final String formattedPrice;
   final VoidCallback onBook;
 
-  static const cream = Color(0xFFFFFAF8);
-  static const rose = Color(0xFFB56F86);
-  static const blush = Color(0xFFF4E4E8);
-  static const blue = Color(0xFFDDECEF);
-  static const ink = Color(0xFF503B42);
-  static const muted = Color(0xFF78676B);
+  static const cream = Color(0xFFFFF8EF);
+  static const rose = Color(0xFFA5553E);
+  static const blush = Color(0xFFFBE7DC);
+  static const blue = Color(0xFFEAF3F7);
+  static const ink = Color(0xFF403735);
+  static const muted = Color(0xFF756863);
 
   @override
   Widget build(BuildContext context) {
@@ -102,7 +102,7 @@ class LumiSpaServiceDetailScreen extends StatelessWidget {
                   Text(
                     'LUMI SPA & WELLNESS',
                     style: GoogleFonts.dmSans(
-                      fontSize: 12,
+                      fontSize: 14,
                       letterSpacing: 1.7,
                       fontWeight: FontWeight.w700,
                       color: rose,
@@ -111,7 +111,7 @@ class LumiSpaServiceDetailScreen extends StatelessWidget {
                   const SizedBox(height: 10),
                   Text(
                     name,
-                    style: GoogleFonts.cormorantGaramond(
+                    style: GoogleFonts.dmSans(
                       fontSize: 37,
                       height: 1.1,
                       fontWeight: FontWeight.w600,
@@ -366,7 +366,7 @@ class LumiSpaServiceDetailScreen extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
               decoration: const BoxDecoration(
                 color: cream,
-                border: Border(top: BorderSide(color: Color(0xFFEADCE0))),
+                border: Border(top: BorderSide(color: Color(0xFFEADFD5))),
               ),
               child: SizedBox(
                 width: double.infinity,

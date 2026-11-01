@@ -1,32 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// LUMI Design System V2 — Soft Luxury Wellness.
-/// Pink-led accents (65%), blue (25%), peach (10%) on a calm ivory canvas.
+/// LUMI — Warm cream, pastel peach and soft sky blue.
+/// Light surfaces with dark, readable text.
 /// Existing API names are preserved for compatibility with current screens.
 abstract final class LumiStyle {
   // Original public tokens retained to avoid breaking older screens.
-  static const ivory = Color(0xFFFAF7F4);
-  static const plum = Color(0xFF392F37);
-  static const rose = Color(0xFFB77C88);
-  static const muted = Color(0xFF887D80);
+  static const ivory = Color(0xFFFFF8EF);
+  static const plum = Color(0xFF403735);
+  static const rose = Color(0xFFA5553E);
+  static const muted = Color(0xFF756863);
 
   // Brand accents — use as accents, not full-screen color coverage.
-  static const dustyRose = Color(0xFFB77C88);
-  static const softPink = Color(0xFFF2BDCB);
-  static const mutedBlue = Color(0xFF8AA6BF);
-  static const aquaBlue = Color(0xFF79C7D9);
-  static const peach = Color(0xFFF2C4B3);
+  static const dustyRose = Color(0xFFA5553E);
+  static const softPink = Color(0xFFF8D5C2);
+  static const mutedBlue = Color(0xFF557C90);
+  static const aquaBlue = Color(0xFFA9CEDD);
+  static const peach = Color(0xFFF5BEA5);
 
   // Supporting surfaces and borders.
   static const canvas = ivory;
-  static const surface = Color(0xFFFFFDFC);
-  static const blushSurface = Color(0xFFFFF0F3);
+  static const surface = Color(0xFFFFFDFA);
+  static const blushSurface = Color(0xFFFBE7DC);
   static const blueSurface = Color(0xFFEAF3F7);
-  static const line = Color(0xFFEADFE1);
+  static const line = Color(0xFFEADFD5);
   static const ink = plum;
 
-  static const double radiusSmall = 8;
+  static const double radiusSmall = 16;
   static const double radiusMedium = 16;
   static const double radiusLarge = 26;
   static const double screenPadding = 24;
@@ -39,20 +39,20 @@ abstract final class LumiStyle {
   static TextStyle heading({double size = 48, Color color = plum}) =>
       GoogleFonts.cormorantGaramond(
         fontSize: size,
-        fontWeight: FontWeight.w500,
-        height: 1.05,
+        fontWeight: FontWeight.w600,
+        height: 1.15,
         letterSpacing: -0.5,
         color: color,
       );
 
-  static TextStyle body({double size = 15, Color color = muted}) =>
-      GoogleFonts.manrope(fontSize: size, height: 1.5, color: color);
+  static TextStyle body({double size = 16, Color color = muted}) =>
+      GoogleFonts.dmSans(fontSize: size, height: 1.5, color: color);
 
-  static TextStyle label({double size = 11, Color color = plum}) =>
-      GoogleFonts.manrope(
+  static TextStyle label({double size = 14, Color color = plum}) =>
+      GoogleFonts.dmSans(
         fontSize: size,
         fontWeight: FontWeight.w600,
-        letterSpacing: 1.5,
+        letterSpacing: 0.2,
         color: color,
       );
 
@@ -60,11 +60,65 @@ abstract final class LumiStyle {
     useMaterial3: true,
     brightness: Brightness.light,
     scaffoldBackgroundColor: canvas,
+    textTheme: GoogleFonts.dmSansTextTheme().copyWith(
+      bodyLarge: GoogleFonts.dmSans(fontSize: 16, height: 1.55, color: ink),
+      bodyMedium: GoogleFonts.dmSans(fontSize: 16, height: 1.5, color: ink),
+      bodySmall: GoogleFonts.dmSans(fontSize: 14, height: 1.45, color: muted),
+      titleLarge: GoogleFonts.dmSans(
+        fontSize: 24,
+        fontWeight: FontWeight.w700,
+        color: ink,
+      ),
+      titleMedium: GoogleFonts.dmSans(
+        fontSize: 18,
+        fontWeight: FontWeight.w600,
+        color: ink,
+      ),
+      labelLarge: GoogleFonts.dmSans(
+        fontSize: 15,
+        fontWeight: FontWeight.w700,
+        color: ink,
+      ),
+    ),
+    filledButtonTheme: FilledButtonThemeData(
+      style: FilledButton.styleFrom(
+        backgroundColor: peach,
+        foregroundColor: ink,
+        minimumSize: const Size(48, 52),
+        textStyle: GoogleFonts.dmSans(
+          fontSize: 15,
+          fontWeight: FontWeight.w700,
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+      ),
+    ),
+    outlinedButtonTheme: OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(
+        foregroundColor: ink,
+        minimumSize: const Size(48, 52),
+        side: const BorderSide(color: line),
+        textStyle: GoogleFonts.dmSans(
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      ),
+    ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: peach,
+        foregroundColor: ink,
+        elevation: 0,
+        minimumSize: const Size(48, 52),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+      ),
+    ),
+
     colorScheme: ColorScheme.fromSeed(
       seedColor: dustyRose,
       brightness: Brightness.light,
-      primary: plum,
-      secondary: dustyRose,
+      primary: dustyRose,
+      secondary: mutedBlue,
       surface: surface,
     ),
     appBarTheme: AppBarTheme(
@@ -72,7 +126,13 @@ abstract final class LumiStyle {
       foregroundColor: plum,
       elevation: 0,
       centerTitle: false,
-      titleTextStyle: heading(size: 30),
+      titleTextStyle: GoogleFonts.dmSans(
+        fontSize: 23,
+        fontWeight: FontWeight.w700,
+        color: ink,
+      ),
+      scrolledUnderElevation: 0,
+      surfaceTintColor: Colors.transparent,
     ),
     cardTheme: CardThemeData(
       color: surface,
@@ -86,10 +146,7 @@ abstract final class LumiStyle {
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
       fillColor: surface,
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: 18,
-        vertical: 16,
-      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(radiusSmall),
         borderSide: const BorderSide(color: line),
@@ -121,7 +178,7 @@ class LumiButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final foreground = light ? LumiStyle.plum : LumiStyle.ivory;
+    const foreground = LumiStyle.ink;
 
     return SizedBox(
       width: double.infinity,
@@ -129,13 +186,13 @@ class LumiButton extends StatelessWidget {
       child: FilledButton(
         onPressed: onPressed,
         style: FilledButton.styleFrom(
-          backgroundColor: light ? LumiStyle.ivory : LumiStyle.plum,
+          backgroundColor: light ? LumiStyle.surface : LumiStyle.peach,
           foregroundColor: foreground,
           disabledBackgroundColor: LumiStyle.line,
           disabledForegroundColor: LumiStyle.muted,
           padding: const EdgeInsets.symmetric(horizontal: 22),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(LumiStyle.radiusSmall),
+            borderRadius: BorderRadius.circular(18),
           ),
         ),
         child: Row(
@@ -143,13 +200,13 @@ class LumiButton extends StatelessWidget {
           children: [
             Flexible(
               child: Text(
-                label.toUpperCase(),
+                label,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: GoogleFonts.dmSans(
-                  fontSize: 13,
+                  fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  letterSpacing: 1.4,
+                  letterSpacing: 0.2,
                 ),
               ),
             ),

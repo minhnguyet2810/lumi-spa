@@ -75,9 +75,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _editProfile() async {
     final changed = await Navigator.of(context).push<bool>(
-      MaterialPageRoute<bool>(
-        builder: (_) => const EditProfileScreen(),
-      ),
+      MaterialPageRoute<bool>(builder: (_) => const EditProfileScreen()),
     );
     if (changed == true && mounted) {
       setState(_reload);
@@ -86,36 +84,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) => ListView(
-    padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
+    padding: const EdgeInsets.fromLTRB(20, 12, 20, 130),
     children: [
-      Row(
-        children: [
-          const Spacer(),
-          Expanded(
-            flex: 3,
-            child: Text(
-              'Hồ sơ cá nhân',
-              textAlign: TextAlign.center,
-              style: LumiStyle.heading(size: 28, color: LumiStyle.plum),
-            ),
+      SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.only(top: 12, bottom: 24),
+          child: Text(
+            'Tài khoản',
+            style: LumiStyle.body(
+              size: 28,
+              color: LumiStyle.ink,
+            ).copyWith(fontWeight: FontWeight.w700, height: 1.2),
           ),
-          Expanded(
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: widget.isLoggedIn
-                  ? TextButton(
-                      onPressed: widget.isLoggingOut ? null : widget.onLogout,
-                      child: const Text('Đăng xuất'),
-                    )
-                  : TextButton(
-                      onPressed: widget.onLogin,
-                      child: const Text('Đăng nhập'),
-                    ),
-            ),
-          ),
-        ],
+        ),
       ),
-      const SizedBox(height: 12),
       _profileCard(),
       const SizedBox(height: 14),
       _membershipCard(),
@@ -128,7 +111,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           child: OutlinedButton.icon(
             onPressed: widget.isLoggingOut ? null : widget.onLogout,
             icon: const Icon(Icons.logout_rounded),
-            label: Text(widget.isLoggingOut ? 'ĐANG ĐĂNG XUẤT...' : 'ĐĂNG XUẤT'),
+            label: Text(widget.isLoggingOut ? 'Đang đăng xuất…' : 'Đăng xuất'),
             style: OutlinedButton.styleFrom(
               foregroundColor: LumiStyle.plum,
               side: const BorderSide(color: LumiStyle.line),
@@ -142,6 +125,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   );
 
   Widget _profileCard() => _card(
+    background: const Color(0xFFFBE7DC),
     child: Column(
       children: [
         FutureBuilder<LumiAccountProfile>(
@@ -161,23 +145,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
             return Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Expanded(
-                  flex: 1,
-                  child: AspectRatio(
-                    aspectRatio: 1,
-                    child: CircleAvatar(
-                      backgroundColor: LumiStyle.blushSurface,
-                      foregroundImage: user?.photoURL == null
-                          ? null
-                          : NetworkImage(user!.photoURL!),
-                      child: user?.photoURL == null
-                          ? const Icon(
-                              Icons.person_outline_rounded,
-                              color: LumiStyle.rose,
-                              size: 38,
-                            )
-                          : null,
-                    ),
+                SizedBox(
+                  width: 64,
+                  height: 64,
+                  child: CircleAvatar(
+                    backgroundColor: const Color(0xFFFFFDFA),
+                    foregroundImage: user?.photoURL == null
+                        ? null
+                        : NetworkImage(user!.photoURL!),
+                    child: user?.photoURL == null
+                        ? const Icon(
+                            Icons.person_outline_rounded,
+                            color: LumiStyle.rose,
+                            size: 32,
+                          )
+                        : null,
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -193,7 +175,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               name,
                               overflow: TextOverflow.ellipsis,
                               style: LumiStyle.body(
-                                size: 18,
+                                size: 22,
                                 color: LumiStyle.plum,
                               ).copyWith(fontWeight: FontWeight.w700),
                             ),
@@ -201,9 +183,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           const SizedBox(width: 6),
                           FutureBuilder<LumiMembership>(
                             future: _membershipFuture,
-                            builder: (context, tierSnapshot) => _tierPill(
-                              tierSnapshot.data?.tier,
-                            ),
+                            builder: (context, tierSnapshot) =>
+                                _tierPill(tierSnapshot.data?.tier),
                           ),
                         ],
                       ),
@@ -237,12 +218,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
         const SizedBox(height: 18),
         SizedBox(
           width: double.infinity,
-          child: OutlinedButton.icon(
+          child: FilledButton.icon(
             onPressed: widget.isLoggedIn ? _editProfile : widget.onLogin,
-            icon: const Icon(Icons.edit_outlined, size: 18),
-            label: const Text('Chỉnh sửa thông tin cá nhân'),
-            style: OutlinedButton.styleFrom(
+            icon: Icon(
+              widget.isLoggedIn ? Icons.edit_outlined : Icons.login_rounded,
+              size: 22,
+            ),
+            label: Text(
+              widget.isLoggedIn ? 'Chỉnh sửa hồ sơ' : 'Đăng nhập',
+              style: LumiStyle.body(
+                size: 16,
+                color: LumiStyle.ink,
+              ).copyWith(fontWeight: FontWeight.w600),
+            ),
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFFFFFDFA),
               foregroundColor: LumiStyle.plum,
+              minimumSize: const Size(48, 54),
               side: const BorderSide(color: LumiStyle.line),
               padding: const EdgeInsets.symmetric(vertical: 13),
             ),
@@ -257,6 +249,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     builder: (context, snapshot) {
       final membership = snapshot.data;
       return _card(
+        background: const Color(0xFFE6F1F5),
         onTap: widget.isLoggedIn
             ? () => Navigator.of(context).push(
                 MaterialPageRoute<void>(
@@ -287,18 +280,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Text(
                     'Thẻ thành viên LUMI',
                     style: LumiStyle.body(
-                      size: 15,
+                      size: 17,
                       color: LumiStyle.plum,
                     ).copyWith(fontWeight: FontWeight.w700),
                   ),
                   const SizedBox(height: 3),
                   Text(
                     'Hạng ${membership?.tier ?? '—'}',
-                    style: LumiStyle.body(size: 13),
+                    style: LumiStyle.body(size: 15),
                   ),
                   Text(
                     'Điểm tích lũy: ${membership?.points?.toString() ?? '—'}',
-                    style: LumiStyle.body(size: 13),
+                    style: LumiStyle.body(size: 15),
                   ),
                 ],
               ),
@@ -312,62 +305,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _settingsCard() => _card(
     child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Material(
-          color: Colors.transparent,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(12),
-            onTap: () => context.push('/settings'),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: Row(
-                children: [
-                  Container(
-                    width: 42,
-                    height: 42,
-                    decoration: const BoxDecoration(
-                      color: LumiStyle.blushSurface,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.settings_outlined,
-                      color: LumiStyle.rose,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Cài đặt', style: LumiStyle.heading(size: 25)),
-                        Text(
-                          'Tùy chọn tài khoản',
-                          style: LumiStyle.body(size: 13),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Icon(
-                    Icons.chevron_right_rounded,
-                    color: LumiStyle.rose,
-                  ),
-                ],
-              ),
-            ),
-          ),
+        _setting(
+          Icons.settings_outlined,
+          'Cài đặt',
+          'Tùy chọn tài khoản',
+          () => context.push('/settings'),
         ),
-        const SizedBox(height: 8),
+        const Divider(height: 20, color: LumiStyle.line),
         _setting(
           Icons.event_note_outlined,
           'Lịch sử liệu trình',
           'Xem các lịch hẹn của bạn',
           widget.onAppointments,
         ),
+        const Divider(height: 20, color: LumiStyle.line),
         _setting(
           Icons.support_agent_outlined,
           'Hỗ trợ và liên hệ',
-          'Chúng tôi luôn sẵn sàng hỗ trợ',
+          'Liên hệ với LUMI',
           widget.onSupport,
         ),
       ],
@@ -379,70 +335,110 @@ class _ProfileScreenState extends State<ProfileScreen> {
     String title,
     String subtitle,
     VoidCallback onTap,
-  ) => Material(
-    color: Colors.transparent,
-    child: InkWell(
-      borderRadius: BorderRadius.circular(12),
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        child: Row(
-          children: [
-            Icon(icon, color: LumiStyle.rose),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: LumiStyle.body(size: 15, color: LumiStyle.plum),
+  ) {
+    final background = icon == Icons.settings_outlined
+        ? const Color(0xFFE6F1F5)
+        : icon == Icons.event_note_outlined
+        ? const Color(0xFFFBE7DC)
+        : const Color(0xFFEDF1E5);
+    final foreground = icon == Icons.settings_outlined
+        ? const Color(0xFF406779)
+        : icon == Icons.event_note_outlined
+        ? LumiStyle.rose
+        : const Color(0xFF526442);
+
+    return Semantics(
+      hint: subtitle,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            child: Row(
+              children: [
+                Container(
+                  width: 46,
+                  height: 46,
+                  decoration: BoxDecoration(
+                    color: background,
+                    borderRadius: BorderRadius.circular(15),
                   ),
-                  Text(subtitle, style: LumiStyle.body(size: 12)),
-                ],
-              ),
+                  child: Icon(icon, color: foreground, size: 25),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: LumiStyle.body(
+                      size: 17,
+                      color: LumiStyle.ink,
+                    ).copyWith(fontWeight: FontWeight.w600, letterSpacing: 0),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                const Icon(
+                  Icons.chevron_right_rounded,
+                  size: 23,
+                  color: LumiStyle.muted,
+                ),
+              ],
             ),
-            const Icon(Icons.chevron_right_rounded, size: 20),
-          ],
+          ),
         ),
       ),
-    ),
-  );
+    );
+  }
 
   Widget _infoLine(IconData icon, String value) => Row(
     children: [
-      Icon(icon, size: 15, color: LumiStyle.muted),
+      Icon(icon, size: 17, color: LumiStyle.muted),
       const SizedBox(width: 6),
       Expanded(
         child: Text(
           value.isEmpty ? '—' : value,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: LumiStyle.body(size: 13),
+          style: LumiStyle.body(size: 15),
         ),
       ),
     ],
   );
 
-  Widget _tierPill(String? tier) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-    decoration: BoxDecoration(
-      color: LumiStyle.blushSurface,
-      borderRadius: BorderRadius.circular(20),
-    ),
-    child: Text(
-      tier ?? '—',
-      style: LumiStyle.body(size: 10, color: LumiStyle.rose).copyWith(
-        fontWeight: FontWeight.w700,
-      ),
-    ),
-  );
+  Widget _tierPill(String? tier) => tier == null || tier.trim().isEmpty
+      ? const SizedBox.shrink()
+      : Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+          decoration: BoxDecoration(
+            color: LumiStyle.blushSurface,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Text(
+            tier,
+            style: LumiStyle.body(
+              size: 14,
+              color: LumiStyle.rose,
+            ).copyWith(fontWeight: FontWeight.w700),
+          ),
+        );
 
-  Widget _card({required Widget child, VoidCallback? onTap}) => Container(
+  Widget _card({
+    required Widget child,
+    VoidCallback? onTap,
+    Color background = LumiStyle.surface,
+  }) => Container(
     decoration: BoxDecoration(
-      color: LumiStyle.surface,
-      borderRadius: BorderRadius.circular(18),
-      border: Border.all(color: LumiStyle.line),
+      color: background,
+      borderRadius: BorderRadius.circular(24),
+      border: Border.all(color: const Color(0x66FFFFFF)),
+      boxShadow: const [
+        BoxShadow(
+          color: Color(0x07403735),
+          blurRadius: 18,
+          offset: Offset(0, 6),
+        ),
+      ],
     ),
     child: Material(
       color: Colors.transparent,

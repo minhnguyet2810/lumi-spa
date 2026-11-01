@@ -18,11 +18,11 @@ class LumiSpaCatalog extends StatefulWidget {
 }
 
 class _LumiSpaCatalogState extends State<LumiSpaCatalog> {
-  static const ink = Color(0xFF503B42);
-  static const rose = Color(0xFFB56F86);
-  static const blue = Color(0xFFDDECEF);
-  static const blush = Color(0xFFF4E4E8);
-  static const muted = Color(0xFF78676B);
+  static const ink = Color(0xFF403735);
+  static const rose = Color(0xFFA5553E);
+  static const blue = Color(0xFFEAF3F7);
+  static const blush = Color(0xFFFBE7DC);
+  static const muted = Color(0xFF756863);
   final _search = TextEditingController();
   String _category = 'Tất cả';
   final categories = const [
@@ -108,7 +108,7 @@ class _LumiSpaCatalogState extends State<LumiSpaCatalog> {
           Text(
             detail,
             style: GoogleFonts.dmSans(
-              fontSize: 13,
+              fontSize: 14,
               color: rose,
               fontWeight: FontWeight.w600,
             ),
@@ -128,10 +128,10 @@ class _LumiSpaCatalogState extends State<LumiSpaCatalog> {
           // LUMI V4: Shared brand header.
 
           Text(
-            'Chăm sóc dành riêng cho bạn.',
-            style: GoogleFonts.cormorantGaramond(
+            'Liệu trình chăm sóc',
+            style: GoogleFonts.dmSans(
               fontSize: 30,
-              height: 1.03,
+              height: 1.2,
               fontWeight: FontWeight.w600,
               color: ink,
             ),
@@ -200,7 +200,7 @@ class _LumiSpaCatalogState extends State<LumiSpaCatalog> {
               contentPadding: const EdgeInsets.symmetric(vertical: 17),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(17),
-                borderSide: const BorderSide(color: Color(0xFFEADCE0)),
+                borderSide: const BorderSide(color: Color(0xFFEADFD5)),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(17),
@@ -211,7 +211,7 @@ class _LumiSpaCatalogState extends State<LumiSpaCatalog> {
           const SizedBox(height: 26),
           heading('Khám phá danh mục'),
           SizedBox(
-            height: 49,
+            height: 60,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               itemCount: categories.length,
@@ -454,7 +454,7 @@ class _LumiSpaCatalogState extends State<LumiSpaCatalog> {
                     categoryOf(service).toUpperCase(),
                     style: GoogleFonts.dmSans(
                       color: rose,
-                      fontSize: 11,
+                      fontSize: 14,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 1.5,
                     ),
@@ -462,7 +462,7 @@ class _LumiSpaCatalogState extends State<LumiSpaCatalog> {
                   const SizedBox(height: 7),
                   Text(
                     name,
-                    style: GoogleFonts.cormorantGaramond(
+                    style: GoogleFonts.dmSans(
                       fontSize: 28,
                       fontWeight: FontWeight.w600,
                       color: ink,
@@ -475,7 +475,7 @@ class _LumiSpaCatalogState extends State<LumiSpaCatalog> {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.dmSans(
-                        fontSize: 13,
+                        fontSize: 14,
                         height: 1.5,
                         color: muted,
                       ),
@@ -492,7 +492,7 @@ class _LumiSpaCatalogState extends State<LumiSpaCatalog> {
                       const SizedBox(width: 5),
                       Text(
                         duration,
-                        style: GoogleFonts.dmSans(color: muted, fontSize: 13),
+                        style: GoogleFonts.dmSans(color: muted, fontSize: 14),
                       ),
                       const Spacer(),
                       Text(

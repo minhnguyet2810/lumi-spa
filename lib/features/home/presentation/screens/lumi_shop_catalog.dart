@@ -16,12 +16,12 @@ class LumiShopCatalog extends StatefulWidget {
 }
 
 class _LumiShopCatalogState extends State<LumiShopCatalog> {
-  static const rose = Color(0xFFB56F86);
-  static const ink = Color(0xFF503B42);
-  static const muted = Color(0xFF78676B);
-  static const blue = Color(0xFFDDECEF);
-  static const blush = Color(0xFFF4E4E8);
-  static const cream = Color(0xFFFFFAF8);
+  static const rose = Color(0xFFA5553E);
+  static const ink = Color(0xFF403735);
+  static const muted = Color(0xFF756863);
+  static const blue = Color(0xFFEAF3F7);
+  static const blush = Color(0xFFFBE7DC);
+  static const cream = Color(0xFFFFF8EF);
   final search = TextEditingController();
   // Giữ giỏ hàng khi đổi tab và khi quay lại từ Login trong phiên app.
   static final Map<String, _CartLine> _sessionCart = {};
@@ -107,17 +107,25 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
 
     if (category == 'Mặt nạ chăm sóc chuyên sâu') {
       if (size.contains('100g')) return 'Dạng hũ: $size (Mặt nạ đất sét / bùn)';
-      if (size.contains('miếng')) return 'Dạng hộp: $size (Mặt nạ miếng sinh học)';
+      if (size.contains('miếng')) {
+        return 'Dạng hộp: $size (Mặt nạ miếng sinh học)';
+      }
     }
 
     if (category == 'Chống nắng & Bảo vệ quang học') {
-      if (size.contains('50ml')) return 'Dạng tuýp: $size (Kem / Gel chống nắng)';
+      if (size.contains('50ml')) {
+        return 'Dạng tuýp: $size (Kem / Gel chống nắng)';
+      }
       if (size.contains('15g')) return 'Dạng hộp: $size (Cushion phấn nước)';
     }
 
     if (category == 'Tinh chất đặc trị & Tế bào gốc') {
-      if (size.contains('15ml')) return 'Dạng lọ: $size (Serum đặc trị mụn SOS)';
-      if (size.contains('30ml')) return 'Dạng lọ: $size (Serum phục hồi & dưỡng trắng)';
+      if (size.contains('15ml')) {
+        return 'Dạng lọ: $size (Serum đặc trị mụn SOS)';
+      }
+      if (size.contains('30ml')) {
+        return 'Dạng lọ: $size (Serum phục hồi & dưỡng trắng)';
+      }
       if (size.contains('50ml')) return 'Dạng chai: $size (Ampoule cấp ẩm B5)';
       if (size.contains('ống')) return 'Dạng vỉ: $size (Tế bào gốc EGF)';
     }
@@ -127,28 +135,46 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
       if (size.contains('30ml')) return 'Dạng lọ: $size (Dầu dưỡng da mặt)';
       if (size.contains('40ml')) return 'Dạng tuýp: $size (Balm phục hồi)';
       if (size.contains('50ml')) return 'Dạng tuýp: $size (Gel cream dưỡng ẩm)';
-      if (size.contains('50g')) return 'Dạng hũ: $size (Kem dưỡng khóa ẩm / Đêm)';
-      if (size.contains('80ml')) return 'Dạng chai: $size (Lotion kiềm dầu / Mặt nạ ngủ)';
+      if (size.contains('50g')) {
+        return 'Dạng hũ: $size (Kem dưỡng khóa ẩm / Đêm)';
+      }
+      if (size.contains('80ml')) {
+        return 'Dạng chai: $size (Lotion kiềm dầu / Mặt nạ ngủ)';
+      }
     }
 
     if (category == 'Làm sạch & Cân bằng') {
-      if (size.contains('70g')) return 'Dạng lọ bột: $size (Bột rửa mặt Enzyme)';
+      if (size.contains('70g')) {
+        return 'Dạng lọ bột: $size (Bột rửa mặt Enzyme)';
+      }
       if (size.contains('100ml')) return 'Dạng tuýp: $size (Gel tẩy da chết)';
-      if (size.contains('150ml')) return 'Dạng chai: $size (Sữa rửa mặt bọt / Toner / Xịt khoáng)';
-      if (size.contains('200ml')) return 'Dạng chai: $size (Dầu / Gel rửa mặt / Toner)';
-      if (size.contains('300ml')) return 'Dạng chai: $size (Nước tẩy trang Micellar)';
+      if (size.contains('150ml')) {
+        return 'Dạng chai: $size (Sữa rửa mặt bọt / Toner / Xịt khoáng)';
+      }
+      if (size.contains('200ml')) {
+        return 'Dạng chai: $size (Dầu / Gel rửa mặt / Toner)';
+      }
+      if (size.contains('300ml')) {
+        return 'Dạng chai: $size (Nước tẩy trang Micellar)';
+      }
     }
 
     if (category == 'Chăm sóc cơ thể & Dưỡng sinh') {
       if (size.contains('50ml')) return 'Dạng tuýp: $size (Kem dưỡng tay)';
       if (size.contains('100ml')) return 'Dạng chai: $size (Serum da đầu)';
-      if (size.contains('150ml')) return 'Dạng chai: $size (Serum AHA dưỡng thể)';
-      if (size.contains('200ml')) return 'Dạng chai: $size (Dầu massage / Kem ủ tóc)';
+      if (size.contains('150ml')) {
+        return 'Dạng chai: $size (Serum AHA dưỡng thể)';
+      }
+      if (size.contains('200ml')) {
+        return 'Dạng chai: $size (Dầu massage / Kem ủ tóc)';
+      }
       if (size.contains('250ml')) return 'Dạng chai: $size (Sữa dưỡng thể)';
       if (size.contains('250g')) return 'Dạng hũ: $size (Muối tắm cà phê)';
       if (size.contains('300ml')) return 'Dạng chai: $size (Dầu gội thảo mộc)';
       if (size.contains('400g')) return 'Dạng hũ: $size (Muối ngâm chân gừng)';
-      if (size.contains('2x10g')) return 'Dạng hũ đôi: $size (Sáp dưỡng & tẩy tế bào chết môi)';
+      if (size.contains('2x10g')) {
+        return 'Dạng hũ đôi: $size (Sáp dưỡng & tẩy tế bào chết môi)';
+      }
     }
 
     final s = size.toLowerCase();
@@ -161,7 +187,10 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
   }
 
   Widget _filterPanel(List<Map<String, dynamic>> items) {
-    final categories = ['Tất cả', ...items.map(_category).toSet().toList()..sort()];
+    final categories = [
+      'Tất cả',
+      ...items.map(_category).toSet().toList()..sort(),
+    ];
 
     // Quy cách tự động lọc theo Dòng sản phẩm chính đang chọn ("theo sản phẩm")
     final categoryFilteredItems = selected == 'Tất cả'
@@ -173,7 +202,8 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
       ...categoryFilteredItems.map(_size).toSet().toList()..sort(),
     ];
 
-    final isFiltered = selected != 'Tất cả' ||
+    final isFiltered =
+        selected != 'Tất cả' ||
         selectedSize != 'Tất cả' ||
         minPrice > 0 ||
         maxPrice < 1000000 ||
@@ -193,7 +223,9 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
         color: const Color(0xFFFBF4F5),
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: _isFilterExpanded ? rose.withValues(alpha: 0.35) : const Color(0xFFEFE4E6),
+          color: _isFilterExpanded
+              ? rose.withValues(alpha: 0.35)
+              : const Color(0xFFEFE4E6),
         ),
         boxShadow: [
           BoxShadow(
@@ -220,7 +252,11 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                       color: blush,
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: const Icon(Icons.tune_rounded, color: rose, size: 18),
+                    child: const Icon(
+                      Icons.tune_rounded,
+                      color: rose,
+                      size: 18,
+                    ),
                   ),
                   const SizedBox(width: 10),
                   Text(
@@ -234,7 +270,10 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                   if (isFiltered) ...[
                     const SizedBox(width: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: rose,
                         borderRadius: BorderRadius.circular(10),
@@ -243,7 +282,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                         'Đang lọc ($activeFilterCount)',
                         style: const TextStyle(
                           color: Colors.white,
-                          fontSize: 10,
+                          fontSize: 14,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -253,7 +292,10 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                   if (isFiltered) ...[
                     TextButton(
                       style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         minimumSize: Size.zero,
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
@@ -269,7 +311,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                         'Đặt lại',
                         style: GoogleFonts.dmSans(
                           fontWeight: FontWeight.w600,
-                          fontSize: 12,
+                          fontSize: 14,
                           color: rose,
                         ),
                       ),
@@ -305,20 +347,29 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                   'Dòng sản phẩm chính',
                   style: GoogleFonts.dmSans(
                     color: ink,
-                    fontSize: 12,
+                    fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
                 const SizedBox(height: 6),
                 DropdownButtonFormField<String>(
                   key: ValueKey('category_$selected'),
-                  initialValue: categories.contains(selected) ? selected : 'Tất cả',
+                  initialValue: categories.contains(selected)
+                      ? selected
+                      : 'Tất cả',
                   isExpanded: true,
                   decoration: InputDecoration(
-                    prefixIcon: const Icon(Icons.auto_awesome_outlined, color: rose, size: 18),
+                    prefixIcon: const Icon(
+                      Icons.auto_awesome_outlined,
+                      color: rose,
+                      size: 18,
+                    ),
                     filled: true,
                     fillColor: Colors.white,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 10,
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: const BorderSide(color: Color(0xFFE5DCDA)),
@@ -328,7 +379,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                       borderSide: const BorderSide(color: Color(0xFFE5DCDA)),
                     ),
                   ),
-                  style: GoogleFonts.dmSans(color: ink, fontSize: 13),
+                  style: GoogleFonts.dmSans(color: ink, fontSize: 14),
                   items: categories.map((cat) {
                     return DropdownMenuItem<String>(
                       value: cat,
@@ -354,20 +405,29 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                   'Dung tích / Quy cách (tự động theo sản phẩm)',
                   style: GoogleFonts.dmSans(
                     color: ink,
-                    fontSize: 12,
+                    fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
                 const SizedBox(height: 6),
                 DropdownButtonFormField<String>(
                   key: ValueKey('size_${selected}_$selectedSize'),
-                  initialValue: availableSizes.contains(selectedSize) ? selectedSize : 'Tất cả',
+                  initialValue: availableSizes.contains(selectedSize)
+                      ? selectedSize
+                      : 'Tất cả',
                   isExpanded: true,
                   decoration: InputDecoration(
-                    prefixIcon: const Icon(Icons.inventory_2_outlined, color: rose, size: 18),
+                    prefixIcon: const Icon(
+                      Icons.inventory_2_outlined,
+                      color: rose,
+                      size: 18,
+                    ),
                     filled: true,
                     fillColor: Colors.white,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 10,
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: const BorderSide(color: Color(0xFFE5DCDA)),
@@ -377,7 +437,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                       borderSide: const BorderSide(color: Color(0xFFE5DCDA)),
                     ),
                   ),
-                  style: GoogleFonts.dmSans(color: ink, fontSize: 13),
+                  style: GoogleFonts.dmSans(color: ink, fontSize: 14),
                   items: availableSizes.map((size) {
                     return DropdownMenuItem<String>(
                       value: size,
@@ -401,7 +461,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                       'Khoảng giá',
                       style: GoogleFonts.dmSans(
                         color: ink,
-                        fontSize: 12,
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -409,7 +469,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                       '${_money(minPrice)} – ${_money(maxPrice)}',
                       style: GoogleFonts.dmSans(
                         color: rose,
-                        fontSize: 12,
+                        fontSize: 14,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -452,7 +512,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                   'Sắp xếp',
                   style: GoogleFonts.dmSans(
                     color: ink,
-                    fontSize: 12,
+                    fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -462,10 +522,17 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                   initialValue: sortOrder,
                   isExpanded: true,
                   decoration: InputDecoration(
-                    prefixIcon: const Icon(Icons.sort_rounded, color: rose, size: 18),
+                    prefixIcon: const Icon(
+                      Icons.sort_rounded,
+                      color: rose,
+                      size: 18,
+                    ),
                     filled: true,
                     fillColor: Colors.white,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 10,
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: const BorderSide(color: Color(0xFFE5DCDA)),
@@ -475,7 +542,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                       borderSide: const BorderSide(color: Color(0xFFE5DCDA)),
                     ),
                   ),
-                  style: GoogleFonts.dmSans(color: ink, fontSize: 13),
+                  style: GoogleFonts.dmSans(color: ink, fontSize: 14),
                   items: const [
                     DropdownMenuItem(
                       value: 'popular',
@@ -502,11 +569,15 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                   height: 40,
                   child: OutlinedButton.icon(
                     onPressed: () => setState(() => _isFilterExpanded = false),
-                    icon: const Icon(Icons.expand_less_rounded, size: 18, color: rose),
+                    icon: const Icon(
+                      Icons.expand_less_rounded,
+                      size: 18,
+                      color: rose,
+                    ),
                     label: Text(
                       'Thu gọn bộ lọc',
                       style: GoogleFonts.dmSans(
-                        fontSize: 12,
+                        fontSize: 14,
                         fontWeight: FontWeight.w700,
                         color: rose,
                       ),
@@ -531,7 +602,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
     );
   }
 
-    Widget _priceChip(String label, int min, int max) {
+  Widget _priceChip(String label, int min, int max) {
     final isSelected = minPrice == min && maxPrice == max;
     return Expanded(
       child: InkWell(
@@ -553,7 +624,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
             label,
             textAlign: TextAlign.center,
             style: GoogleFonts.dmSans(
-              fontSize: 11,
+              fontSize: 14,
               fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
               color: isSelected ? Colors.white : ink,
             ),
@@ -742,7 +813,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                   const SizedBox(height: 6),
                   Text(
                     'Giỏ hàng hiện chỉ lưu trong phiên sử dụng. Chưa tạo đơn hàng thật.',
-                    style: GoogleFonts.dmSans(fontSize: 12, color: muted),
+                    style: GoogleFonts.dmSans(fontSize: 14, color: muted),
                   ),
                 ],
               ),
@@ -783,7 +854,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                       const SizedBox(height: 8),
                       Text(
                         _name(item),
-                        style: GoogleFonts.cormorantGaramond(
+                        style: GoogleFonts.dmSans(
                           fontSize: 37,
                           fontWeight: FontWeight.w600,
                           color: ink,
@@ -923,10 +994,10 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
         children: [
           // LUMI V4: Cart in shared AppBar.
           Text(
-            'Chăm sóc da,\nnâng niu bản thân.',
-            style: GoogleFonts.cormorantGaramond(
+            'Chăm sóc da mỗi ngày',
+            style: GoogleFonts.dmSans(
               fontSize: 30,
-              height: 1.02,
+              height: 1.2,
               fontWeight: FontWeight.w600,
               color: ink,
             ),
@@ -935,7 +1006,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
           Text(
             'Khám phá những sản phẩm chăm sóc da '
             'được lựa chọn dành cho bạn.',
-            style: GoogleFonts.dmSans(fontSize: 13, height: 1.4, color: muted),
+            style: GoogleFonts.dmSans(fontSize: 14, height: 1.4, color: muted),
           ),
           const SizedBox(height: 15),
           ClipRRect(
@@ -973,7 +1044,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                           'THE LUMI COLLECTION',
                           style: GoogleFonts.dmSans(
                             color: Colors.white,
-                            fontSize: 10,
+                            fontSize: 14,
                             letterSpacing: 1.5,
                             fontWeight: FontWeight.w700,
                           ),
@@ -981,10 +1052,10 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                         const SizedBox(height: 5),
                         Text(
                           'Đẹp từ những\nđiều dịu dàng.',
-                          style: GoogleFonts.cormorantGaramond(
+                          style: GoogleFonts.dmSans(
                             color: Colors.white,
                             fontSize: 24,
-                            height: 1.02,
+                            height: 1.2,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -1099,8 +1170,10 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
               } else {
                 // popular: sắp xếp theo thứ tự phổ biến
                 filtered.sort((a, b) {
-                  final orderA = int.tryParse(a['sortOrder']?.toString() ?? '') ?? 999;
-                  final orderB = int.tryParse(b['sortOrder']?.toString() ?? '') ?? 999;
+                  final orderA =
+                      int.tryParse(a['sortOrder']?.toString() ?? '') ?? 999;
+                  final orderB =
+                      int.tryParse(b['sortOrder']?.toString() ?? '') ?? 999;
                   return orderA.compareTo(orderB);
                 });
               }
@@ -1110,7 +1183,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   SizedBox(
-                    height: 46,
+                    height: 60,
                     child: ListView.separated(
                       scrollDirection: Axis.horizontal,
                       itemCount: categories.length,
@@ -1140,7 +1213,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                   const SizedBox(height: 17),
                   Text(
                     '${filtered.length} sản phẩm',
-                    style: GoogleFonts.dmSans(color: muted, fontSize: 13),
+                    style: GoogleFonts.dmSans(color: muted, fontSize: 14),
                   ),
                   const SizedBox(height: 12),
                   if (filtered.isEmpty)
@@ -1152,13 +1225,16 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: filtered.length,
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 12,
-                          mainAxisSpacing: 12,
-                          mainAxisExtent: 315,
-                        ),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 12,
+                      mainAxisExtent:
+                          345 +
+                          (MediaQuery.textScalerOf(context).scale(16) - 16)
+                                  .clamp(0.0, 80.0) *
+                              5,
+                    ),
                     itemBuilder: (context, index) {
                       final item = filtered[index];
                       return InkWell(

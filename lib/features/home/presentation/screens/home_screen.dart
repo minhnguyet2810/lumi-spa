@@ -1,5 +1,7 @@
 import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
+
 import 'lumi_booking_screen.dart';
 import 'spa_catalog.dart';
 import 'lumi_shop_catalog.dart';
@@ -40,10 +42,10 @@ class _HomeScreenState extends State<HomeScreen> {
   late Future<List<Map<String, dynamic>>> _productsFuture;
 
   static const _pink = LumiStyle.rose;
-  static const _softPink = Color(0xFFF2BDCB);
-  static const _blue = Color(0xFF8AA6BF);
-  static const _ink = Color(0xFF493C46);
-  static const _canvas = Color(0xFFFFFAF9);
+  static const _softPink = Color(0xFFF8D5C2);
+  static const _blue = Color(0xFFA9CEDD);
+  static const _ink = Color(0xFF403735);
+  static const _canvas = Color(0xFFFFF8EF);
   static const _muted = LumiStyle.muted;
 
   int _unreadNotifCount = 0;
@@ -82,7 +84,6 @@ class _HomeScreenState extends State<HomeScreen> {
     };
   }
 
-
   @override
   void dispose() {
     _notifSubscription?.cancel();
@@ -102,36 +103,39 @@ class _HomeScreenState extends State<HomeScreen> {
           .where('userId', isEqualTo: user.uid)
           .snapshots()
           .listen((snapshot) {
-        if (!mounted) return;
+            if (!mounted) return;
 
-        for (final change in snapshot.docChanges) {
-          final data = change.doc.data();
-          if (data == null) continue;
+            for (final change in snapshot.docChanges) {
+              final data = change.doc.data();
+              if (data == null) continue;
 
-          if (change.type == DocumentChangeType.added) {
-            final docId = change.doc.id;
-            if (!_seenNotifIds.contains(docId)) {
-              _seenNotifIds.add(docId);
-              DateTime createdAt = DateTime.now();
-              if (data['createdAt'] is Timestamp) {
-                createdAt = (data['createdAt'] as Timestamp).toDate();
-              }
-              if (DateTime.now().difference(createdAt).inMinutes < 5) {
-                _showHeadsUpNotification(
-                  title: data['title']?.toString() ?? 'Thông báo từ LUMI SPA',
-                  message: data['message']?.toString() ?? '',
-                  type: data['type']?.toString(),
-                );
+              if (change.type == DocumentChangeType.added) {
+                final docId = change.doc.id;
+                if (!_seenNotifIds.contains(docId)) {
+                  _seenNotifIds.add(docId);
+                  DateTime createdAt = DateTime.now();
+                  if (data['createdAt'] is Timestamp) {
+                    createdAt = (data['createdAt'] as Timestamp).toDate();
+                  }
+                  if (DateTime.now().difference(createdAt).inMinutes < 5) {
+                    _showHeadsUpNotification(
+                      title:
+                          data['title']?.toString() ?? 'Thông báo từ LUMI SPA',
+                      message: data['message']?.toString() ?? '',
+                      type: data['type']?.toString(),
+                    );
+                  }
+                }
               }
             }
-          }
-        }
 
-        final totalUnread = snapshot.docs.where((d) => d.data()['isRead'] != true).length;
-        setState(() {
-          _unreadNotifCount = totalUnread;
-        });
-      }, onError: (_) {});
+            final totalUnread = snapshot.docs
+                .where((d) => d.data()['isRead'] != true)
+                .length;
+            setState(() {
+              _unreadNotifCount = totalUnread;
+            });
+          }, onError: (_) {});
     });
   }
 
@@ -145,7 +149,7 @@ class _HomeScreenState extends State<HomeScreen> {
     ScaffoldMessenger.of(context).showMaterialBanner(
       MaterialBanner(
         elevation: 8,
-        backgroundColor: const Color(0xFFFAF7F4),
+        backgroundColor: const Color(0xFFFFF8EF),
         surfaceTintColor: Colors.transparent,
         dividerColor: const Color(0xFFF0E4E6),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -153,15 +157,15 @@ class _HomeScreenState extends State<HomeScreen> {
           width: 42,
           height: 42,
           decoration: const BoxDecoration(
-            color: Color(0xFFF4E4E8),
+            color: Color(0xFFFBE7DC),
             shape: BoxShape.circle,
           ),
           child: Icon(
             type == 'appointment'
                 ? Icons.calendar_month_outlined
                 : type == 'order'
-                    ? Icons.shopping_bag_outlined
-                    : Icons.notifications_active_outlined,
+                ? Icons.shopping_bag_outlined
+                : Icons.notifications_active_outlined,
             color: _rose,
             size: 22,
           ),
@@ -430,7 +434,7 @@ class _HomeScreenState extends State<HomeScreen> {
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      backgroundColor: const Color(0xFFFFFAF9),
+      backgroundColor: const Color(0xFFFFF8EF),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -472,9 +476,9 @@ class _HomeScreenState extends State<HomeScreen> {
         height: height,
         child: url == null
             ? const ColoredBox(
-                color: Color(0xFFE9DDE0),
+                color: Color(0xFFFBE7DC),
                 child: Center(
-                  child: Icon(Icons.spa_outlined, color: Color(0xFFB56F86)),
+                  child: Icon(Icons.spa_outlined, color: Color(0xFFA5553E)),
                 ),
               )
             : Image.network(
@@ -486,9 +490,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: CircularProgressIndicator(strokeWidth: 2),
                       ),
                 errorBuilder: (context, error, stack) => const ColoredBox(
-                  color: Color(0xFFE9DDE0),
+                  color: Color(0xFFFBE7DC),
                   child: Center(
-                    child: Icon(Icons.image_outlined, color: Color(0xFFB56F86)),
+                    child: Icon(Icons.image_outlined, color: Color(0xFFA5553E)),
                   ),
                 ),
               ),
@@ -503,10 +507,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _home() {
-    const blush = Color(0xFFF4E4E8);
-    const babyBlue = Color(0xFFDDECEF);
-    const rose = Color(0xFFB56F86);
-    const textColor = Color(0xFF503B42);
+    const blush = Color(0xFFFBE7DC);
+    const babyBlue = Color(0xFFE8F2F6);
+    const rose = Color(0xFFA5553E);
+    const textColor = Color(0xFF403735);
 
     Widget heading(String title, String action, VoidCallback onTap) => Row(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -547,21 +551,19 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           children: [
             Container(
-              height: 68,
+              width: 62,
+              height: 62,
               alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: color,
-                borderRadius: BorderRadius.circular(18),
-              ),
+              decoration: BoxDecoration(color: color, shape: BoxShape.circle),
               child: Icon(icon, color: textColor, size: 27),
             ),
             const SizedBox(height: 9),
             Text(
               label,
-              maxLines: 1,
+              maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: GoogleFonts.dmSans(
-                fontSize: 13,
+                fontSize: 14,
                 fontWeight: FontWeight.w700,
                 color: textColor,
               ),
@@ -590,9 +592,7 @@ class _HomeScreenState extends State<HomeScreen> {
         padding: const EdgeInsets.fromLTRB(20, 12, 20, 30),
         children: [
           Text(
-            _isLoggedIn
-                ? 'Xin chào, $_memberName ♡'
-                : 'Chào mừng đến với LUMI ♡',
+            _isLoggedIn ? 'Chào $_memberName' : 'Chào bạn',
             style: GoogleFonts.dmSans(
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -601,11 +601,15 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const SizedBox(height: 6),
           Text(
-            'Hôm nay, hãy dành chút thời gian cho mình.',
+            'Chăm sóc theo cách của bạn.',
             style: GoogleFonts.dmSans(
               fontSize: 15,
               color: textColor.withValues(alpha: .78),
             ),
+          ),
+          const SizedBox(height: 20),
+          _LumiFirebaseBannerCarousel(
+            onNavigate: (tab) => setState(() => _tab = tab),
           ),
           const SizedBox(height: 20),
           InkWell(
@@ -625,7 +629,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      'Tìm dịch vụ, liệu trình, mỹ phẩm...',
+                      'Tìm dịch vụ, mỹ phẩm',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.dmSans(
@@ -640,15 +644,8 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           const SizedBox(height: 22),
-          _LumiFirebaseBannerCarousel(
-            onNavigate: (tab) => setState(() => _tab = tab),
-          ),
           const SizedBox(height: 26),
-          heading(
-            'Khám phá danh mục',
-            'Xem tất cả',
-            () => setState(() => _tab = 1),
-          ),
+          heading('Danh mục', 'Xem tất cả', () => setState(() => _tab = 1)),
           const SizedBox(height: 12),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -706,7 +703,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 return _loadingPanel('Chưa có liệu trình nào.');
               }
               return SizedBox(
-                height: 282,
+                height:
+                    320 +
+                    (MediaQuery.textScalerOf(context).scale(16) - 16).clamp(
+                          0.0,
+                          100.0,
+                        ) *
+                        5,
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   itemCount: items.length > 6 ? 6 : items.length,
@@ -717,18 +720,17 @@ class _HomeScreenState extends State<HomeScreen> {
                       onTap: () => setState(() => _tab = 1),
                       borderRadius: BorderRadius.circular(20),
                       child: Container(
-                        width: 215,
+                        width: 190,
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: index.isEven ? blush : babyBlue,
+                          color: Colors.white,
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _homePhoto(item, height: 112),
-                            const SizedBox(height: 10),
-                            const Spacer(),
+                            _homePhoto(item, height: 150),
+                            const SizedBox(height: 14),
                             Text(
                               item['name']?.toString() ?? 'Liệu trình LUMI',
                               maxLines: 2,
@@ -768,7 +770,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const SizedBox(height: 28),
           heading(
-            'Mỹ phẩm được yêu thích',
+            'Mỹ phẩm tại LUMI',
             'Cửa hàng',
             () => setState(() => _tab = 2),
           ),
@@ -788,7 +790,13 @@ class _HomeScreenState extends State<HomeScreen> {
               final items = snapshot.data ?? [];
               if (items.isEmpty) return _loadingPanel('Chưa có mỹ phẩm nào.');
               return SizedBox(
-                height: 244,
+                height:
+                    290 +
+                    (MediaQuery.textScalerOf(context).scale(16) - 16).clamp(
+                          0.0,
+                          100.0,
+                        ) *
+                        5,
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   itemCount: items.length > 6 ? 6 : items.length,
@@ -799,19 +807,18 @@ class _HomeScreenState extends State<HomeScreen> {
                       onTap: () => setState(() => _tab = 2),
                       borderRadius: BorderRadius.circular(19),
                       child: Container(
-                        width: 174,
+                        width: 180,
                         padding: const EdgeInsets.all(11),
                         decoration: BoxDecoration(
-                          color: index.isOdd ? babyBlue : Colors.white,
+                          color: Colors.white,
                           borderRadius: BorderRadius.circular(19),
                           border: Border.all(color: const Color(0xFFEDDFE2)),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _homePhoto(item, height: 98),
-                            const SizedBox(height: 8),
-                            const Spacer(),
+                            _homePhoto(item, height: 142),
+                            const SizedBox(height: 14),
                             Text(
                               item['name']?.toString() ?? 'Mỹ phẩm LUMI',
                               maxLines: 2,
@@ -841,64 +848,35 @@ class _HomeScreenState extends State<HomeScreen> {
             },
           ),
           const SizedBox(height: 28),
-          heading('LUMI Journal', 'Khám phá', _openJournal),
-          const SizedBox(height: 12),
-          InkWell(
-            onTap: _openJournal,
+          Material(
+            color: const Color(0xFFE8F2F6),
             borderRadius: BorderRadius.circular(22),
-            child: Container(
-              padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                color: const Color(0xFFDDECEF),
-                borderRadius: BorderRadius.circular(22),
-              ),
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.auto_stories_outlined,
-                    size: 36,
-                    color: Color(0xFFB56F86),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'BEAUTY · SHORTS · OUR STORY',
-                          style: GoogleFonts.dmSans(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 1,
-                            color: rose,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          'Một chút cảm hứng mỗi ngày',
-                          style: GoogleFonts.cormorantGaramond(
-                            fontSize: 24,
-                            fontWeight: FontWeight.w700,
-                            color: textColor,
-                          ),
-                        ),
-                        const SizedBox(height: 5),
-                        Text(
-                          'Bài viết, video ngắn và câu chuyện LUMI',
-                          style: GoogleFonts.dmSans(
-                            fontSize: 12,
-                            color: textColor,
-                          ),
-                        ),
-                      ],
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              onTap: _openJournal,
+              child: Padding(
+                padding: const EdgeInsets.all(22),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.menu_book_outlined,
+                      size: 28,
+                      color: Color(0xFF403735),
                     ),
-                  ),
-                  const Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    size: 16,
-                    color: Color(0xFF503B42),
-                  ),
-                ],
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Text(
+                        'Góc chăm sóc da',
+                        style: GoogleFonts.dmSans(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF403735),
+                        ),
+                      ),
+                    ),
+                    const Icon(Icons.arrow_forward_rounded),
+                  ],
+                ),
               ),
             ),
           ),
@@ -913,9 +891,9 @@ class _HomeScreenState extends State<HomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'DÀNH RIÊNG CHO BẠN',
+                  'Dịch vụ tại LUMI',
                   style: GoogleFonts.dmSans(
-                    fontSize: 12,
+                    fontSize: 14,
                     letterSpacing: 1.2,
                     fontWeight: FontWeight.w700,
                     color: rose,
@@ -923,8 +901,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(height: 9),
                 Text(
-                  'Một chút thời gian cho bản thân.',
-                  style: GoogleFonts.cormorantGaramond(
+                  'Đặt lịch chăm sóc',
+                  style: GoogleFonts.dmSans(
                     fontSize: 29,
                     fontWeight: FontWeight.w700,
                     color: textColor,
@@ -932,7 +910,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(height: 9),
                 Text(
-                  'Đặt lịch chăm sóc và tận hưởng phút giây thư giãn.',
+                  'Chọn liệu trình và thời gian phù hợp.',
                   style: GoogleFonts.dmSans(fontSize: 15, color: textColor),
                 ),
                 const SizedBox(height: 15),
@@ -942,8 +920,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: FilledButton(
                     onPressed: () => _requireLogin('đặt lịch tại LUMI'),
                     style: FilledButton.styleFrom(
-                      backgroundColor: rose,
-                      foregroundColor: Colors.white,
+                      backgroundColor: LumiStyle.peach,
+                      foregroundColor: LumiStyle.ink,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(15),
                       ),
@@ -1164,7 +1142,7 @@ class _HomeScreenState extends State<HomeScreen> {
       height: 100,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: const Color(0xFFFFE8EC),
+        color: const Color(0xFFFBE7DC),
         borderRadius: BorderRadius.circular(15),
       ),
       child: Text(
@@ -1179,7 +1157,7 @@ class _HomeScreenState extends State<HomeScreen> {
     child: Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFE8EC),
+        color: const Color(0xFFFBE7DC),
         borderRadius: BorderRadius.circular(15),
       ),
       child: Row(
@@ -1433,7 +1411,7 @@ class _HomeScreenState extends State<HomeScreen> {
               duration: const Duration(milliseconds: 240),
               curve: Curves.easeOutCubic,
               decoration: BoxDecoration(
-                color: selected ? _pink : Colors.transparent,
+                color: selected ? LumiStyle.peach : Colors.transparent,
                 borderRadius: BorderRadius.circular(30),
               ),
               child: Column(
@@ -1441,8 +1419,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   Icon(
                     selected ? selectedIcon : icon,
-                    size: 21,
-                    color: const Color(0xFFFFF7F7),
+                    size: 23,
+                    color: LumiStyle.ink,
                   ),
                   const SizedBox(height: 3),
                   Text(
@@ -1450,15 +1428,179 @@ class _HomeScreenState extends State<HomeScreen> {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.dmSans(
-                      fontSize: 9,
+                      fontSize: 11,
                       fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                      color: const Color(0xFFFFF7F7),
+                      color: LumiStyle.ink,
                     ),
                   ),
                 ],
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openMenuMembership() async {
+    if (!_isLoggedIn) {
+      await context.push('/login');
+      if (!mounted) return;
+      await _loadSession();
+      if (!mounted || !_isLoggedIn) return;
+    }
+    if (!mounted) return;
+    context.push('/membership');
+  }
+
+  Widget _buildLumiMenu() {
+    const ink = Color(0xFF403735);
+    const muted = Color(0xFF5F5550);
+    const cream = Color(0xFFFFF8EF);
+    const peach = Color(0xFFFBE7DC);
+    const accent = Color(0xFFA5553E);
+
+    TextStyle type(double size, {bool bold = false, Color color = ink}) =>
+        GoogleFonts.dmSans(
+          fontSize: size,
+          height: 1.4,
+          fontWeight: bold ? FontWeight.w600 : FontWeight.w400,
+          letterSpacing: 0,
+          wordSpacing: 0,
+          color: color,
+        );
+
+    void open(VoidCallback action) {
+      Navigator.of(context).pop();
+      action();
+    }
+
+    Widget item(IconData icon, String title, VoidCallback action) => ListTile(
+      minVerticalPadding: 14,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+      leading: Icon(icon, color: ink, size: 25),
+      title: Text(title, style: type(18, bold: true)),
+      trailing: const Icon(Icons.chevron_right_rounded, color: muted, size: 22),
+      onTap: () => open(action),
+    );
+
+    return Drawer(
+      width: MediaQuery.sizeOf(context).width * 0.88,
+      backgroundColor: cream,
+      surfaceTintColor: Colors.transparent,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.horizontal(right: Radius.circular(28)),
+      ),
+      child: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.only(bottom: 24),
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 14, 12, 20),
+              child: Row(
+                children: [
+                  Expanded(child: Text('LUMI', style: type(30, bold: true))),
+                  IconButton(
+                    tooltip: 'Đóng menu',
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: const Icon(Icons.close_rounded, color: ink),
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Row(
+                children: [
+                  const CircleAvatar(
+                    radius: 26,
+                    backgroundColor: Color(0xFFEAF3F7),
+                    child: Icon(
+                      Icons.person_outline_rounded,
+                      color: ink,
+                      size: 28,
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Text(
+                      _isLoggedIn ? _memberName : 'Chào bạn',
+                      style: type(22, bold: true),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Material(
+                color: peach,
+                borderRadius: BorderRadius.circular(22),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(22),
+                  onTap: () => open(() {
+                    _openMenuMembership();
+                  }),
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Icon(
+                          Icons.workspace_premium_outlined,
+                          color: accent,
+                          size: 30,
+                        ),
+                        const SizedBox(height: 12),
+                        Text('Thành viên LUMI', style: type(22, bold: true)),
+
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                'Xem quyền lợi',
+                                style: type(17, bold: true, color: accent),
+                              ),
+                            ),
+                            const Icon(
+                              Icons.arrow_forward_rounded,
+                              color: accent,
+                              size: 22,
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            item(Icons.auto_stories_outlined, 'Góc chăm sóc da', _openJournal),
+            item(
+              Icons.notifications_none_rounded,
+              'Thông báo',
+              _openNotifications,
+            ),
+            item(Icons.workspace_premium_outlined, 'Thẻ thành viên', () {
+              _openMenuMembership();
+            }),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              child: Divider(color: Color(0xFFEADFD5)),
+            ),
+            item(Icons.settings_outlined, 'Cài đặt', () {
+              context.push('/settings');
+            }),
+            if (!_isLoggedIn)
+              item(Icons.login_rounded, 'Đăng nhập / Đăng ký', () {
+                context.push('/login').then((_) {
+                  if (mounted) _loadSession();
+                });
+              }),
+          ],
         ),
       ),
     );
@@ -1486,131 +1628,149 @@ class _HomeScreenState extends State<HomeScreen> {
     ];
 
     return Scaffold(
+      drawer: _buildLumiMenu(),
       backgroundColor: _canvas,
       appBar: _tab == 4
           ? null
           : AppBar(
-        backgroundColor: _canvas,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        toolbarHeight: 60,
-        title: Text(
-          'LUMI',
-          style: GoogleFonts.cormorantGaramond(
-            fontSize: 35,
-            fontWeight: FontWeight.w600,
-            color: _ink,
-                ),
-        ),
-        actions: [
-          // LUMI V4.1: Context-aware action for each tab.
-          if (_tab == 0)
-            IconButton(
-              tooltip: 'Tìm kiếm',
-              onPressed: _openSearch,
-              icon: const Icon(Icons.search_rounded, color: _plum, size: 25),
-            ),
-
-          if (_tab == 1)
-            IconButton(
-              tooltip: 'Lịch hẹn',
-              onPressed: () => setState(() => _tab = 3),
-              icon: const Icon(
-                Icons.event_available_outlined,
-                color: _plum,
-                size: 25,
-              ),
-            ),
-
-          if (_tab == 2)
-            IconButton(
-              tooltip: 'Giỏ hàng',
-              onPressed: () {
-                final openCart = LumiShopCatalog.openActiveCart;
-                if (openCart != null) {
-                  openCart();
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Giỏ hàng đang được tải.')),
-                  );
-                }
-              },
-              icon: ValueListenableBuilder<int>(
-                valueListenable: LumiShopCatalog.cartQuantityNotifier,
-                builder: (context, quantity, _) => Badge(
-                  isLabelVisible: quantity > 0,
-                  backgroundColor: const Color(0xFFB56F86),
-                  textColor: Colors.white,
-                  label: Text(quantity > 99 ? '99+' : '$quantity'),
-                  child: const Icon(
-                    Icons.shopping_bag_outlined,
-                    color: _plum,
-                    size: 25,
-                  ),
+              backgroundColor: _canvas,
+              elevation: 0,
+              scrolledUnderElevation: 0,
+              toolbarHeight: 60,
+              leading: Builder(
+                builder: (drawerContext) => IconButton(
+                  tooltip: 'Mở menu',
+                  icon: const Icon(Icons.menu_rounded, color: _ink),
+                  onPressed: () => Scaffold.of(drawerContext).openDrawer(),
                 ),
               ),
-            ),
-
-          if (_tab == 3)
-            IconButton(
-              tooltip: 'Tài khoản',
-              onPressed: () => setState(() => _tab = 4),
-              icon: const Icon(
-                Icons.person_outline_rounded,
-                color: _plum,
-                size: 25,
+              title: Text(
+                'LUMI',
+                style: GoogleFonts.cormorantGaramond(
+                  fontSize: 35,
+                  fontWeight: FontWeight.w600,
+                  color: _ink,
+                ),
               ),
-            ),
-
-          if (_tab == 4 && !_isLoggedIn)
-            IconButton(
-              tooltip: 'Đăng nhập',
-              onPressed: () {
-                context.push('/login').then((_) {
-                  if (mounted) _loadSession();
-                });
-              },
-              icon: const Icon(Icons.login_rounded, color: _plum, size: 25),
-            ),
-
-          IconButton(
-            tooltip: 'Thông báo',
-            onPressed: _openNotifications,
-            icon: _unreadNotifCount > 0
-                ? Badge.count(
-                    count: _unreadNotifCount,
-                    backgroundColor: _rose,
-                    textColor: Colors.white,
-                    child: const Icon(
-                      Icons.notifications_active_rounded,
+              actions: [
+                // LUMI V4.1: Context-aware action for each tab.
+                if (_tab == 0)
+                  IconButton(
+                    tooltip: 'Tìm kiếm',
+                    onPressed: _openSearch,
+                    icon: const Icon(
+                      Icons.search_rounded,
                       color: _plum,
-                      size: 26,
+                      size: 25,
                     ),
-                  )
-                : const Icon(
-                    Icons.notifications_none_rounded,
-                    color: _plum,
-                    size: 26,
                   ),
-          ),
 
-          const SizedBox(width: 10),
-        ],
-      ),
+                if (_tab == 1)
+                  IconButton(
+                    tooltip: 'Lịch hẹn',
+                    onPressed: () => setState(() => _tab = 3),
+                    icon: const Icon(
+                      Icons.event_available_outlined,
+                      color: _plum,
+                      size: 25,
+                    ),
+                  ),
+
+                if (_tab == 2)
+                  IconButton(
+                    tooltip: 'Giỏ hàng',
+                    onPressed: () {
+                      final openCart = LumiShopCatalog.openActiveCart;
+                      if (openCart != null) {
+                        openCart();
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Giỏ hàng đang được tải.'),
+                          ),
+                        );
+                      }
+                    },
+                    icon: ValueListenableBuilder<int>(
+                      valueListenable: LumiShopCatalog.cartQuantityNotifier,
+                      builder: (context, quantity, _) => Badge(
+                        isLabelVisible: quantity > 0,
+                        backgroundColor: const Color(0xFFA5553E),
+                        textColor: Colors.white,
+                        label: Text(quantity > 99 ? '99+' : '$quantity'),
+                        child: const Icon(
+                          Icons.shopping_bag_outlined,
+                          color: _plum,
+                          size: 25,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                if (_tab == 3)
+                  IconButton(
+                    tooltip: 'Tài khoản',
+                    onPressed: () => setState(() => _tab = 4),
+                    icon: const Icon(
+                      Icons.person_outline_rounded,
+                      color: _plum,
+                      size: 25,
+                    ),
+                  ),
+
+                if (_tab == 4 && !_isLoggedIn)
+                  IconButton(
+                    tooltip: 'Đăng nhập',
+                    onPressed: () {
+                      context.push('/login').then((_) {
+                        if (mounted) _loadSession();
+                      });
+                    },
+                    icon: const Icon(
+                      Icons.login_rounded,
+                      color: _plum,
+                      size: 25,
+                    ),
+                  ),
+
+                IconButton(
+                  tooltip: 'Thông báo',
+                  onPressed: _openNotifications,
+                  icon: _unreadNotifCount > 0
+                      ? Badge.count(
+                          count: _unreadNotifCount,
+                          backgroundColor: _rose,
+                          textColor: Colors.white,
+                          child: const Icon(
+                            Icons.notifications_active_rounded,
+                            color: _plum,
+                            size: 26,
+                          ),
+                        )
+                      : const Icon(
+                          Icons.notifications_none_rounded,
+                          color: _plum,
+                          size: 26,
+                        ),
+                ),
+
+                const SizedBox(width: 10),
+              ],
+            ),
       body: pages[_tab],
       bottomNavigationBar: SafeArea(
         top: false,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(18, 7, 18, 12),
           child: Container(
-            height: 70,
+            height: 76,
             padding: const EdgeInsets.all(7),
             decoration: BoxDecoration(
-              color: _plum,
+              color: LumiStyle.surface,
               borderRadius: BorderRadius.circular(36),
               boxShadow: [
                 BoxShadow(
-                  color: _plum.withValues(alpha: 0.20),
+                  color: _plum.withValues(alpha: 0.08),
                   blurRadius: 24,
                   offset: const Offset(0, 8),
                 ),
@@ -1697,7 +1857,7 @@ class _LumiSearchSheetState extends State<_LumiSearchSheet> {
                       style: GoogleFonts.dmSans(
                         fontSize: 23,
                         fontWeight: FontWeight.w700,
-                        color: const Color(0xFF503B42),
+                        color: const Color(0xFF403735),
                       ),
                     ),
                   ),
@@ -1718,13 +1878,13 @@ class _LumiSearchSheetState extends State<_LumiSearchSheet> {
                 onChanged: (value) => setState(() => _query = value.trim()),
                 style: GoogleFonts.dmSans(
                   fontSize: 16,
-                  color: const Color(0xFF503B42),
+                  color: const Color(0xFF403735),
                 ),
                 decoration: InputDecoration(
                   hintText: 'Nhập tên dịch vụ hoặc mỹ phẩm...',
                   prefixIcon: const Icon(
                     Icons.search_rounded,
-                    color: Color(0xFFB56F86),
+                    color: Color(0xFFA5553E),
                   ),
                   suffixIcon: _query.isEmpty
                       ? null
@@ -1741,12 +1901,12 @@ class _LumiSearchSheetState extends State<_LumiSearchSheet> {
                   contentPadding: const EdgeInsets.symmetric(vertical: 16),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(17),
-                    borderSide: const BorderSide(color: Color(0xFFEADCE0)),
+                    borderSide: const BorderSide(color: Color(0xFFEADFD5)),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(17),
                     borderSide: const BorderSide(
-                      color: Color(0xFFB56F86),
+                      color: Color(0xFFA5553E),
                       width: 1.5,
                     ),
                   ),
@@ -1766,12 +1926,12 @@ class _LumiSearchSheetState extends State<_LumiSearchSheet> {
                         child: ChoiceChip(
                           label: Text(label),
                           selected: _filter == label,
-                          selectedColor: const Color(0xFFF4E4E8),
-                          backgroundColor: const Color(0xFFDDECEF),
+                          selectedColor: const Color(0xFFFBE7DC),
+                          backgroundColor: const Color(0xFFE8F2F6),
                           labelStyle: GoogleFonts.dmSans(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
-                            color: const Color(0xFF503B42),
+                            color: const Color(0xFF403735),
                           ),
                           onSelected: (_) => setState(() => _filter = label),
                         ),
@@ -1787,7 +1947,7 @@ class _LumiSearchSheetState extends State<_LumiSearchSheet> {
                   if (!snapshot.hasData) {
                     return const Center(
                       child: CircularProgressIndicator(
-                        color: Color(0xFFB56F86),
+                        color: Color(0xFFA5553E),
                       ),
                     );
                   }
@@ -1819,7 +1979,7 @@ class _LumiSearchSheetState extends State<_LumiSearchSheet> {
                           style: GoogleFonts.dmSans(
                             fontSize: 16,
                             height: 1.5,
-                            color: const Color(0xFF705A63),
+                            color: const Color(0xFF756863),
                           ),
                         ),
                       ),
@@ -1833,8 +1993,8 @@ class _LumiSearchSheetState extends State<_LumiSearchSheet> {
                       final entry = matches[index];
                       return Material(
                         color: index.isEven
-                            ? const Color(0xFFF4E4E8)
-                            : const Color(0xFFDDECEF),
+                            ? const Color(0xFFFBE7DC)
+                            : const Color(0xFFE8F2F6),
                         borderRadius: BorderRadius.circular(16),
                         child: ListTile(
                           contentPadding: const EdgeInsets.symmetric(
@@ -1845,14 +2005,14 @@ class _LumiSearchSheetState extends State<_LumiSearchSheet> {
                             entry.service
                                 ? Icons.spa_outlined
                                 : Icons.water_drop_outlined,
-                            color: const Color(0xFF8F5369),
+                            color: const Color(0xFFA5553E),
                           ),
                           title: Text(
                             entry.item['name']?.toString() ?? 'LUMI',
                             style: GoogleFonts.dmSans(
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
-                              color: const Color(0xFF503B42),
+                              color: const Color(0xFF403735),
                             ),
                           ),
                           subtitle: Text(
@@ -1882,6 +2042,7 @@ class _LumiSearchSheetState extends State<_LumiSearchSheet> {
 }
 
 // LUMI Home: Firestore-powered banners. Does not modify bottom navigation.
+
 class _LumiFirebaseBannerCarousel extends StatefulWidget {
   const _LumiFirebaseBannerCarousel({required this.onNavigate});
 
@@ -1895,7 +2056,21 @@ class _LumiFirebaseBannerCarousel extends StatefulWidget {
 class _LumiFirebaseBannerCarouselState
     extends State<_LumiFirebaseBannerCarousel> {
   final PageController _controller = PageController();
+  late Stream<QuerySnapshot<Map<String, dynamic>>> _stream;
   int _page = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _connect();
+  }
+
+  void _connect() {
+    _stream = FirebaseFirestore.instance
+        .collection('banners')
+        .where('isActive', isEqualTo: true)
+        .snapshots();
+  }
 
   @override
   void dispose() {
@@ -1903,171 +2078,224 @@ class _LumiFirebaseBannerCarouselState
     super.dispose();
   }
 
+  Widget _notice(String message, {bool retry = false}) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            message,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.dmSans(
+              fontSize: 16,
+              height: 1.5,
+              color: LumiStyle.ink,
+            ),
+          ),
+          if (retry) ...[
+            const SizedBox(height: 12),
+            TextButton.icon(
+              onPressed: () => setState(_connect),
+              icon: const Icon(Icons.refresh_rounded),
+              label: const Text('Thử lại'),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-      stream: FirebaseFirestore.instance
-          .collection('banners')
-          .where('isActive', isEqualTo: true)
-          .snapshots(),
+      stream: _stream,
       builder: (context, snapshot) {
-        final docs = snapshot.data?.docs.toList() ?? [];
+        if (snapshot.hasError) {
+          return _notice('Chưa tải được banner.', retry: true);
+        }
+        if (!snapshot.hasData) {
+          return const SizedBox(
+            height: 240,
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        final docs = snapshot.data!.docs.toList();
         docs.sort((a, b) {
           final x = a.data()['sortOrder'];
           final y = b.data()['sortOrder'];
-          return (x is num ? x.toInt() : 999).compareTo(
-            y is num ? y.toInt() : 999,
-          );
+          return (x is num ? x : 999).compareTo(y is num ? y : 999);
         });
-        // Keep the original look as a safe fallback while offline/empty.
-        if (docs.isEmpty) {
-          return _bannerCard(
-            title: 'Nâng niu vẻ đẹp của riêng bạn.',
-            description:
-                'Thư giãn, chăm sóc làn da và tìm lại sự cân bằng tại LUMI.',
-            imageUrl: '',
-            targetTab: 1,
-          );
-        }
+
+        if (docs.isEmpty) return const SizedBox.shrink();
+
         final selected = _page.clamp(0, docs.length - 1);
+        final scale = MediaQuery.textScalerOf(context).scale(16) / 16;
+        final height = 300.0 + (scale > 1 ? (scale - 1) * 200 : 0);
+
         return Column(
           children: [
             SizedBox(
-              height: 375,
+              height: height,
               child: PageView.builder(
                 controller: _controller,
                 itemCount: docs.length,
                 onPageChanged: (value) => setState(() => _page = value),
                 itemBuilder: (context, index) {
                   final data = docs[index].data();
-                  final type = (data['targetType'] ?? 'services').toString();
-                  return _bannerCard(
-                    title: (data['title'] ?? 'LUMI SPA & WELLNESS').toString(),
-                    description:
-                        'Một chút dịu dàng dành riêng cho bạn tại LUMI.',
-                    imageUrl: (data['imageUrl'] ?? '').toString(),
-                    targetTab: type == 'products' ? 2 : 1,
-                  );
+                  final title = (data['title'] ?? '').toString().trim();
+                  final image = (data['imageUrl'] ?? '').toString().trim();
+                  final target = (data['targetType'] ?? '').toString();
+                  final int? tab = target == 'products'
+                      ? 2
+                      : target == 'services'
+                      ? 1
+                      : null;
+
+                  return _banner(title: title, image: image, tab: tab);
                 },
               ),
             ),
-            const SizedBox(height: 11),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(
-                docs.length,
-                (i) => AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  margin: const EdgeInsets.symmetric(horizontal: 3),
-                  width: i == selected ? 17 : 6,
-                  height: 6,
-                  decoration: BoxDecoration(
-                    color: i == selected
-                        ? const Color(0xFFB56F86)
-                        : const Color(0xFFE7CED6),
-                    borderRadius: BorderRadius.circular(10),
+            if (docs.length > 1) ...[
+              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(
+                  docs.length,
+                  (index) => AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    margin: const EdgeInsets.symmetric(horizontal: 3),
+                    height: 6,
+                    width: index == selected ? 20 : 6,
+                    decoration: BoxDecoration(
+                      color: index == selected
+                          ? LumiStyle.rose
+                          : LumiStyle.line,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                   ),
                 ),
               ),
-            ),
+            ],
           ],
         );
       },
     );
   }
 
-  Widget _bannerCard({
+  Widget _banner({
     required String title,
-    required String description,
-    required String imageUrl,
-    required int targetTab,
+    required String image,
+    required int? tab,
   }) {
-    const rose = Color(0xFFB56F86);
-    const textColor = Color(0xFF503B42);
-    return Container(
-      clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(
-        color: const Color(0xFFF4E4E8),
-        borderRadius: BorderRadius.circular(22),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(26),
+      child: Stack(
+        fit: StackFit.expand,
         children: [
-          SizedBox(
-            height: 188,
-            width: double.infinity,
-            child: imageUrl.trim().isEmpty
-                ? Image.asset(
-                    'assets/images/welcome_spa_2.png',
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, _, _) => _imageFallback(),
-                  )
-                : Image.network(
-                    imageUrl,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, _, _) => _imageFallback(),
+          if (image.isNotEmpty)
+            Image.network(
+              image,
+              fit: BoxFit.cover,
+              alignment: Alignment.centerRight,
+              excludeFromSemantics: true,
+              loadingBuilder: (context, child, progress) {
+                if (progress == null) return child;
+                return const ColoredBox(
+                  color: Color(0xFFFBE7DC),
+                  child: Center(
+                    child: CircularProgressIndicator(strokeWidth: 2),
                   ),
+                );
+              },
+              errorBuilder: (context, error, stackTrace) {
+                final uri = Uri.tryParse(image);
+                debugPrint(
+                  'LUMI_BANNER: scheme=${uri?.scheme}, '
+                  'asset=${image.startsWith("assets/")}, '
+                  'error=${error.runtimeType}',
+                );
+                if (error is NetworkImageLoadException) {
+                  debugPrint('LUMI_BANNER: HTTP ${error.statusCode}');
+                }
+                return _imageUnavailable();
+              },
+            )
+          else
+            _imageUnavailable(),
+
+          // Vùng nền đủ sáng để tiêu đề dễ đọc trên ảnh Firebase.
+          const DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+                colors: [
+                  Color(0xFFFFF8EF),
+                  Color(0xF2FFF8EF),
+                  Color(0x1AFFF8EF),
+                ],
+                stops: [0, 0.38, 1],
+              ),
+            ),
           ),
+
           Padding(
-            padding: const EdgeInsets.fromLTRB(19, 15, 19, 15),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'LUMI SPA & WELLNESS',
-                  style: GoogleFonts.dmSans(
-                    fontSize: 11,
-                    letterSpacing: 1.3,
-                    fontWeight: FontWeight.w700,
-                    color: rose,
-                  ),
-                ),
-                const SizedBox(height: 7),
-                Text(
-                  title,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.cormorantGaramond(
-                    fontSize: 28,
-                    height: 1.03,
-                    fontWeight: FontWeight.w700,
-                    color: textColor,
-                  ),
-                ),
-                const SizedBox(height: 7),
-                Text(
-                  description,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 13,
-                    height: 1.3,
-                    color: textColor,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                SizedBox(
-                  height: 40,
-                  child: FilledButton.icon(
-                    onPressed: () => widget.onNavigate(targetTab),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: rose,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(13),
+            padding: const EdgeInsets.all(24),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: FractionallySizedBox(
+                widthFactor: 0.72,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (title.isNotEmpty)
+                      Text(
+                        title,
+                        maxLines: 4,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.dmSans(
+                          fontSize: 26,
+                          height: 1.2,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: -0.4,
+                          color: LumiStyle.ink,
+                        ),
                       ),
-                    ),
-                    icon: const Icon(Icons.arrow_forward_rounded, size: 17),
-                    label: Text(
-                      targetTab == 2 ? 'Khám phá mỹ phẩm' : 'Khám phá dịch vụ',
-                      style: GoogleFonts.dmSans(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
+                    if (tab != null) ...[
+                      const SizedBox(height: 22),
+                      FilledButton(
+                        onPressed: () => widget.onNavigate(tab),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: LumiStyle.peach,
+                          foregroundColor: LumiStyle.ink,
+                          minimumSize: const Size(48, 48),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 18,
+                            vertical: 12,
+                          ),
+                          shape: const StadiumBorder(),
+                        ),
+                        child: Text(
+                          tab == 2 ? 'Xem mỹ phẩm →' : 'Xem dịch vụ →',
+                          style: GoogleFonts.dmSans(
+                            fontSize: 16,
+                            height: 1.3,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
+                    ],
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         ],
@@ -2075,10 +2303,18 @@ class _LumiFirebaseBannerCarouselState
     );
   }
 
-  Widget _imageFallback() => const ColoredBox(
-    color: Color(0xFFDDECEF),
-    child: Center(
-      child: Icon(Icons.spa_outlined, size: 55, color: Color(0xFFB56F86)),
+  Widget _imageUnavailable() => const ColoredBox(
+    color: Color(0xFFE8F2F6),
+    child: Align(
+      alignment: Alignment.centerRight,
+      child: Padding(
+        padding: EdgeInsets.all(24),
+        child: Icon(
+          Icons.broken_image_outlined,
+          color: Color(0xFF557C90),
+          size: 36,
+        ),
+      ),
     ),
   );
 }

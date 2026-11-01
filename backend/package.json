@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "test:permissions": "node --test tests/permissions_test.js",
-    "test:rules": "node --test tests/permissions_rules_test.js"
+    "test:rules": "node --test tests/permissions_rules_test.js",
+    "test:dependencies": "node --test tests/dependency_compat_test.js"
   },
   "keywords": [],
   "author": "",
@@ -22,10 +23,21 @@
   },
   "devDependencies": {
     "supertest": "^7.3.1",
-    "@firebase/rules-unit-testing": "^6.0.0",
-    "firebase": "^13.1.0"
+    "@firebase/rules-unit-testing": "5.0.2",
+    "firebase": "12.19.0"
   },
   "engines": {
     "node": "22"
+  },
+  "overrides": {
+    "@grpc/grpc-js": "1.14.7",
+    "rimraf": {
+      "glob": {
+        ".": "14.0.2",
+        "minimatch": "11.0.1"
+      }
+    },
+    "@firebase/app": "0.16.2",
+    "@firebase/app-compat": "0.5.18"
   }
 }

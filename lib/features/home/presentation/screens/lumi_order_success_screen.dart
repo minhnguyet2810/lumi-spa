@@ -130,14 +130,14 @@ class LumiOrderSuccessScreen extends StatelessWidget {
                       ),
                       const Divider(height: 25),
                       _infoRow(
-                        'Thanh toán',
-                        'COD',
-                      ),
-                      const Divider(height: 25),
-                      _infoRow(
-                        'Trạng thái',
-                         paymentMethod,
-                      ),
+  'Thanh toán',
+  paymentMethod,
+),
+const Divider(height: 25),
+_infoRow(
+  'Trạng thái',
+  'Chờ xác nhận',
+),
                     ],
                   ),
                 ),

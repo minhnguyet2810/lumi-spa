@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/data/lumi_order_store.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class LumiOrderDetailScreen extends StatefulWidget {
   const LumiOrderDetailScreen({
@@ -401,11 +402,43 @@ class _LumiOrderDetailScreenState
 
     final orderId = widget.order['id'] ?? '';
 
-    LumiOrderStore.cancelOrder(orderId);
+    try {
+  await FirebaseFirestore.instance
+      .collection('orders')
+      .doc(orderId)
+      .update({
+    'status': 'cancelled',
+    'updatedAt': FieldValue.serverTimestamp(),
+  });
 
-    setState(() {
-      currentStatus = 'Đã hủy';
-    });
+  LumiOrderStore.cancelOrder(orderId);
+
+  if (!mounted) {
+    return;
+  }
+
+  setState(() {
+    currentStatus = 'Đã hủy';
+  });
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(
+      content: Text('Đơn hàng đã được hủy'),
+    ),
+  );
+} catch (error) {
+  debugPrint('Cancel order error: $error');
+
+  if (!mounted) {
+    return;
+  }
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(
+      content: Text('Không thể hủy đơn hàng. Vui lòng thử lại.'),
+    ),
+  );
+}
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(

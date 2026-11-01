@@ -1,3 +1,5 @@
+import '../../../../core/theme/lumi_adaptive.dart';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -8,11 +10,7 @@ class BookingDetailSheet extends StatelessWidget {
   final BookingItem booking;
   final VoidCallback? onCancel;
 
-  const BookingDetailSheet({
-    super.key,
-    required this.booking,
-    this.onCancel,
-  });
+  const BookingDetailSheet({super.key, required this.booking, this.onCancel});
 
   static const ivory = LumiStyle.ivory;
   static const plum = LumiStyle.plum;
@@ -21,10 +19,11 @@ class BookingDetailSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    LumiAdaptive.depend(context);
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
-      decoration: const BoxDecoration(
-        color: ivory,
+      decoration: BoxDecoration(
+        color: LumiAdaptive.color(ivory, surface: true),
         borderRadius: BorderRadius.vertical(top: Radius.circular(26)),
       ),
       child: Column(
@@ -36,7 +35,10 @@ class BookingDetailSheet extends StatelessWidget {
               width: 44,
               height: 4,
               decoration: BoxDecoration(
-                color: plum.withValues(alpha: 0.18),
+                color: LumiAdaptive.color(
+                  plum.withValues(alpha: 0.18),
+                  surface: true,
+                ),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -46,11 +48,13 @@ class BookingDetailSheet extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Chi tiết lịch hẹn',
-                style: GoogleFonts.cormorantGaramond(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w700,
-                  color: plum,
+                LumiAdaptive.text('Chi tiết lịch hẹn'),
+                style: LumiAdaptive.style(
+                  GoogleFonts.cormorantGaramond(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w700,
+                    color: LumiAdaptive.color(plum),
+                  ),
                 ),
               ),
               _statusBadge(booking),
@@ -60,9 +64,11 @@ class BookingDetailSheet extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: LumiAdaptive.color(Colors.white, surface: true),
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: const Color(0xFFEFE8E8)),
+              border: Border.all(
+                color: LumiAdaptive.color(const Color(0xFFEFE8E8)),
+              ),
             ),
             child: Column(
               children: [
@@ -92,19 +98,28 @@ class BookingDetailSheet extends StatelessWidget {
                   Navigator.of(context).pop();
                   onCancel?.call();
                 },
-                icon: const Icon(Icons.cancel_outlined, color: Colors.red),
+                icon: Icon(
+                  Icons.cancel_outlined,
+                  color: LumiAdaptive.color(Colors.red),
+                ),
                 label: Text(
-                  'HỦY LỊCH HẸN NÀY',
-                  style: GoogleFonts.dmSans(
-                    fontWeight: FontWeight.w700,
-                    color: Colors.red.shade700,
-                    fontSize: 13,
+                  LumiAdaptive.text('HỦY LỊCH HẸN NÀY'),
+                  style: LumiAdaptive.style(
+                    GoogleFonts.dmSans(
+                      fontWeight: FontWeight.w700,
+                      color: LumiAdaptive.color(Colors.red.shade700),
+                      fontSize: 13,
+                    ),
                   ),
                 ),
-                style: OutlinedButton.styleFrom(
-                  side: BorderSide(color: Colors.red.shade200),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
+                style: LumiAdaptive.style(
+                  OutlinedButton.styleFrom(
+                    side: BorderSide(
+                      color: LumiAdaptive.color(Colors.red.shade200),
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                   ),
                 ),
               ),
@@ -119,21 +134,25 @@ class BookingDetailSheet extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
-          label,
-          style: GoogleFonts.dmSans(
-            fontSize: 13,
-            color: plum.withValues(alpha: 0.65),
+          LumiAdaptive.text(label),
+          style: LumiAdaptive.style(
+            GoogleFonts.dmSans(
+              fontSize: 13,
+              color: LumiAdaptive.color(plum.withValues(alpha: 0.65)),
+            ),
           ),
         ),
         const SizedBox(width: 12),
         Expanded(
           child: Text(
-            value,
+            LumiAdaptive.text(value),
             textAlign: TextAlign.right,
-            style: GoogleFonts.dmSans(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: plum,
+            style: LumiAdaptive.style(
+              GoogleFonts.dmSans(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: LumiAdaptive.color(plum),
+              ),
             ),
           ),
         ),
@@ -167,15 +186,17 @@ class BookingDetailSheet extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: bg,
+        color: LumiAdaptive.color(bg, surface: true),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
-        item.statusLabel,
-        style: GoogleFonts.dmSans(
-          color: fg,
-          fontSize: 11,
-          fontWeight: FontWeight.w700,
+        LumiAdaptive.text(item.statusLabel),
+        style: LumiAdaptive.style(
+          GoogleFonts.dmSans(
+            color: LumiAdaptive.color(fg),
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+          ),
         ),
       ),
     );

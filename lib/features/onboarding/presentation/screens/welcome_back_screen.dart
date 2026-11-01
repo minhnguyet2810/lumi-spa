@@ -1,3 +1,5 @@
+import '../../../../core/theme/lumi_adaptive.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -89,7 +91,7 @@ class _WelcomeBackScreenState extends State<WelcomeBackScreen>
       scale: _pressed ? 0.98 : 1,
       duration: Duration(milliseconds: reduceMotion ? 0 : 120),
       child: Material(
-        color: _peach,
+        color: LumiAdaptive.color(_peach, surface: true),
         borderRadius: BorderRadius.circular(18),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
@@ -104,19 +106,25 @@ class _WelcomeBackScreenState extends State<WelcomeBackScreen>
               children: [
                 Flexible(
                   child: Text(
-                    'Khám phá LUMI',
+                    LumiAdaptive.text('Khám phá LUMI'),
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.dmSans(
-                      fontSize: 17,
-                      height: 1.3,
-                      fontWeight: FontWeight.w700,
-                      color: _ink,
-                      letterSpacing: 0,
+                    style: LumiAdaptive.style(
+                      GoogleFonts.dmSans(
+                        fontSize: 17,
+                        height: 1.3,
+                        fontWeight: FontWeight.w700,
+                        color: LumiAdaptive.color(_ink),
+                        letterSpacing: 0,
+                      ),
                     ),
                   ),
                 ),
                 const SizedBox(width: 14),
-                const Icon(Icons.arrow_forward_rounded, color: _ink, size: 22),
+                Icon(
+                  Icons.arrow_forward_rounded,
+                  color: LumiAdaptive.color(_ink),
+                  size: 22,
+                ),
               ],
             ),
           ),
@@ -134,42 +142,50 @@ class _WelcomeBackScreenState extends State<WelcomeBackScreen>
         fit: BoxFit.cover,
         alignment: const Alignment(0.15, 0),
         excludeFromSemantics: true,
-        errorBuilder: (context, error, stackTrace) =>
-            const ColoredBox(color: Color(0xFFFBE7DC)),
+        errorBuilder: (context, error, stackTrace) => ColoredBox(
+          color: LumiAdaptive.color(Color(0xFFFBE7DC), surface: true),
+        ),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    LumiAdaptive.depend(context);
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: const SystemUiOverlayStyle(
+      value: SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.dark,
-        statusBarBrightness: Brightness.light,
-        systemNavigationBarColor: _cream,
-        systemNavigationBarIconBrightness: Brightness.dark,
+        statusBarIconBrightness: LumiAdaptive.isDark
+            ? Brightness.light
+            : Brightness.dark,
+        statusBarBrightness: LumiAdaptive.isDark
+            ? Brightness.dark
+            : Brightness.light,
+        systemNavigationBarColor: LumiAdaptive.color(_cream, surface: true),
+        systemNavigationBarIconBrightness: LumiAdaptive.isDark
+            ? Brightness.light
+            : Brightness.dark,
       ),
       child: Scaffold(
-        backgroundColor: _cream,
+        backgroundColor: LumiAdaptive.color(_cream, surface: true),
         body: LayoutBuilder(
           builder: (context, constraints) {
             return Stack(
               fit: StackFit.expand,
               children: [
                 _photo(constraints.maxHeight),
-                const DecoratedBox(
+                DecoratedBox(
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       stops: [0, 0.26, 0.48, 0.76, 1],
                       colors: [
-                        Color(0xFFFFF1E6),
-                        Color(0xF5FFF1E6),
-                        Color(0x22FFF1E6),
-                        Color(0x153F3028),
-                        Color(0xCC403735),
+                        LumiAdaptive.color(Color(0xFFFFF1E6), surface: true),
+                        LumiAdaptive.color(Color(0xF5FFF1E6), surface: true),
+                        LumiAdaptive.color(Color(0x22FFF1E6), surface: true),
+                        LumiAdaptive.color(Color(0x153F3028), surface: true),
+                        LumiAdaptive.color(Color(0xCC403735), surface: true),
                       ],
                     ),
                   ),
@@ -199,34 +215,46 @@ class _WelcomeBackScreenState extends State<WelcomeBackScreen>
                                     children: [
                                       Expanded(
                                         child: Text(
-                                          'LUMI',
-                                          style: GoogleFonts.dmSans(
-                                            fontSize: 23,
-                                            fontWeight: FontWeight.w700,
-                                            letterSpacing: 1,
-                                            color: _ink,
+                                          LumiAdaptive.text('LUMI'),
+                                          style: LumiAdaptive.style(
+                                            GoogleFonts.dmSans(
+                                              fontSize: 23,
+                                              fontWeight: FontWeight.w700,
+                                              letterSpacing: 1,
+                                              color: LumiAdaptive.color(_ink),
+                                            ),
                                           ),
                                         ),
                                       ),
                                       Container(
                                         padding: const EdgeInsets.all(12),
                                         decoration: BoxDecoration(
-                                          color: const Color(0xFFFFF8EF),
+                                          color: LumiAdaptive.color(
+                                            const Color(0xFFFFF8EF),
+                                            surface: true,
+                                          ),
                                           shape: BoxShape.circle,
                                           border: Border.all(
-                                            color: Colors.white,
+                                            color: LumiAdaptive.color(
+                                              Colors.white,
+                                            ),
                                           ),
-                                          boxShadow: const [
+                                          boxShadow: [
                                             BoxShadow(
-                                              color: Color(0x153F3028),
+                                              color: LumiAdaptive.color(
+                                                Color(0x153F3028),
+                                                surface: true,
+                                              ),
                                               blurRadius: 16,
                                               offset: Offset(0, 6),
                                             ),
                                           ],
                                         ),
-                                        child: const Icon(
+                                        child: Icon(
                                           Icons.spa_outlined,
-                                          color: Color(0xFFA5553E),
+                                          color: LumiAdaptive.color(
+                                            Color(0xFFA5553E),
+                                          ),
                                           size: 24,
                                         ),
                                       ),
@@ -237,13 +265,15 @@ class _WelcomeBackScreenState extends State<WelcomeBackScreen>
                                 _reveal(
                                   0.06,
                                   Text(
-                                    'Một chút\nbình yên.',
-                                    style: GoogleFonts.lora(
-                                      fontSize: 43,
-                                      height: 1.16,
-                                      fontWeight: FontWeight.w500,
-                                      letterSpacing: -0.8,
-                                      color: _ink,
+                                    LumiAdaptive.text('Một chút\nbình yên.'),
+                                    style: LumiAdaptive.style(
+                                      GoogleFonts.lora(
+                                        fontSize: 43,
+                                        height: 1.16,
+                                        fontWeight: FontWeight.w500,
+                                        letterSpacing: -0.8,
+                                        color: LumiAdaptive.color(_ink),
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -255,14 +285,22 @@ class _WelcomeBackScreenState extends State<WelcomeBackScreen>
                                     width: double.infinity,
                                     padding: const EdgeInsets.all(24),
                                     decoration: BoxDecoration(
-                                      color: _cream,
+                                      color: LumiAdaptive.color(
+                                        _cream,
+                                        surface: true,
+                                      ),
                                       borderRadius: BorderRadius.circular(30),
                                       border: Border.all(
-                                        color: const Color(0xFFFFFDFA),
+                                        color: LumiAdaptive.color(
+                                          const Color(0xFFFFFDFA),
+                                        ),
                                       ),
-                                      boxShadow: const [
+                                      boxShadow: [
                                         BoxShadow(
-                                          color: Color(0x243F3028),
+                                          color: LumiAdaptive.color(
+                                            Color(0x243F3028),
+                                            surface: true,
+                                          ),
                                           blurRadius: 30,
                                           offset: Offset(0, 12),
                                         ),
@@ -273,26 +311,34 @@ class _WelcomeBackScreenState extends State<WelcomeBackScreen>
                                           CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          _name.isEmpty
-                                              ? 'Chào bạn.'
-                                              : 'Chào $_name.',
-                                          style: GoogleFonts.dmSans(
-                                            fontSize: 27,
-                                            height: 1.25,
-                                            fontWeight: FontWeight.w600,
-                                            letterSpacing: 0,
-                                            color: _ink,
+                                          LumiAdaptive.text(
+                                            _name.isEmpty
+                                                ? 'Chào bạn.'
+                                                : 'Chào $_name.',
+                                          ),
+                                          style: LumiAdaptive.style(
+                                            GoogleFonts.dmSans(
+                                              fontSize: 27,
+                                              height: 1.25,
+                                              fontWeight: FontWeight.w600,
+                                              letterSpacing: 0,
+                                              color: LumiAdaptive.color(_ink),
+                                            ),
                                           ),
                                         ),
                                         const SizedBox(height: 12),
                                         Text(
-                                          'Hôm nay, dành thời gian\n'
-                                          'chăm sóc mình nhé.',
-                                          style: GoogleFonts.dmSans(
-                                            fontSize: 17,
-                                            height: 1.5,
-                                            letterSpacing: 0,
-                                            color: _muted,
+                                          LumiAdaptive.text(
+                                            'Hôm nay, dành thời gian\n'
+                                            'chăm sóc mình nhé.',
+                                          ),
+                                          style: LumiAdaptive.style(
+                                            GoogleFonts.dmSans(
+                                              fontSize: 17,
+                                              height: 1.5,
+                                              letterSpacing: 0,
+                                              color: LumiAdaptive.color(_muted),
+                                            ),
                                           ),
                                         ),
                                         const SizedBox(height: 24),

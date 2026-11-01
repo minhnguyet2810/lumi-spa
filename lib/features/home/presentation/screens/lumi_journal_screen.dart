@@ -1,9 +1,12 @@
+import '../../../../core/theme/lumi_adaptive.dart';
+import 'lumi_about_page.dart';
+import 'lumi_journal_media.dart';
 import '../../../../core/data/lumi_journal_repository.dart';
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-// Journal V2.1: editorial demo content. V2.2 will replace this with an API.
+// Published journal content from Firestore.
 class LumiJournalScreen extends StatefulWidget {
   const LumiJournalScreen({super.key});
 
@@ -29,7 +32,7 @@ class _LumiJournalScreenState extends State<LumiJournalScreen> {
   static const ink = Color(0xFF403735);
   static const rose = Color(0xFFA5553E);
   static const bg = Color(0xFFFFF8EF);
-  static const blue = Color(0xFFE8F2F6);
+
   static const blush = Color(0xFFFBE7DC);
   final _search = TextEditingController();
   String _category = 'Tất cả';
@@ -126,17 +129,21 @@ class _LumiJournalScreenState extends State<LumiJournalScreen> {
         loadingBuilder: (_, child, progress) => progress == null
             ? child
             : Container(
-                color: blush,
+                color: LumiAdaptive.color(blush, surface: true),
                 alignment: Alignment.center,
-                child: const CircularProgressIndicator(
+                child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  color: rose,
+                  color: LumiAdaptive.color(rose),
                 ),
               ),
         errorBuilder: (_, _, _) => Container(
-          color: blush,
+          color: LumiAdaptive.color(blush),
           alignment: Alignment.center,
-          child: const Icon(Icons.spa_outlined, size: 32, color: rose),
+          child: Icon(
+            Icons.spa_outlined,
+            size: 32,
+            color: LumiAdaptive.color(rose),
+          ),
         ),
       ),
     ),
@@ -145,13 +152,13 @@ class _LumiJournalScreenState extends State<LumiJournalScreen> {
   void _openStory(_Story story) => Navigator.of(context).push(
     MaterialPageRoute<void>(
       builder: (_) => Scaffold(
-        backgroundColor: bg,
+        backgroundColor: LumiAdaptive.color(bg, surface: true),
         appBar: AppBar(
-          backgroundColor: bg,
-          foregroundColor: ink,
+          backgroundColor: LumiAdaptive.color(bg, surface: true),
+          foregroundColor: LumiAdaptive.color(ink),
           title: Text(
-            'Góc chăm sóc da',
-            style: GoogleFonts.dmSans(fontSize: 27),
+            LumiAdaptive.text('Góc chăm sóc da'),
+            style: LumiAdaptive.style(GoogleFonts.dmSans(fontSize: 27)),
           ),
         ),
         body: ListView(
@@ -160,41 +167,49 @@ class _LumiJournalScreenState extends State<LumiJournalScreen> {
             _photo(story.image, height: 245),
             const SizedBox(height: 24),
             Text(
-              story.category.toUpperCase(),
-              style: GoogleFonts.dmSans(
-                color: rose,
-                letterSpacing: 1.8,
-                fontWeight: FontWeight.w700,
-                fontSize: 14,
+              LumiAdaptive.text(story.category.toUpperCase()),
+              style: LumiAdaptive.style(
+                GoogleFonts.dmSans(
+                  color: LumiAdaptive.color(rose),
+                  letterSpacing: 1.8,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 14,
+                ),
               ),
             ),
             const SizedBox(height: 9),
             Text(
-              story.title,
-              style: GoogleFonts.dmSans(
-                color: ink,
-                fontSize: 39,
-                height: 1.04,
-                fontWeight: FontWeight.w700,
+              LumiAdaptive.text(story.title),
+              style: LumiAdaptive.style(
+                GoogleFonts.dmSans(
+                  color: LumiAdaptive.color(ink),
+                  fontSize: 39,
+                  height: 1.04,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
             const SizedBox(height: 13),
             Text(
-              'LUMI EDITORIAL  ·  ${story.minutes} PHÚT ĐỌC',
-              style: GoogleFonts.dmSans(
-                color: rose,
-                fontSize: 14,
-                letterSpacing: .7,
+              LumiAdaptive.text('LUMI EDITORIAL  ·  ${story.minutes} PHÚT ĐỌC'),
+              style: LumiAdaptive.style(
+                GoogleFonts.dmSans(
+                  color: LumiAdaptive.color(rose),
+                  fontSize: 14,
+                  letterSpacing: .7,
+                ),
               ),
             ),
             const SizedBox(height: 19),
             Text(
-              story.summary,
-              style: GoogleFonts.dmSans(
-                color: ink,
-                fontSize: 17,
-                height: 1.55,
-                fontWeight: FontWeight.w600,
+              LumiAdaptive.text(story.summary),
+              style: LumiAdaptive.style(
+                GoogleFonts.dmSans(
+                  color: LumiAdaptive.color(ink),
+                  fontSize: 17,
+                  height: 1.55,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
             const SizedBox(height: 12),
@@ -202,18 +217,28 @@ class _LumiJournalScreenState extends State<LumiJournalScreen> {
               Padding(
                 padding: const EdgeInsets.only(top: 15),
                 child: Text(
-                  paragraph,
-                  style: GoogleFonts.dmSans(
-                    color: ink,
-                    fontSize: 15,
-                    height: 1.75,
+                  LumiAdaptive.text(paragraph),
+                  style: LumiAdaptive.style(
+                    GoogleFonts.dmSans(
+                      color: LumiAdaptive.color(ink),
+                      fontSize: 15,
+                      height: 1.75,
+                    ),
                   ),
                 ),
               ),
             const SizedBox(height: 26),
             Text(
-              'Bài viết mẫu cho dự án LUMI SPA · Nội dung mang tính tham khảo.',
-              style: GoogleFonts.dmSans(color: rose, fontSize: 14, height: 1.5),
+              LumiAdaptive.text(
+                'Bài viết mẫu cho dự án LUMI SPA · Nội dung mang tính tham khảo.',
+              ),
+              style: LumiAdaptive.style(
+                GoogleFonts.dmSans(
+                  color: LumiAdaptive.color(rose),
+                  fontSize: 14,
+                  height: 1.5,
+                ),
+              ),
             ),
           ],
         ),
@@ -221,58 +246,11 @@ class _LumiJournalScreenState extends State<LumiJournalScreen> {
     ),
   );
 
-  // ignore: unused_element
-  // ignore: unused_element
-  Widget _storyRow(_Story story) => InkWell(
-    onTap: () => _openStory(story),
-    borderRadius: BorderRadius.circular(18),
-    child: Padding(
-      padding: const EdgeInsets.symmetric(vertical: 11),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _photo(story.image, width: 116, height: 112),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '${story.category.toUpperCase()}  ·  ${story.minutes} PHÚT',
-                  style: GoogleFonts.dmSans(
-                    fontSize: 14,
-                    color: rose,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 7),
-                Text(
-                  story.title,
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 15,
-                    height: 1.35,
-                    color: ink,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 7),
-                Text(
-                  'Đọc bài viết  ↗',
-                  style: GoogleFonts.dmSans(color: rose, fontSize: 14),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
-
   Widget _storiesPage() {
     if (_journalLoading) {
-      return const Center(child: CircularProgressIndicator(color: rose));
+      return Center(
+        child: CircularProgressIndicator(color: LumiAdaptive.color(rose)),
+      );
     }
 
     if (_journalError != null) {
@@ -282,38 +260,53 @@ class _LumiJournalScreenState extends State<LumiJournalScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.cloud_off_outlined, size: 42, color: ink),
+              Icon(
+                Icons.cloud_off_outlined,
+                size: 42,
+                color: LumiAdaptive.color(ink),
+              ),
               const SizedBox(height: 18),
               Text(
-                'Chưa tải được bài viết',
+                LumiAdaptive.text('Chưa tải được bài viết'),
                 textAlign: TextAlign.center,
-                style: GoogleFonts.dmSans(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w700,
-                  color: ink,
+                style: LumiAdaptive.style(
+                  GoogleFonts.dmSans(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                    color: LumiAdaptive.color(ink),
+                  ),
                 ),
               ),
               const SizedBox(height: 10),
               Text(
-                _journalError!.contains('permission-denied')
-                    ? 'Tài khoản chưa có quyền đọc nội dung này.'
-                    : 'Vui lòng kiểm tra kết nối và thử lại.',
+                LumiAdaptive.text(
+                  _journalError!.contains('permission-denied')
+                      ? 'Tài khoản chưa có quyền đọc nội dung này.'
+                      : 'Vui lòng kiểm tra kết nối và thử lại.',
+                ),
                 textAlign: TextAlign.center,
-                style: GoogleFonts.dmSans(
-                  fontSize: 16,
-                  height: 1.5,
-                  color: ink,
+                style: LumiAdaptive.style(
+                  GoogleFonts.dmSans(
+                    fontSize: 16,
+                    height: 1.5,
+                    color: LumiAdaptive.color(ink),
+                  ),
                 ),
               ),
               const SizedBox(height: 22),
               FilledButton.icon(
                 onPressed: _loadJournal,
                 icon: const Icon(Icons.refresh_rounded),
-                label: const Text('Thử lại'),
-                style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xFFF5BEA5),
-                  foregroundColor: ink,
-                  minimumSize: const Size(140, 52),
+                label: Text(LumiAdaptive.text('Thử lại')),
+                style: LumiAdaptive.style(
+                  FilledButton.styleFrom(
+                    backgroundColor: LumiAdaptive.color(
+                      const Color(0xFFF5BEA5),
+                      surface: true,
+                    ),
+                    foregroundColor: LumiAdaptive.color(ink),
+                    minimumSize: const Size(140, 52),
+                  ),
                 ),
               ),
             ],
@@ -344,12 +337,17 @@ class _LumiJournalScreenState extends State<LumiJournalScreen> {
           TextField(
             controller: _search,
             onChanged: (_) => setState(() {}),
-            style: GoogleFonts.dmSans(fontSize: 16, color: ink),
+            style: LumiAdaptive.style(
+              GoogleFonts.dmSans(fontSize: 16, color: LumiAdaptive.color(ink)),
+            ),
             decoration: InputDecoration(
-              hintText: 'Tìm bài viết',
-              prefixIcon: const Icon(Icons.search_rounded, color: ink),
+              hintText: LumiAdaptive.optionalText('Tìm bài viết'),
+              prefixIcon: Icon(
+                Icons.search_rounded,
+                color: LumiAdaptive.color(ink),
+              ),
               filled: true,
-              fillColor: Colors.white,
+              fillColor: LumiAdaptive.color(Colors.white, surface: true),
               contentPadding: const EdgeInsets.all(18),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(20),
@@ -370,20 +368,28 @@ class _LumiJournalScreenState extends State<LumiJournalScreen> {
                   Padding(
                     padding: const EdgeInsets.only(right: 8),
                     child: ChoiceChip(
-                      label: Text(category),
+                      label: Text(LumiAdaptive.text(category)),
                       selected: _category == category,
                       showCheckmark: false,
-                      selectedColor: const Color(0xFFF5BEA5),
-                      backgroundColor: Colors.white,
+                      selectedColor: LumiAdaptive.color(
+                        const Color(0xFFF5BEA5),
+                        surface: true,
+                      ),
+                      backgroundColor: LumiAdaptive.color(
+                        Colors.white,
+                        surface: true,
+                      ),
                       side: BorderSide.none,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 12,
                         vertical: 10,
                       ),
-                      labelStyle: GoogleFonts.dmSans(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: ink,
+                      labelStyle: LumiAdaptive.style(
+                        GoogleFonts.dmSans(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: LumiAdaptive.color(ink),
+                        ),
                       ),
                       onSelected: (_) => setState(() => _category = category),
                     ),
@@ -396,18 +402,25 @@ class _LumiJournalScreenState extends State<LumiJournalScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 40),
               child: Text(
-                query.isEmpty
-                    ? 'Chưa có bài viết.'
-                    : 'Không tìm thấy bài viết phù hợp.',
+                LumiAdaptive.text(
+                  query.isEmpty
+                      ? 'Chưa có bài viết.'
+                      : 'Không tìm thấy bài viết phù hợp.',
+                ),
                 textAlign: TextAlign.center,
-                style: GoogleFonts.dmSans(fontSize: 17, color: ink),
+                style: LumiAdaptive.style(
+                  GoogleFonts.dmSans(
+                    fontSize: 17,
+                    color: LumiAdaptive.color(ink),
+                  ),
+                ),
               ),
             ),
           for (final story in filtered)
             Padding(
               padding: const EdgeInsets.only(bottom: 20),
               child: Material(
-                color: Colors.white,
+                color: LumiAdaptive.color(Colors.white, surface: true),
                 borderRadius: BorderRadius.circular(24),
                 clipBehavior: Clip.antiAlias,
                 child: InkWell(
@@ -420,35 +433,48 @@ class _LumiJournalScreenState extends State<LumiJournalScreen> {
                         _photo(story.image, height: 200),
                         const SizedBox(height: 16),
                         Text(
-                          '${story.category} · ${story.minutes} phút đọc',
-                          style: GoogleFonts.dmSans(
-                            fontSize: 14,
-                            color: const Color(0xFF756863),
+                          LumiAdaptive.text(
+                            '${story.category} · ${story.minutes} phút đọc',
+                          ),
+                          style: LumiAdaptive.style(
+                            GoogleFonts.dmSans(
+                              fontSize: 14,
+                              color: LumiAdaptive.color(
+                                const Color(0xFF756863),
+                              ),
+                            ),
                           ),
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          story.title,
-                          style: GoogleFonts.dmSans(
-                            fontSize: 22,
-                            height: 1.3,
-                            fontWeight: FontWeight.w700,
-                            color: ink,
+                          LumiAdaptive.text(story.title),
+                          style: LumiAdaptive.style(
+                            GoogleFonts.dmSans(
+                              fontSize: 22,
+                              height: 1.3,
+                              fontWeight: FontWeight.w700,
+                              color: LumiAdaptive.color(ink),
+                            ),
                           ),
                         ),
                         const SizedBox(height: 16),
                         Row(
                           children: [
                             Text(
-                              'Đọc bài viết',
-                              style: GoogleFonts.dmSans(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: ink,
+                              LumiAdaptive.text('Đọc bài viết'),
+                              style: LumiAdaptive.style(
+                                GoogleFonts.dmSans(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: LumiAdaptive.color(ink),
+                                ),
                               ),
                             ),
                             const Spacer(),
-                            const Icon(Icons.arrow_forward_rounded, color: ink),
+                            Icon(
+                              Icons.arrow_forward_rounded,
+                              color: LumiAdaptive.color(ink),
+                            ),
                           ],
                         ),
                         const SizedBox(height: 6),
@@ -463,220 +489,81 @@ class _LumiJournalScreenState extends State<LumiJournalScreen> {
     );
   }
 
-  Widget _shortsPage() => ListView(
-    padding: const EdgeInsets.all(20),
-    children: [
-      Text(
-        'LUMI SHORTS',
-        style: GoogleFonts.dmSans(
-          color: rose,
-          fontSize: 14,
-          letterSpacing: 2,
-          fontWeight: FontWeight.w700,
-        ),
-      ),
-      const SizedBox(height: 6),
-      Text(
-        'Little moments, big glow.',
-        style: GoogleFonts.dmSans(
-          fontSize: 35,
-          color: ink,
-          fontWeight: FontWeight.w700,
-        ),
-      ),
-      const SizedBox(height: 9),
-      Text(
-        'Ý tưởng video ngắn cho LUMI. Chưa có MP4 thật nên không hiển thị nút phát giả.',
-        style: GoogleFonts.dmSans(color: ink, fontSize: 14, height: 1.5),
-      ),
-      const SizedBox(height: 18),
-      for (final item in const [
-        (
-          '60 giây thư giãn',
-          'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=900&q=85',
-        ),
-        (
-          'Skincare buổi tối',
-          'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=900&q=85',
-        ),
-        (
-          'Một ngày tại LUMI',
-          'https://images.unsplash.com/photo-1519823551278-64ac92734fb1?w=900&q=85',
-        ),
-      ])
-        Padding(
-          padding: const EdgeInsets.only(bottom: 18),
-          child: Row(
-            children: [
-              _photo(item.$2, width: 132, height: 176),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'VIDEO CONCEPT',
-                      style: GoogleFonts.dmSans(
-                        color: rose,
-                        fontSize: 14,
-                        letterSpacing: 1.3,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      item.$1,
-                      style: GoogleFonts.dmSans(
-                        fontSize: 27,
-                        color: ink,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      'Sắp ra mắt',
-                      style: GoogleFonts.dmSans(color: rose, fontSize: 14),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-    ],
-  );
+  Widget _shortsPage() => const LumiJournalShorts();
 
-  Widget _aboutPage() => ListView(
-    padding: const EdgeInsets.fromLTRB(20, 14, 20, 32),
-    children: [
-      _photo(
-        'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=1100&q=85',
-        height: 230,
-      ),
-      const SizedBox(height: 23),
-      Text(
-        'DISCOVER LUMI',
-        style: GoogleFonts.dmSans(
-          color: rose,
-          fontSize: 14,
-          letterSpacing: 2,
-          fontWeight: FontWeight.w700,
-        ),
-      ),
-      const SizedBox(height: 7),
-      Text(
-        'A softer kind of beauty.',
-        style: GoogleFonts.dmSans(
-          color: ink,
-          fontSize: 39,
-          height: 1.04,
-          fontWeight: FontWeight.w700,
-        ),
-      ),
-      const SizedBox(height: 17),
-      Text(
-        'LUMI SPA & WELLNESS là dự án ứng dụng chăm sóc sắc đẹp được thiết kế với tinh thần nhẹ nhàng, thanh lịch và đặt trải nghiệm cá nhân làm trung tâm.',
-        style: GoogleFonts.dmSans(color: ink, fontSize: 15, height: 1.75),
-      ),
-      const SizedBox(height: 16),
-      Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: blue,
-          borderRadius: BorderRadius.circular(18),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'OUR PHILOSOPHY',
-              style: GoogleFonts.dmSans(
-                color: rose,
-                letterSpacing: 1.6,
-                fontSize: 14,
-              ),
-            ),
-            const SizedBox(height: 7),
-            Text(
-              'Chăm sóc bản thân là một hành trình, không phải một đích đến.',
-              style: GoogleFonts.dmSans(color: ink, fontSize: 26, height: 1.15),
-            ),
-          ],
-        ),
-      ),
-      const SizedBox(height: 20),
-      Text(
-        'Trong ứng dụng, bạn có thể tìm hiểu liệu trình, khám phá mỹ phẩm và lên kế hoạch cho những phút giây thư giãn.',
-        style: GoogleFonts.dmSans(color: ink, fontSize: 15, height: 1.75),
-      ),
-      const SizedBox(height: 22),
-      Text(
-        'Giới thiệu ý tưởng thương hiệu mẫu của dự án; chưa phải thông tin xác minh về một cơ sở kinh doanh.',
-        style: GoogleFonts.dmSans(color: rose, fontSize: 14, height: 1.5),
-      ),
-    ],
-  );
+  Widget _aboutPage() => const LumiAboutPage();
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    backgroundColor: bg,
-    appBar: AppBar(
-      backgroundColor: bg,
-      foregroundColor: ink,
-      elevation: 0,
-      title: Text(
-        'Góc chăm sóc da',
-        style: GoogleFonts.dmSans(fontSize: 29, fontWeight: FontWeight.w700),
+  Widget build(BuildContext context) => LumiAdaptive.watch(
+    context,
+    () => Scaffold(
+      backgroundColor: LumiAdaptive.color(bg, surface: true),
+      appBar: AppBar(
+        backgroundColor: LumiAdaptive.color(bg, surface: true),
+        foregroundColor: LumiAdaptive.color(ink),
+        elevation: 0,
+        title: Text(
+          LumiAdaptive.text('Góc chăm sóc da'),
+          style: LumiAdaptive.style(
+            GoogleFonts.dmSans(fontSize: 29, fontWeight: FontWeight.w700),
+          ),
+        ),
       ),
-    ),
-    body: Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(20, 4, 20, 10),
-          child: Row(
-            children: [
-              for (final (index, label) in [
-                (0, 'Bài viết'),
-                (1, 'Shorts'),
-                (2, 'Về LUMI'),
-              ])
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 3),
-                    child: InkWell(
-                      onTap: () => setState(() => _section = index),
-                      borderRadius: BorderRadius.circular(22),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 180),
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        decoration: BoxDecoration(
-                          color: _section == index ? blush : Colors.white,
-                          borderRadius: BorderRadius.circular(22),
-                        ),
-                        child: Text(
-                          label,
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.dmSans(
-                            color: ink,
-                            fontSize: 14,
-                            fontWeight: _section == index
-                                ? FontWeight.w700
-                                : FontWeight.w500,
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 4, 20, 10),
+            child: Row(
+              children: [
+                for (final (index, label) in [
+                  (0, 'Bài viết'),
+                  (1, 'Shorts'),
+                  (2, 'Về LUMI'),
+                ])
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 3),
+                      child: InkWell(
+                        onTap: () => setState(() => _section = index),
+                        borderRadius: BorderRadius.circular(22),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 180),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          decoration: BoxDecoration(
+                            color: LumiAdaptive.color(
+                              _section == index ? blush : Colors.white,
+                              surface: true,
+                            ),
+                            borderRadius: BorderRadius.circular(22),
+                          ),
+                          child: Text(
+                            LumiAdaptive.text(label),
+                            textAlign: TextAlign.center,
+                            style: LumiAdaptive.style(
+                              GoogleFonts.dmSans(
+                                color: LumiAdaptive.color(ink),
+                                fontSize: 14,
+                                fontWeight: _section == index
+                                    ? FontWeight.w700
+                                    : FontWeight.w500,
+                              ),
+                            ),
                           ),
                         ),
                       ),
                     ),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
-        ),
-        Expanded(
-          child: IndexedStack(
-            index: _section,
-            children: [_storiesPage(), _shortsPage(), _aboutPage()],
+          Expanded(
+            child: IndexedStack(
+              index: _section,
+              children: [_storiesPage(), _shortsPage(), _aboutPage()],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     ),
   );
 }

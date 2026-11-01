@@ -1,3 +1,5 @@
+import '../../../../core/theme/lumi_adaptive.dart';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -88,7 +90,8 @@ class _LoginScreenState extends State<LoginScreen>
 
   void _message(String text) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(LumiAdaptive.text(text))));
   }
 
   // Đồng bộ hồ sơ Firestore với Firebase Auth, không ghi đè hồ sơ đã có.
@@ -139,7 +142,7 @@ class _LoginScreenState extends State<LoginScreen>
             await _syncUserProfile(result.user!, registeredName: name);
           } on FirebaseException {
             _message(
-              'Tài khoản đã tạo, nhưng chưa lưu được hồ sơ. Hãy kiểm tra Firestore Rules rồi đăng nhập lại.',
+              'Tài khoản đã được tạo, nhưng hồ sơ chưa cập nhật hoàn tất. Bạn vui lòng đăng nhập lại để tiếp tục.',
             );
             return;
           }
@@ -193,16 +196,25 @@ class _LoginScreenState extends State<LoginScreen>
     }
   }
 
-  static const _ink = Color(0xFF342C32);
-  static const _rose = Color(0xFFB77489);
-  static const _soft = Color(0xFFF0F5F2);
+  static const _ink = Color(0xFF403735);
+  static const _rose = Color(0xFFA5553E);
+  static const _soft = Color(0xFFEAF3F7);
 
   InputDecoration _pill(String hint, IconData icon) => InputDecoration(
-    hintText: hint,
-    hintStyle: GoogleFonts.dmSans(fontSize: 14, color: const Color(0xFF89938E)),
-    prefixIcon: Icon(icon, color: const Color(0xFF77877E), size: 20),
+    hintText: LumiAdaptive.optionalText(hint),
+    hintStyle: LumiAdaptive.style(
+      GoogleFonts.dmSans(
+        fontSize: 14,
+        color: LumiAdaptive.color(const Color(0xFF89938E)),
+      ),
+    ),
+    prefixIcon: Icon(
+      icon,
+      color: LumiAdaptive.color(const Color(0xFF77877E)),
+      size: 20,
+    ),
     filled: true,
-    fillColor: _soft,
+    fillColor: LumiAdaptive.color(_soft, surface: true),
     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(30),
@@ -214,7 +226,7 @@ class _LoginScreenState extends State<LoginScreen>
     ),
     focusedBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(30),
-      borderSide: const BorderSide(color: _rose, width: 1.5),
+      borderSide: BorderSide(color: LumiAdaptive.color(_rose), width: 1.5),
     ),
   );
 
@@ -229,9 +241,10 @@ class _LoginScreenState extends State<LoginScreen>
 
   @override
   Widget build(BuildContext context) {
+    LumiAdaptive.depend(context);
     final registering = _register;
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, size) => SingleChildScrollView(
@@ -251,7 +264,7 @@ class _LoginScreenState extends State<LoginScreen>
                           Icons.arrow_back_ios_new_rounded,
                           size: 16,
                         ),
-                        label: const Text('Quay lại'),
+                        label: Text(LumiAdaptive.text('Quay lại')),
                       ),
                     ),
                     ClipRRect(
@@ -272,14 +285,20 @@ class _LoginScreenState extends State<LoginScreen>
                                 fit: BoxFit.cover,
                               ),
                             ),
-                            const DecoratedBox(
+                            DecoratedBox(
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
                                   begin: Alignment.centerLeft,
                                   end: Alignment.centerRight,
                                   colors: [
-                                    Color(0xB5362730),
-                                    Color(0x00362730),
+                                    LumiAdaptive.color(
+                                      Color(0xB5362730),
+                                      surface: true,
+                                    ),
+                                    LumiAdaptive.color(
+                                      Color(0x00362730),
+                                      surface: true,
+                                    ),
                                   ],
                                 ),
                               ),
@@ -295,30 +314,38 @@ class _LoginScreenState extends State<LoginScreen>
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'LUMI.',
-                                    style: GoogleFonts.dmSans(
-                                      fontSize: 27,
-                                      fontWeight: FontWeight.w800,
-                                      color: Colors.white,
+                                    LumiAdaptive.text('LUMI.'),
+                                    style: LumiAdaptive.style(
+                                      GoogleFonts.dmSans(
+                                        fontSize: 27,
+                                        fontWeight: FontWeight.w800,
+                                        color: LumiAdaptive.color(Colors.white),
+                                      ),
                                     ),
                                   ),
                                   const SizedBox(height: 7),
                                   Text(
-                                    'Your little escape,\nright here.',
-                                    style: GoogleFonts.dmSans(
-                                      fontSize: 13,
-                                      height: 1.35,
-                                      color: Colors.white,
+                                    LumiAdaptive.text(
+                                      'Your little escape,\nright here.',
+                                    ),
+                                    style: LumiAdaptive.style(
+                                      GoogleFonts.dmSans(
+                                        fontSize: 14,
+                                        height: 1.35,
+                                        color: LumiAdaptive.color(Colors.white),
+                                      ),
                                     ),
                                   ),
                                   const Spacer(),
                                   Text(
-                                    'SPA & WELLNESS',
-                                    style: GoogleFonts.dmSans(
-                                      fontSize: 10,
-                                      letterSpacing: 2,
-                                      fontWeight: FontWeight.w700,
-                                      color: Colors.white,
+                                    LumiAdaptive.text('SPA & WELLNESS'),
+                                    style: LumiAdaptive.style(
+                                      GoogleFonts.dmSans(
+                                        fontSize: 14,
+                                        letterSpacing: 2,
+                                        fontWeight: FontWeight.w700,
+                                        color: LumiAdaptive.color(Colors.white),
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -339,12 +366,18 @@ class _LoginScreenState extends State<LoginScreen>
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
                               Text(
-                                registering ? 'Create Account' : 'Welcome Back',
-                                style: GoogleFonts.dmSans(
-                                  fontSize: 27,
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: -0.9,
-                                  color: _ink,
+                                LumiAdaptive.text(
+                                  registering
+                                      ? 'Create Account'
+                                      : 'Welcome Back',
+                                ),
+                                style: LumiAdaptive.style(
+                                  GoogleFonts.dmSans(
+                                    fontSize: 27,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: -0.9,
+                                    color: LumiAdaptive.color(_ink),
+                                  ),
                                 ),
                               ),
                               const SizedBox(height: 21),
@@ -396,7 +429,9 @@ class _LoginScreenState extends State<LoginScreen>
                                           _obscure
                                               ? Icons.visibility_off_outlined
                                               : Icons.visibility_outlined,
-                                          color: const Color(0xFF89938E),
+                                          color: LumiAdaptive.color(
+                                            const Color(0xFF89938E),
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -405,29 +440,35 @@ class _LoginScreenState extends State<LoginScreen>
                               if (!registering)
                                 Row(
                                   children: [
-                                    const Icon(
+                                    Icon(
                                       Icons.check_circle_rounded,
-                                      color: _rose,
+                                      color: LumiAdaptive.color(_rose),
                                       size: 20,
                                     ),
                                     const SizedBox(width: 7),
                                     Expanded(
                                       child: Text(
-                                        'Stay signed in',
-                                        style: GoogleFonts.dmSans(
-                                          fontSize: 12,
-                                          color: const Color(0xFF767676),
+                                        LumiAdaptive.text('Stay signed in'),
+                                        style: LumiAdaptive.style(
+                                          GoogleFonts.dmSans(
+                                            fontSize: 14,
+                                            color: LumiAdaptive.color(
+                                              const Color(0xFF767676),
+                                            ),
+                                          ),
                                         ),
                                       ),
                                     ),
                                     TextButton(
                                       onPressed: _busy ? null : _resetPassword,
                                       child: Text(
-                                        'Forgot Password?',
-                                        style: GoogleFonts.dmSans(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w700,
-                                          color: _rose,
+                                        LumiAdaptive.text('Forgot Password?'),
+                                        style: LumiAdaptive.style(
+                                          GoogleFonts.dmSans(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w700,
+                                            color: LumiAdaptive.color(_rose),
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -438,40 +479,60 @@ class _LoginScreenState extends State<LoginScreen>
                                 height: 56,
                                 child: DecoratedBox(
                                   decoration: BoxDecoration(
-                                    gradient: const LinearGradient(
+                                    gradient: LinearGradient(
                                       colors: [
-                                        Color(0xFF6C4656),
-                                        Color(0xFFD39AA9),
+                                        LumiAdaptive.color(
+                                          Color(0xFFA5553E),
+                                          surface: true,
+                                        ),
+                                        LumiAdaptive.color(
+                                          Color(0xFFF5BEA5),
+                                          surface: true,
+                                        ),
                                       ],
                                     ),
                                     borderRadius: BorderRadius.circular(32),
                                   ),
                                   child: ElevatedButton(
                                     onPressed: _busy ? null : _submit,
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.transparent,
-                                      disabledBackgroundColor:
-                                          Colors.transparent,
-                                      shadowColor: Colors.transparent,
-                                      foregroundColor: Colors.white,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(32),
+                                    style: LumiAdaptive.style(
+                                      ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.transparent,
+                                        disabledBackgroundColor:
+                                            Colors.transparent,
+                                        shadowColor: Colors.transparent,
+                                        foregroundColor: LumiAdaptive.color(
+                                          Colors.white,
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            32,
+                                          ),
+                                        ),
                                       ),
                                     ),
                                     child: _busy
-                                        ? const SizedBox(
+                                        ? SizedBox(
                                             width: 21,
                                             height: 21,
                                             child: CircularProgressIndicator(
                                               strokeWidth: 2,
-                                              color: Colors.white,
+                                              color: LumiAdaptive.color(
+                                                Colors.white,
+                                              ),
                                             ),
                                           )
                                         : Text(
-                                            registering ? 'Sign Up' : 'Log In',
-                                            style: GoogleFonts.dmSans(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w700,
+                                            LumiAdaptive.text(
+                                              registering
+                                                  ? 'Sign Up'
+                                                  : 'Log In',
+                                            ),
+                                            style: LumiAdaptive.style(
+                                              GoogleFonts.dmSans(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w700,
+                                              ),
                                             ),
                                           ),
                                   ),
@@ -480,23 +541,37 @@ class _LoginScreenState extends State<LoginScreen>
                               const SizedBox(height: 24),
                               Row(
                                 children: [
-                                  const Expanded(
-                                    child: Divider(color: Color(0xFFE4E4E4)),
+                                  Expanded(
+                                    child: Divider(
+                                      color: LumiAdaptive.color(
+                                        Color(0xFFE4E4E4),
+                                        surface: true,
+                                      ),
+                                    ),
                                   ),
                                   Padding(
                                     padding: const EdgeInsets.symmetric(
                                       horizontal: 12,
                                     ),
                                     child: Text(
-                                      'LUMI SPA & WELLNESS',
-                                      style: GoogleFonts.dmSans(
-                                        color: const Color(0xFF9A9A9A),
-                                        fontSize: 11,
+                                      LumiAdaptive.text('LUMI SPA & WELLNESS'),
+                                      style: LumiAdaptive.style(
+                                        GoogleFonts.dmSans(
+                                          color: LumiAdaptive.color(
+                                            const Color(0xFF9A9A9A),
+                                          ),
+                                          fontSize: 14,
+                                        ),
                                       ),
                                     ),
                                   ),
-                                  const Expanded(
-                                    child: Divider(color: Color(0xFFE4E4E4)),
+                                  Expanded(
+                                    child: Divider(
+                                      color: LumiAdaptive.color(
+                                        Color(0xFFE4E4E4),
+                                        surface: true,
+                                      ),
+                                    ),
                                   ),
                                 ],
                               ),
@@ -505,12 +580,18 @@ class _LoginScreenState extends State<LoginScreen>
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Text(
-                                    registering
-                                        ? 'Already have an account?'
-                                        : "Don't have an account?",
-                                    style: GoogleFonts.dmSans(
-                                      fontSize: 13,
-                                      color: const Color(0xFF8A8A8A),
+                                    LumiAdaptive.text(
+                                      registering
+                                          ? 'Already have an account?'
+                                          : "Don't have an account?",
+                                    ),
+                                    style: LumiAdaptive.style(
+                                      GoogleFonts.dmSans(
+                                        fontSize: 14,
+                                        color: LumiAdaptive.color(
+                                          const Color(0xFF8A8A8A),
+                                        ),
+                                      ),
                                     ),
                                   ),
                                   TextButton(
@@ -520,11 +601,15 @@ class _LoginScreenState extends State<LoginScreen>
                                             () => _register = !_register,
                                           ),
                                     child: Text(
-                                      registering ? 'Log In' : 'Sign Up',
-                                      style: GoogleFonts.dmSans(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w800,
-                                        color: _rose,
+                                      LumiAdaptive.text(
+                                        registering ? 'Log In' : 'Sign Up',
+                                      ),
+                                      style: LumiAdaptive.style(
+                                        GoogleFonts.dmSans(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w800,
+                                          color: LumiAdaptive.color(_rose),
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -533,8 +618,10 @@ class _LoginScreenState extends State<LoginScreen>
                               const SizedBox(height: 8),
                               TextButton(
                                 onPressed: _busy ? null : _returnToGuest,
-                                child: const Text(
-                                  'Tiếp tục khám phá mà không đăng nhập',
+                                child: Text(
+                                  LumiAdaptive.text(
+                                    'Tiếp tục khám phá mà không đăng nhập',
+                                  ),
                                 ),
                               ),
                             ],

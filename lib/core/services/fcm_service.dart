@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -14,7 +15,9 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
       options: DefaultFirebaseOptions.currentPlatform,
     );
   } catch (_) {}
-  debugPrint('🔔 [FCM Background] Đã nhận push notification: ${message.messageId}');
+  debugPrint(
+    '🔔 [FCM Background] Đã nhận push notification: ${message.messageId}',
+  );
   debugPrint('Tiêu đề: ${message.notification?.title}');
   debugPrint('Nội dung: ${message.notification?.body}');
   debugPrint('Dữ liệu đính kèm: ${message.data}');
@@ -54,7 +57,9 @@ class FcmService {
         sound: true,
       );
 
-      debugPrint('🔔 [FCM Permission] Trạng thái: ${settings.authorizationStatus}');
+      debugPrint(
+        '🔔 [FCM Permission] Trạng thái: ${settings.authorizationStatus}',
+      );
 
       // 3. Cấu hình hiển thị thông báo khi app đang chạy ở foreground
       await _fcm.setForegroundNotificationPresentationOptions(
@@ -94,13 +99,17 @@ class FcmService {
 
       // 6. Lắng nghe thông báo khi app đang ở foreground
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-        debugPrint('🔔 [FCM Foreground] Nhận tin: ${message.notification?.title}');
+        debugPrint(
+          '🔔 [FCM Foreground] Nhận tin: ${message.notification?.title}',
+        );
         onForegroundMessage?.call(message);
       });
 
       // 7. Lắng nghe sự kiện người dùng bấm vào notification từ thanh Status bar để mở app
       FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-        debugPrint('👉 [FCM OpenApp] Người dùng bấm vào thông báo: ${message.data}');
+        debugPrint(
+          '👉 [FCM OpenApp] Người dùng bấm vào thông báo: ${message.data}',
+        );
         onNotificationTap?.call(message);
       });
 

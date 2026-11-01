@@ -64,11 +64,15 @@ class AdminUserItem {
 
   String get roleLabel => isAdmin ? 'Quản trị viên' : 'Khách hàng';
 
-  Color get roleColor => isAdmin ? const Color(0xFF7C3AED) : const Color(0xFF2563EB);
+  Color get roleColor =>
+      isAdmin ? const Color(0xFF7C3AED) : const Color(0xFF2563EB);
 
-  Color get roleBgColor => isAdmin ? const Color(0xFFF5F3FF) : const Color(0xFFEFF6FF);
+  Color get roleBgColor =>
+      isAdmin ? const Color(0xFFF5F3FF) : const Color(0xFFEFF6FF);
 
-  factory AdminUserItem.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
+  factory AdminUserItem.fromFirestore(
+    DocumentSnapshot<Map<String, dynamic>> doc,
+  ) {
     final data = doc.data() ?? {};
     return AdminUserItem.fromMap(data, doc.id);
   }
@@ -83,10 +87,15 @@ class AdminUserItem {
     }
 
     final id = data['uid']?.toString() ?? data['id']?.toString() ?? docId;
-    final displayName = data['displayName']?.toString() ?? data['name']?.toString() ?? 'Khách hàng';
+    final displayName =
+        data['displayName']?.toString() ??
+        data['name']?.toString() ??
+        'Khách hàng';
     final email = data['email']?.toString() ?? '';
-    final phone = data['phone']?.toString() ?? data['phoneNumber']?.toString() ?? '';
-    final photoUrl = data['photoUrl']?.toString() ?? data['avatarUrl']?.toString();
+    final phone =
+        data['phone']?.toString() ?? data['phoneNumber']?.toString() ?? '';
+    final photoUrl =
+        data['photoUrl']?.toString() ?? data['avatarUrl']?.toString();
     final role = data['role']?.toString() ?? 'user';
 
     return AdminUserItem(
@@ -132,4 +141,3 @@ class AdminUserItem {
     );
   }
 }
-

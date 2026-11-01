@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import '../../../../core/theme/lumi_style.dart';
 import '../../data/models/admin_user_item.dart';
 
@@ -151,7 +152,8 @@ class AdminUserTable extends StatelessWidget {
                         CircleAvatar(
                           radius: 18,
                           backgroundColor: LumiStyle.plum,
-                          backgroundImage: user.photoUrl != null && user.photoUrl!.isNotEmpty
+                          backgroundImage:
+                              user.photoUrl != null && user.photoUrl!.isNotEmpty
                               ? NetworkImage(user.photoUrl!)
                               : null,
                           child: user.photoUrl == null || user.photoUrl!.isEmpty
@@ -180,7 +182,10 @@ class AdminUserTable extends StatelessWidget {
                             ),
                             Text(
                               'ID: ${user.id.length > 8 ? user.id.substring(0, 8) : user.id}...',
-                              style: GoogleFonts.dmSans(fontSize: 10, color: LumiStyle.muted),
+                              style: GoogleFonts.dmSans(
+                                fontSize: 10,
+                                color: LumiStyle.muted,
+                              ),
                             ),
                           ],
                         ),
@@ -192,7 +197,10 @@ class AdminUserTable extends StatelessWidget {
                   DataCell(
                     Text(
                       user.email.isNotEmpty ? user.email : '—',
-                      style: GoogleFonts.dmSans(fontSize: 12, color: LumiStyle.plum),
+                      style: GoogleFonts.dmSans(
+                        fontSize: 12,
+                        color: LumiStyle.plum,
+                      ),
                     ),
                   ),
 
@@ -200,14 +208,20 @@ class AdminUserTable extends StatelessWidget {
                   DataCell(
                     Text(
                       user.phone.isNotEmpty ? user.phone : '—',
-                      style: GoogleFonts.dmSans(fontSize: 12, color: LumiStyle.plum),
+                      style: GoogleFonts.dmSans(
+                        fontSize: 12,
+                        color: LumiStyle.plum,
+                      ),
                     ),
                   ),
 
                   // Vai trò
                   DataCell(
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
                       decoration: BoxDecoration(
                         color: user.roleBgColor,
                         borderRadius: BorderRadius.circular(10),
@@ -227,7 +241,10 @@ class AdminUserTable extends StatelessWidget {
                   DataCell(
                     Text(
                       '${user.bookingCount} lịch · ${user.orderCount} đơn',
-                      style: GoogleFonts.dmSans(fontSize: 12, fontWeight: FontWeight.w600),
+                      style: GoogleFonts.dmSans(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
 
@@ -235,7 +252,10 @@ class AdminUserTable extends StatelessWidget {
                   DataCell(
                     Text(
                       user.formattedCreatedAt,
-                      style: GoogleFonts.dmSans(fontSize: 11, color: LumiStyle.muted),
+                      style: GoogleFonts.dmSans(
+                        fontSize: 11,
+                        color: LumiStyle.muted,
+                      ),
                     ),
                   ),
 
@@ -243,7 +263,11 @@ class AdminUserTable extends StatelessWidget {
                   DataCell(
                     IconButton(
                       tooltip: 'Xem hồ sơ',
-                      icon: const Icon(Icons.remove_red_eye_outlined, size: 18, color: LumiStyle.rose),
+                      icon: const Icon(
+                        Icons.remove_red_eye_outlined,
+                        size: 18,
+                        color: LumiStyle.rose,
+                      ),
                       onPressed: () => onTapDetail(user),
                     ),
                   ),
@@ -256,4 +280,3 @@ class AdminUserTable extends StatelessWidget {
     );
   }
 }
-

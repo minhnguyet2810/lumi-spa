@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import '../../../../core/theme/lumi_style.dart';
 import '../../data/models/admin_order_item.dart';
 
@@ -43,7 +44,11 @@ class AdminOrderDetailDialog extends StatelessWidget {
                       color: LumiStyle.blushSurface,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.shopping_bag_outlined, color: LumiStyle.rose, size: 24),
+                    child: const Icon(
+                      Icons.shopping_bag_outlined,
+                      color: LumiStyle.rose,
+                      size: 24,
+                    ),
                   ),
                   const SizedBox(width: 14),
                   Expanded(
@@ -62,12 +67,19 @@ class AdminOrderDetailDialog extends StatelessWidget {
                             ),
                             const SizedBox(width: 10),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 3,
+                              ),
                               decoration: BoxDecoration(
-                                color: order.statusColor.withValues(alpha: 0.12),
+                                color: order.statusColor.withValues(
+                                  alpha: 0.12,
+                                ),
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
-                                  color: order.statusColor.withValues(alpha: 0.4),
+                                  color: order.statusColor.withValues(
+                                    alpha: 0.4,
+                                  ),
                                 ),
                               ),
                               child: Text(
@@ -84,7 +96,10 @@ class AdminOrderDetailDialog extends StatelessWidget {
                         const SizedBox(height: 4),
                         Text(
                           'Thời gian đặt: ${order.formattedCreatedAt}',
-                          style: GoogleFonts.dmSans(fontSize: 12, color: LumiStyle.muted),
+                          style: GoogleFonts.dmSans(
+                            fontSize: 12,
+                            color: LumiStyle.muted,
+                          ),
                         ),
                       ],
                     ),
@@ -123,28 +138,55 @@ class AdminOrderDetailDialog extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 10),
-                          _infoRow(Icons.person_outline, 'Khách hàng', order.customerName),
+                          _infoRow(
+                            Icons.person_outline,
+                            'Khách hàng',
+                            order.customerName,
+                          ),
                           const SizedBox(height: 8),
-                          _infoRow(Icons.phone_outlined, 'Số điện thoại', order.phone.isNotEmpty ? order.phone : 'Chưa cập nhật'),
+                          _infoRow(
+                            Icons.phone_outlined,
+                            'Số điện thoại',
+                            order.phone.isNotEmpty
+                                ? order.phone
+                                : 'Chưa cập nhật',
+                          ),
                           if (order.customerEmail.isNotEmpty) ...[
                             const SizedBox(height: 8),
-                            _infoRow(Icons.mail_outline, 'Email nhận thông báo', order.customerEmail),
+                            _infoRow(
+                              Icons.mail_outline,
+                              'Email nhận thông báo',
+                              order.customerEmail,
+                            ),
                           ],
                           const SizedBox(height: 8),
-                          _infoRow(Icons.location_on_outlined, 'Địa chỉ giao hàng', order.shippingAddress),
+                          _infoRow(
+                            Icons.location_on_outlined,
+                            'Địa chỉ giao hàng',
+                            order.shippingAddress,
+                          ),
                           if (order.note.isNotEmpty) ...[
                             const SizedBox(height: 8),
-                            _infoRow(Icons.note_alt_outlined, 'Ghi chú của khách', order.note),
+                            _infoRow(
+                              Icons.note_alt_outlined,
+                              'Ghi chú của khách',
+                              order.note,
+                            ),
                           ],
                           const SizedBox(height: 8),
-                          _infoRow(Icons.payment_outlined, 'Phương thức thanh toán', order.paymentMethod),
+                          _infoRow(
+                            Icons.payment_outlined,
+                            'Phương thức thanh toán',
+                            order.paymentMethod,
+                          ),
                         ],
                       ),
                     ),
                     const SizedBox(height: 16),
 
                     // Lý do hủy nếu có
-                    if (order.cancelReason != null && order.cancelReason!.isNotEmpty) ...[
+                    if (order.cancelReason != null &&
+                        order.cancelReason!.isNotEmpty) ...[
                       Container(
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
@@ -155,7 +197,11 @@ class AdminOrderDetailDialog extends StatelessWidget {
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Icon(Icons.info_outline, color: Colors.red.shade700, size: 20),
+                            Icon(
+                              Icons.info_outline,
+                              color: Colors.red.shade700,
+                              size: 20,
+                            ),
                             const SizedBox(width: 10),
                             Expanded(
                               child: Column(
@@ -206,15 +252,25 @@ class AdminOrderDetailDialog extends StatelessWidget {
                       child: Column(
                         children: [
                           ...order.items.map((it) {
-                            final name = it['name'] ?? it['productName'] ?? 'Sản phẩm LUMI';
+                            final name =
+                                it['name'] ??
+                                it['productName'] ??
+                                'Sản phẩm LUMI';
                             final qty = it['quantity'] ?? 1;
                             final price = it['price'] ?? it['unitPrice'] ?? 0;
-                            final totalLine = (price is num ? price : num.tryParse(price.toString()) ?? 0) * (qty is num ? qty : 1);
+                            final totalLine =
+                                (price is num
+                                    ? price
+                                    : num.tryParse(price.toString()) ?? 0) *
+                                (qty is num ? qty : 1);
 
                             return Column(
                               children: [
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 12,
+                                  ),
                                   child: Row(
                                     children: [
                                       Container(
@@ -222,14 +278,21 @@ class AdminOrderDetailDialog extends StatelessWidget {
                                         height: 36,
                                         decoration: BoxDecoration(
                                           color: LumiStyle.blushSurface,
-                                          borderRadius: BorderRadius.circular(8),
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
                                         ),
-                                        child: const Icon(Icons.spa_outlined, color: LumiStyle.rose, size: 20),
+                                        child: const Icon(
+                                          Icons.spa_outlined,
+                                          color: LumiStyle.rose,
+                                          size: 20,
+                                        ),
                                       ),
                                       const SizedBox(width: 12),
                                       Expanded(
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             Text(
                                               name,
@@ -241,7 +304,10 @@ class AdminOrderDetailDialog extends StatelessWidget {
                                             ),
                                             Text(
                                               'Đơn giá: ${_formatVND(price is num ? price : 0)}',
-                                              style: GoogleFonts.dmSans(fontSize: 11.5, color: LumiStyle.muted),
+                                              style: GoogleFonts.dmSans(
+                                                fontSize: 11.5,
+                                                color: LumiStyle.muted,
+                                              ),
                                             ),
                                           ],
                                         ),
@@ -323,7 +389,11 @@ class AdminOrderDetailDialog extends StatelessWidget {
                   if (order.status == 'pending') ...[
                     OutlinedButton.icon(
                       onPressed: () => onUpdateStatus('cancelled'),
-                      icon: const Icon(Icons.close, size: 16, color: Colors.red),
+                      icon: const Icon(
+                        Icons.close,
+                        size: 16,
+                        color: Colors.red,
+                      ),
                       label: const Text('HỦY ĐƠN'),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.red.shade700,
@@ -334,7 +404,9 @@ class AdminOrderDetailDialog extends StatelessWidget {
                       onPressed: () => onUpdateStatus('confirmed'),
                       icon: const Icon(Icons.check, size: 16),
                       label: const Text('DUYỆT ĐƠN & GỬI EMAIL'),
-                      style: FilledButton.styleFrom(backgroundColor: LumiStyle.rose),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: LumiStyle.rose,
+                      ),
                     ),
                   ],
 
@@ -342,7 +414,11 @@ class AdminOrderDetailDialog extends StatelessWidget {
                   if (order.status == 'confirmed') ...[
                     OutlinedButton.icon(
                       onPressed: () => onUpdateStatus('cancelled'),
-                      icon: const Icon(Icons.close, size: 16, color: Colors.red),
+                      icon: const Icon(
+                        Icons.close,
+                        size: 16,
+                        color: Colors.red,
+                      ),
                       label: const Text('HỦY ĐƠN'),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.red.shade700,
@@ -353,7 +429,9 @@ class AdminOrderDetailDialog extends StatelessWidget {
                       onPressed: () => onUpdateStatus('shipping'),
                       icon: const Icon(Icons.local_shipping_outlined, size: 16),
                       label: const Text('BẮT ĐẦU GIAO HÀNG'),
-                      style: FilledButton.styleFrom(backgroundColor: const Color(0xFF2563EB)),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: const Color(0xFF2563EB),
+                      ),
                     ),
                   ],
 
@@ -363,7 +441,9 @@ class AdminOrderDetailDialog extends StatelessWidget {
                       onPressed: () => onUpdateStatus('completed'),
                       icon: const Icon(Icons.done_all, size: 16),
                       label: const Text('XÁC NHẬN ĐÃ GIAO HÀNG'),
-                      style: FilledButton.styleFrom(backgroundColor: const Color(0xFF16A34A)),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: const Color(0xFF16A34A),
+                      ),
                     ),
                   ],
                 ],

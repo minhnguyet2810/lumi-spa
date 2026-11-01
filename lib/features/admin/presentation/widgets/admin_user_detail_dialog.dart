@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import '../../../../core/theme/lumi_style.dart';
 import '../../data/models/admin_user_item.dart';
 
@@ -39,7 +40,8 @@ class AdminUserDetailDialog extends StatelessWidget {
                   CircleAvatar(
                     radius: 30,
                     backgroundColor: LumiStyle.plum,
-                    backgroundImage: user.photoUrl != null && user.photoUrl!.isNotEmpty
+                    backgroundImage:
+                        user.photoUrl != null && user.photoUrl!.isNotEmpty
                         ? NetworkImage(user.photoUrl!)
                         : null,
                     child: user.photoUrl == null || user.photoUrl!.isEmpty
@@ -72,11 +74,16 @@ class AdminUserDetailDialog extends StatelessWidget {
                             ),
                             const SizedBox(width: 8),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 3,
+                              ),
                               decoration: BoxDecoration(
                                 color: user.roleBgColor,
                                 borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: user.roleColor.withValues(alpha: 0.3)),
+                                border: Border.all(
+                                  color: user.roleColor.withValues(alpha: 0.3),
+                                ),
                               ),
                               child: Text(
                                 user.roleLabel,
@@ -92,7 +99,10 @@ class AdminUserDetailDialog extends StatelessWidget {
                         const SizedBox(height: 4),
                         Text(
                           'ID: ${user.id}',
-                          style: GoogleFonts.dmSans(fontSize: 11, color: LumiStyle.muted),
+                          style: GoogleFonts.dmSans(
+                            fontSize: 11,
+                            color: LumiStyle.muted,
+                          ),
                         ),
                       ],
                     ),
@@ -122,14 +132,18 @@ class AdminUserDetailDialog extends StatelessWidget {
                 icon: Icons.email_outlined,
                 label: 'Email',
                 value: user.email.isNotEmpty ? user.email : 'Chưa có email',
-                onCopy: user.email.isNotEmpty ? () => _copy(context, user.email, 'Email') : null,
+                onCopy: user.email.isNotEmpty
+                    ? () => _copy(context, user.email, 'Email')
+                    : null,
               ),
               const SizedBox(height: 8),
               _buildInfoRow(
                 icon: Icons.phone_outlined,
                 label: 'Số điện thoại',
                 value: user.phone.isNotEmpty ? user.phone : 'Chưa cập nhật',
-                onCopy: user.phone.isNotEmpty ? () => _copy(context, user.phone, 'Số điện thoại') : null,
+                onCopy: user.phone.isNotEmpty
+                    ? () => _copy(context, user.phone, 'Số điện thoại')
+                    : null,
               ),
               const SizedBox(height: 8),
               _buildInfoRow(
@@ -181,7 +195,9 @@ class AdminUserDetailDialog extends StatelessWidget {
                 alignment: Alignment.centerRight,
                 child: FilledButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  style: FilledButton.styleFrom(backgroundColor: LumiStyle.plum),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: LumiStyle.plum,
+                  ),
                   child: Text('Đóng', style: GoogleFonts.dmSans()),
                 ),
               ),
@@ -222,7 +238,11 @@ class AdminUserDetailDialog extends StatelessWidget {
         if (onCopy != null)
           IconButton(
             tooltip: 'Sao chép',
-            icon: const Icon(Icons.copy_rounded, size: 16, color: LumiStyle.rose),
+            icon: const Icon(
+              Icons.copy_rounded,
+              size: 16,
+              color: LumiStyle.rose,
+            ),
             onPressed: onCopy,
           ),
       ],
@@ -267,4 +287,3 @@ class AdminUserDetailDialog extends StatelessWidget {
     );
   }
 }
-

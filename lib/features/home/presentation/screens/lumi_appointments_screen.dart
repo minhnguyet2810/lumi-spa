@@ -1,3 +1,5 @@
+import '../../../../core/theme/lumi_adaptive.dart';
+
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
@@ -155,42 +157,61 @@ class _LumiAppointmentsScreenState extends State<LumiAppointmentsScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: LumiStyle.ivory,
+        backgroundColor: LumiAdaptive.color(LumiStyle.ivory, surface: true),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(
-          'Hủy lịch hẹn?',
-          style: GoogleFonts.dmSans(
-            fontSize: 24,
-            fontWeight: FontWeight.w700,
-            color: plum,
+          LumiAdaptive.text('Hủy lịch hẹn?'),
+          style: LumiAdaptive.style(
+            GoogleFonts.dmSans(
+              fontSize: 24,
+              fontWeight: FontWeight.w700,
+              color: LumiAdaptive.color(plum),
+            ),
           ),
         ),
         content: Text(
-          'Quý khách có chắc chắn muốn hủy lịch hẹn liệu trình "${booking.serviceName}" vào lúc ${booking.formattedDateTime} không?\n\nPhòng và chuyên viên sẽ được giải phóng trên hệ thống cho khách hàng khác.',
-          style: GoogleFonts.dmSans(fontSize: 14, height: 1.5, color: plum),
+          LumiAdaptive.text(
+            'Quý khách có chắc chắn muốn hủy lịch hẹn liệu trình "${booking.serviceName}" vào lúc ${booking.formattedDateTime} không?\n\nPhòng và chuyên viên sẽ được giải phóng trên hệ thống cho khách hàng khác.',
+          ),
+          style: LumiAdaptive.style(
+            GoogleFonts.dmSans(
+              fontSize: 14,
+              height: 1.5,
+              color: LumiAdaptive.color(plum),
+            ),
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
             child: Text(
-              'GIỮ LỊCH',
-              style: GoogleFonts.dmSans(
-                fontWeight: FontWeight.w600,
-                color: muted,
+              LumiAdaptive.text('GIỮ LỊCH'),
+              style: LumiAdaptive.style(
+                GoogleFonts.dmSans(
+                  fontWeight: FontWeight.w600,
+                  color: LumiAdaptive.color(muted),
+                ),
               ),
             ),
           ),
           FilledButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            style: FilledButton.styleFrom(
-              backgroundColor: Colors.red.shade700,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+            style: LumiAdaptive.style(
+              FilledButton.styleFrom(
+                backgroundColor: LumiAdaptive.color(
+                  Colors.red.shade700,
+                  surface: true,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
             ),
             child: Text(
-              'XÁC NHẬN HỦY',
-              style: GoogleFonts.dmSans(fontWeight: FontWeight.w700),
+              LumiAdaptive.text('XÁC NHẬN HỦY'),
+              style: LumiAdaptive.style(
+                GoogleFonts.dmSans(fontWeight: FontWeight.w700),
+              ),
             ),
           ),
         ],
@@ -206,8 +227,9 @@ class _LumiAppointmentsScreenState extends State<LumiAppointmentsScreen> {
     showDialog<void>(
       context: context,
       barrierDismissible: false,
-      builder: (_) =>
-          const Center(child: CircularProgressIndicator(color: rose)),
+      builder: (_) => Center(
+        child: CircularProgressIndicator(color: LumiAdaptive.color(rose)),
+      ),
     );
 
     try {
@@ -216,9 +238,9 @@ class _LumiAppointmentsScreenState extends State<LumiAppointmentsScreen> {
         Navigator.of(context, rootNavigator: true).pop(); // dismiss loading
         _fetchBookings();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Đã hủy lịch hẹn thành công.'),
-            backgroundColor: plum,
+          SnackBar(
+            content: Text(LumiAdaptive.text('Đã hủy lịch hẹn thành công.')),
+            backgroundColor: LumiAdaptive.color(plum, surface: true),
           ),
         );
       }
@@ -227,8 +249,11 @@ class _LumiAppointmentsScreenState extends State<LumiAppointmentsScreen> {
         Navigator.of(context, rootNavigator: true).pop(); // dismiss loading
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(e.toString()),
-            backgroundColor: Colors.red.shade700,
+            content: Text(LumiAdaptive.text(e.toString())),
+            backgroundColor: LumiAdaptive.color(
+              Colors.red.shade700,
+              surface: true,
+            ),
           ),
         );
       }
@@ -259,12 +284,18 @@ class _LumiAppointmentsScreenState extends State<LumiAppointmentsScreen> {
           duration: const Duration(milliseconds: 220),
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
-            color: selected ? Colors.white : Colors.transparent,
+            color: LumiAdaptive.color(
+              selected ? Colors.white : Colors.transparent,
+              surface: true,
+            ),
             borderRadius: BorderRadius.circular(15),
             boxShadow: selected
                 ? [
                     BoxShadow(
-                      color: plum.withValues(alpha: 0.07),
+                      color: LumiAdaptive.color(
+                        plum.withValues(alpha: 0.07),
+                        surface: true,
+                      ),
                       blurRadius: 10,
                       offset: const Offset(0, 2),
                     ),
@@ -272,12 +303,14 @@ class _LumiAppointmentsScreenState extends State<LumiAppointmentsScreen> {
                 : null,
           ),
           child: Text(
-            displayTitle,
+            LumiAdaptive.text(displayTitle),
             textAlign: TextAlign.center,
-            style: GoogleFonts.dmSans(
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-              color: selected ? plum : muted,
+            style: LumiAdaptive.style(
+              GoogleFonts.dmSans(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: LumiAdaptive.color(selected ? plum : muted),
+              ),
             ),
           ),
         ),
@@ -314,9 +347,9 @@ class _LumiAppointmentsScreenState extends State<LumiAppointmentsScreen> {
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(22, 32, 22, 28),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: LumiAdaptive.color(Colors.white, surface: true),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFF0E4E6)),
+        border: Border.all(color: LumiAdaptive.color(const Color(0xFFF0E4E6))),
       ),
       child: Column(
         children: [
@@ -324,7 +357,10 @@ class _LumiAppointmentsScreenState extends State<LumiAppointmentsScreen> {
             width: 80,
             height: 80,
             decoration: BoxDecoration(
-              color: blush.withValues(alpha: 0.5),
+              color: LumiAdaptive.color(
+                blush.withValues(alpha: 0.5),
+                surface: true,
+              ),
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -335,25 +371,33 @@ class _LumiAppointmentsScreenState extends State<LumiAppointmentsScreen> {
                   : _selectedTab == 1
                   ? Icons.history_rounded
                   : Icons.event_busy_outlined,
-              color: plum,
+              color: LumiAdaptive.color(plum),
               size: 36,
             ),
           ),
           const SizedBox(height: 18),
           Text(
-            title,
+            LumiAdaptive.text(title),
             textAlign: TextAlign.center,
-            style: GoogleFonts.dmSans(
-              fontSize: 26,
-              fontWeight: FontWeight.w700,
-              color: ink,
+            style: LumiAdaptive.style(
+              GoogleFonts.dmSans(
+                fontSize: 26,
+                fontWeight: FontWeight.w700,
+                color: LumiAdaptive.color(ink),
+              ),
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            desc,
+            LumiAdaptive.text(desc),
             textAlign: TextAlign.center,
-            style: GoogleFonts.dmSans(fontSize: 14, height: 1.5, color: muted),
+            style: LumiAdaptive.style(
+              GoogleFonts.dmSans(
+                fontSize: 14,
+                height: 1.5,
+                color: LumiAdaptive.color(muted),
+              ),
+            ),
           ),
           const SizedBox(height: 20),
           SizedBox(
@@ -363,11 +407,13 @@ class _LumiAppointmentsScreenState extends State<LumiAppointmentsScreen> {
               onPressed: widget.isLoggedIn
                   ? widget.onExploreServices
                   : widget.onLogin,
-              style: FilledButton.styleFrom(
-                backgroundColor: rose,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
+              style: LumiAdaptive.style(
+                FilledButton.styleFrom(
+                  backgroundColor: LumiAdaptive.color(rose, surface: true),
+                  foregroundColor: LumiAdaptive.color(Colors.white),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
                 ),
               ),
               icon: Icon(
@@ -375,11 +421,15 @@ class _LumiAppointmentsScreenState extends State<LumiAppointmentsScreen> {
                 size: 18,
               ),
               label: Text(
-                widget.isLoggedIn ? 'Chọn dịch vụ' : 'ĐĂNG NHẬP NGAY',
-                style: GoogleFonts.dmSans(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.2,
+                LumiAdaptive.text(
+                  widget.isLoggedIn ? 'Chọn dịch vụ' : 'ĐĂNG NHẬP NGAY',
+                ),
+                style: LumiAdaptive.style(
+                  GoogleFonts.dmSans(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.2,
+                  ),
                 ),
               ),
             ),
@@ -394,27 +444,42 @@ class _LumiAppointmentsScreenState extends State<LumiAppointmentsScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: LumiAdaptive.color(Colors.white, surface: true),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.red.shade100),
+        border: Border.all(color: LumiAdaptive.color(Colors.red.shade100)),
       ),
       child: Column(
         children: [
-          Icon(Icons.cloud_off_rounded, size: 48, color: Colors.red.shade400),
+          Icon(
+            Icons.cloud_off_rounded,
+            size: 48,
+            color: LumiAdaptive.color(Colors.red.shade400),
+          ),
           const SizedBox(height: 14),
           Text(
-            'Không thể tải lịch hẹn',
-            style: GoogleFonts.dmSans(
-              fontSize: 24,
-              fontWeight: FontWeight.w700,
-              color: plum,
+            LumiAdaptive.text('Không thể tải lịch hẹn'),
+            style: LumiAdaptive.style(
+              GoogleFonts.dmSans(
+                fontSize: 24,
+                fontWeight: FontWeight.w700,
+                color: LumiAdaptive.color(plum),
+              ),
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            _errorMessage ?? 'Đã xảy ra sự cố kết nối với hệ thống Firestore.',
+            LumiAdaptive.text(
+              _errorMessage ??
+                  'LUMI chưa tải được lịch hẹn. Bạn vui lòng thử lại sau nhé.',
+            ),
             textAlign: TextAlign.center,
-            style: GoogleFonts.dmSans(fontSize: 14, color: muted, height: 1.4),
+            style: LumiAdaptive.style(
+              GoogleFonts.dmSans(
+                fontSize: 14,
+                color: LumiAdaptive.color(muted),
+                height: 1.4,
+              ),
+            ),
           ),
           const SizedBox(height: 18),
           if (_errorMessage?.contains('đăng nhập') == true ||
@@ -426,16 +491,20 @@ class _LumiAppointmentsScreenState extends State<LumiAppointmentsScreen> {
                 onPressed: widget.onLogin,
                 icon: const Icon(Icons.login_rounded, size: 18),
                 label: Text(
-                  'ĐĂNG NHẬP LẠI',
-                  style: GoogleFonts.dmSans(
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.2,
+                  LumiAdaptive.text('ĐĂNG NHẬP LẠI'),
+                  style: LumiAdaptive.style(
+                    GoogleFonts.dmSans(
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.2,
+                    ),
                   ),
                 ),
-                style: FilledButton.styleFrom(
-                  backgroundColor: rose,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                style: LumiAdaptive.style(
+                  FilledButton.styleFrom(
+                    backgroundColor: LumiAdaptive.color(rose, surface: true),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                 ),
               ),
@@ -444,18 +513,26 @@ class _LumiAppointmentsScreenState extends State<LumiAppointmentsScreen> {
           ],
           OutlinedButton.icon(
             onPressed: _fetchBookings,
-            icon: const Icon(Icons.refresh_rounded, size: 18, color: rose),
+            icon: Icon(
+              Icons.refresh_rounded,
+              size: 18,
+              color: LumiAdaptive.color(rose),
+            ),
             label: Text(
-              'Thử lại',
-              style: GoogleFonts.dmSans(
-                fontWeight: FontWeight.w700,
-                color: rose,
+              LumiAdaptive.text('Thử lại'),
+              style: LumiAdaptive.style(
+                GoogleFonts.dmSans(
+                  fontWeight: FontWeight.w700,
+                  color: LumiAdaptive.color(rose),
+                ),
               ),
             ),
-            style: OutlinedButton.styleFrom(
-              side: const BorderSide(color: rose),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+            style: LumiAdaptive.style(
+              OutlinedButton.styleFrom(
+                side: BorderSide(color: LumiAdaptive.color(rose)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
           ),
@@ -466,22 +543,25 @@ class _LumiAppointmentsScreenState extends State<LumiAppointmentsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    LumiAdaptive.depend(context);
     final list = _filteredBookings;
 
     return RefreshIndicator(
       onRefresh: _fetchBookings,
-      color: rose,
+      color: LumiAdaptive.color(rose, surface: true),
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(20, 10, 20, 115),
         children: [
           Text(
-            'Lịch hẹn',
-            style: GoogleFonts.dmSans(
-              fontSize: 28,
-              height: 1.25,
-              fontWeight: FontWeight.w700,
-              color: ink,
+            LumiAdaptive.text('Lịch hẹn'),
+            style: LumiAdaptive.style(
+              GoogleFonts.dmSans(
+                fontSize: 28,
+                height: 1.25,
+                fontWeight: FontWeight.w700,
+                color: LumiAdaptive.color(ink),
+              ),
             ),
           ),
 
@@ -489,7 +569,10 @@ class _LumiAppointmentsScreenState extends State<LumiAppointmentsScreen> {
           Container(
             padding: const EdgeInsets.all(5),
             decoration: BoxDecoration(
-              color: blush.withValues(alpha: 0.5),
+              color: LumiAdaptive.color(
+                blush.withValues(alpha: 0.5),
+                surface: true,
+              ),
               borderRadius: BorderRadius.circular(19),
             ),
             child: Row(
@@ -504,9 +587,13 @@ class _LumiAppointmentsScreenState extends State<LumiAppointmentsScreen> {
           if (!widget.isLoggedIn)
             _emptyState()
           else if (_isLoading && _bookings.isEmpty)
-            const Padding(
+            Padding(
               padding: EdgeInsets.symmetric(vertical: 40),
-              child: Center(child: CircularProgressIndicator(color: rose)),
+              child: Center(
+                child: CircularProgressIndicator(
+                  color: LumiAdaptive.color(rose),
+                ),
+              ),
             )
           else if (_errorMessage != null && _bookings.isEmpty)
             _errorState()

@@ -28,10 +28,14 @@ class LumiOrderStore {
   static void syncOrderFromFirestore(Map<String, dynamic> data, String id) {
     final orderId = data['id']?.toString() ?? data['orderId']?.toString() ?? id;
     final status = mapStatus(data['status']?.toString() ?? 'pending');
-    final total = data['formattedTotal']?.toString() ?? '${data['total'] ?? 0} đ';
+    final total =
+        data['formattedTotal']?.toString() ?? '${data['total'] ?? 0} đ';
     final customerName = data['customerName']?.toString() ?? 'Khách hàng LUMI';
     final phone = data['phone']?.toString() ?? '';
-    final address = data['shippingAddress']?.toString() ?? data['address']?.toString() ?? '';
+    final address =
+        data['shippingAddress']?.toString() ??
+        data['address']?.toString() ??
+        '';
     final note = data['note']?.toString() ?? '';
     final paymentMethod = data['paymentMethod']?.toString() ?? 'COD';
     final items = jsonEncode(data['items'] ?? []);
@@ -91,9 +95,7 @@ class LumiOrderStore {
   }
 
   static void cancelOrder(String orderId) {
-    final index = orders.indexWhere(
-      (order) => order['id'] == orderId,
-    );
+    final index = orders.indexWhere((order) => order['id'] == orderId);
 
     if (index != -1) {
       orders[index]['status'] = 'Đã hủy';

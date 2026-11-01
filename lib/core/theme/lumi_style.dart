@@ -1,3 +1,5 @@
+import 'lumi_adaptive.dart';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -56,6 +58,111 @@ abstract final class LumiStyle {
         color: color,
       );
 
+  /// Theme-aware screens read these colors through Theme.of(context).
+  static ThemeData get darkTheme {
+    final colors = ColorScheme.fromSeed(
+      seedColor: peach,
+      brightness: Brightness.dark,
+      primary: const Color(0xFFF5BEA5),
+      onPrimary: const Color(0xFF40271D),
+      primaryContainer: const Color(0xFF56392F),
+      onPrimaryContainer: const Color(0xFFFFE5D6),
+      secondary: const Color(0xFFA9CEDD),
+      secondaryContainer: const Color(0xFF2B414A),
+      onSecondaryContainer: const Color(0xFFDCEFF7),
+      surface: const Color(0xFF343D44),
+      onSurface: const Color(0xFFF6EDE6),
+      onSurfaceVariant: const Color(0xFFD8CEC4),
+      outline: const Color(0xFF9B887D),
+      outlineVariant: const Color(0xFF667680),
+    );
+    final base = ThemeData(
+      useMaterial3: true,
+      splashFactory: InkSparkle.splashFactory,
+      colorScheme: colors,
+      scaffoldBackgroundColor: const Color(0xFF262D32),
+    );
+    final text = GoogleFonts.dmSansTextTheme(base.textTheme)
+        .apply(bodyColor: colors.onSurface, displayColor: colors.onSurface);
+    return base.copyWith(
+      textTheme: text.copyWith(
+        bodyLarge: text.bodyLarge?.copyWith(fontSize: 17, height: 1.5),
+        bodyMedium: text.bodyMedium?.copyWith(fontSize: 16, height: 1.5),
+        bodySmall: text.bodySmall?.copyWith(
+          fontSize: 14,
+          height: 1.45,
+          color: colors.onSurfaceVariant,
+        ),
+        titleLarge: text.titleLarge?.copyWith(
+          fontSize: 24,
+          fontWeight: FontWeight.w700,
+        ),
+        titleMedium: text.titleMedium?.copyWith(
+          fontSize: 17,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      appBarTheme: AppBarTheme(
+        backgroundColor: base.scaffoldBackgroundColor,
+        foregroundColor: colors.onSurface,
+        elevation: 2,
+        shadowColor: dustyRose.withValues(alpha: 0.18),
+        scrolledUnderElevation: 0,
+        titleTextStyle: GoogleFonts.dmSans(
+          fontSize: 23,
+          fontWeight: FontWeight.w700,
+          color: colors.onSurface,
+        ),
+      ),
+      cardTheme: CardThemeData(
+        color: colors.surface,
+        elevation: 2,
+        shadowColor: dustyRose.withValues(alpha: 0.18),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(22),
+          side: BorderSide(color: colors.outlineVariant),
+        ),
+      ),
+      dividerColor: colors.outlineVariant,
+      dividerTheme: DividerThemeData(color: colors.outlineVariant),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          backgroundColor: colors.primary,
+          foregroundColor: colors.onPrimary,
+          minimumSize: const Size(48, 52),
+          textStyle: GoogleFonts.dmSans(
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+          ),
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: colors.primary,
+          minimumSize: const Size(48, 52),
+          side: BorderSide(color: colors.outline),
+        ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: colors.surface,
+        hintStyle: TextStyle(color: colors.onSurfaceVariant),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: colors.outlineVariant),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: colors.primary, width: 1.5),
+        ),
+      ),
+    );
+  }
+
   static ThemeData get theme => ThemeData(
     useMaterial3: true,
     brightness: Brightness.light,
@@ -108,7 +215,8 @@ abstract final class LumiStyle {
       style: ElevatedButton.styleFrom(
         backgroundColor: peach,
         foregroundColor: ink,
-        elevation: 0,
+        elevation: 2,
+        shadowColor: dustyRose.withValues(alpha: 0.18),
         minimumSize: const Size(48, 52),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       ),
@@ -178,7 +286,9 @@ class LumiButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const foreground = LumiStyle.ink;
+    final foreground = light
+        ? Theme.of(context).colorScheme.onSurface
+        : Theme.of(context).colorScheme.onPrimary;
 
     return SizedBox(
       width: double.infinity,
@@ -186,10 +296,14 @@ class LumiButton extends StatelessWidget {
       child: FilledButton(
         onPressed: onPressed,
         style: FilledButton.styleFrom(
-          backgroundColor: light ? LumiStyle.surface : LumiStyle.peach,
+          backgroundColor: light
+              ? Theme.of(context).colorScheme.surface
+              : Theme.of(context).colorScheme.primary,
           foregroundColor: foreground,
           disabledBackgroundColor: LumiStyle.line,
-          disabledForegroundColor: LumiStyle.muted,
+          disabledForegroundColor: Theme.of(context)
+              .colorScheme
+              .onSurfaceVariant,
           padding: const EdgeInsets.symmetric(horizontal: 22),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(18),
@@ -200,7 +314,7 @@ class LumiButton extends StatelessWidget {
           children: [
             Flexible(
               child: Text(
-                label,
+                LumiAdaptive.text(label),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: GoogleFonts.dmSans(

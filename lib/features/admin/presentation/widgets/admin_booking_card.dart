@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import '../../../../core/theme/lumi_style.dart';
 import '../../../booking/data/models/booking_item.dart';
 
@@ -20,8 +21,10 @@ class AdminBookingCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isPending = booking.status == 'pending';
-    final isApproved = booking.status == 'approved' || booking.status == 'confirmed';
-    final isRejected = booking.status == 'rejected' || booking.status == 'cancelled';
+    final isApproved =
+        booking.status == 'approved' || booking.status == 'confirmed';
+    final isRejected =
+        booking.status == 'rejected' || booking.status == 'cancelled';
 
     Color badgeBg;
     Color badgeText;
@@ -99,11 +102,16 @@ class AdminBookingCard extends StatelessWidget {
                       ],
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: badgeBg,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: badgeText.withValues(alpha: 0.3)),
+                        border: Border.all(
+                          color: badgeText.withValues(alpha: 0.3),
+                        ),
                       ),
                       child: Text(
                         badgeTitle,
@@ -121,7 +129,11 @@ class AdminBookingCard extends StatelessWidget {
                 // Hàng 2: Tên khách hàng & Số điện thoại
                 Row(
                   children: [
-                    const Icon(Icons.person_outline_rounded, size: 18, color: LumiStyle.rose),
+                    const Icon(
+                      Icons.person_outline_rounded,
+                      size: 18,
+                      color: LumiStyle.rose,
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -137,7 +149,10 @@ class AdminBookingCard extends StatelessWidget {
                     ),
                     if (booking.contactPhone.isNotEmpty)
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
                         decoration: BoxDecoration(
                           color: LumiStyle.ivory,
                           borderRadius: BorderRadius.circular(8),
@@ -158,7 +173,11 @@ class AdminBookingCard extends StatelessWidget {
                 // Hàng 3: Dịch vụ & Thời gian hẹn
                 Row(
                   children: [
-                    const Icon(Icons.spa_outlined, size: 18, color: LumiStyle.muted),
+                    const Icon(
+                      Icons.spa_outlined,
+                      size: 18,
+                      color: LumiStyle.muted,
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -185,7 +204,11 @@ class AdminBookingCard extends StatelessWidget {
                 // Hàng 4: Thời gian đặt hẹn
                 Row(
                   children: [
-                    const Icon(Icons.access_time_rounded, size: 16, color: LumiStyle.muted),
+                    const Icon(
+                      Icons.access_time_rounded,
+                      size: 16,
+                      color: LumiStyle.muted,
+                    ),
                     const SizedBox(width: 8),
                     Text(
                       booking.formattedDateTime,
@@ -264,4 +287,3 @@ class AdminBookingCard extends StatelessWidget {
     );
   }
 }
-

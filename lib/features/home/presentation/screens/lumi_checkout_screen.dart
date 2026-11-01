@@ -1,26 +1,26 @@
+import '../../../../core/theme/lumi_adaptive.dart';
+
 import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:http/http.dart' as http;
-import '../../../../core/network/api_config.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
-import 'lumi_shop_catalog.dart';
-import 'lumi_order_success_screen.dart';
 import '../../../../core/data/lumi_order_store.dart';
+import '../../../../core/network/api_config.dart';
+import 'lumi_order_success_screen.dart';
+import 'lumi_shop_catalog.dart';
 
 class LumiCheckoutScreen extends StatefulWidget {
-  const LumiCheckoutScreen({
-    super.key,
-    required this.cartItems,
-  });
+  const LumiCheckoutScreen({super.key, required this.cartItems});
 
   final List<LumiCartItem> cartItems;
 
   @override
-  State<LumiCheckoutScreen> createState() =>
-      _LumiCheckoutScreenState();
+  State<LumiCheckoutScreen> createState() => _LumiCheckoutScreenState();
 }
 
 class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
@@ -35,6 +35,10 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
   static const bankAccount = '104882453416';
   static const bankOwner = 'Nha Doan LUMI SPA';
 
+  static const savedNameKey = 'lumi_customer_name';
+  static const savedPhoneKey = 'lumi_customer_phone';
+  static const savedAddressKey = 'lumi_customer_address';
+
   final _formKey = GlobalKey<FormState>();
 
   final _nameController = TextEditingController();
@@ -45,19 +49,10 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
   bool _isSubmitting = false;
   String _paymentMethod = 'cod';
 
-  num get subtotal {
-    return widget.cartItems.fold<num>(
-      0,
-      (total, item) => total + item.total,
-    );
-  }
-
-  num get shippingFee {
-    return subtotal >= 500000 ? 0 : 30000;
-  }
-
-  num get grandTotal {
-    return subtotal + shippingFee;
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedCustomerInfo();
   }
 
   @override
@@ -69,13 +64,50 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
     super.dispose();
   }
 
+  Future<void> _loadSavedCustomerInfo() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    if (!mounted) {
+      return;
+    }
+
+    _nameController.text = prefs.getString(savedNameKey) ?? '';
+
+    _phoneController.text = prefs.getString(savedPhoneKey) ?? '';
+
+    _addressController.text = prefs.getString(savedAddressKey) ?? '';
+
+    setState(() {});
+  }
+
+  Future<void> _saveCustomerInfo({
+    required String name,
+    required String phone,
+    required String address,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    await prefs.setString(savedNameKey, name);
+    await prefs.setString(savedPhoneKey, phone);
+    await prefs.setString(savedAddressKey, address);
+  }
+
+  num get subtotal {
+    return widget.cartItems.fold<num>(0, (total, item) => total + item.total);
+  }
+
+  num get shippingFee {
+    return subtotal >= 500000 ? 0 : 30000;
+  }
+
+  num get grandTotal {
+    return subtotal + shippingFee;
+  }
+
   String _money(num value) {
     final digits = value.toInt().toString();
 
-    return '${digits.replaceAllMapped(
-      RegExp(r'\B(?=(\d{3})+(?!\d))'),
-      (match) => '.',
-    )} đ';
+    return '${digits.replaceAllMapped(RegExp(r'\B(?=(\d{3})+(?!\d))'), (match) => '.')} đ';
   }
 
   String _productName(LumiCartItem item) {
@@ -108,42 +140,34 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
     String? hint,
   }) {
     return InputDecoration(
-      labelText: label,
-      hintText: hint,
-      prefixIcon: Icon(
-        icon,
-        color: rose,
-      ),
+      labelText: LumiAdaptive.optionalText(label),
+      hintText: LumiAdaptive.optionalText(hint),
+      prefixIcon: Icon(icon, color: LumiAdaptive.color(rose)),
       filled: true,
-      fillColor: Colors.white,
-      labelStyle: GoogleFonts.dmSans(
-        color: muted,
+      fillColor: LumiAdaptive.color(Colors.white, surface: true),
+      labelStyle: LumiAdaptive.style(
+        GoogleFonts.dmSans(color: LumiAdaptive.color(muted)),
       ),
-      hintStyle: GoogleFonts.dmSans(
-        color: muted.withValues(alpha: .65),
+      hintStyle: LumiAdaptive.style(
+        GoogleFonts.dmSans(
+          color: LumiAdaptive.color(muted.withValues(alpha: .65)),
+        ),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: blush),
+        borderSide: BorderSide(color: LumiAdaptive.color(blush)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(
-          color: rose,
-          width: 1.5,
-        ),
+        borderSide: BorderSide(color: LumiAdaptive.color(rose), width: 1.5),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(
-          color: Colors.redAccent,
-        ),
+        borderSide: BorderSide(color: LumiAdaptive.color(Colors.redAccent)),
       ),
       focusedErrorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(
-          color: Colors.redAccent,
-        ),
+        borderSide: BorderSide(color: LumiAdaptive.color(Colors.redAccent)),
       ),
     );
   }
@@ -151,18 +175,16 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
   Widget _sectionTitle(String title, IconData icon) {
     return Row(
       children: [
-        Icon(
-          icon,
-          color: rose,
-          size: 21,
-        ),
+        Icon(icon, color: LumiAdaptive.color(rose), size: 21),
         const SizedBox(width: 8),
         Text(
-          title,
-          style: GoogleFonts.dmSans(
-            color: ink,
-            fontSize: 19,
-            fontWeight: FontWeight.w700,
+          LumiAdaptive.text(title),
+          style: LumiAdaptive.style(
+            GoogleFonts.dmSans(
+              color: LumiAdaptive.color(ink),
+              fontSize: 19,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ),
       ],
@@ -176,9 +198,9 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: LumiAdaptive.color(Colors.white, surface: true),
         borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: blush),
+        border: Border.all(color: LumiAdaptive.color(blush)),
       ),
       child: Row(
         children: [
@@ -188,11 +210,11 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
               width: 64,
               height: 64,
               child: imageUrl == null
-                  ? const ColoredBox(
-                      color: blue,
+                  ? ColoredBox(
+                      color: LumiAdaptive.color(blue),
                       child: Icon(
                         Icons.spa_outlined,
-                        color: rose,
+                        color: LumiAdaptive.color(rose),
                         size: 28,
                       ),
                     )
@@ -200,11 +222,11 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
                       imageUrl,
                       fit: BoxFit.cover,
                       errorBuilder: (_, _, _) {
-                        return const ColoredBox(
-                          color: blue,
+                        return ColoredBox(
+                          color: LumiAdaptive.color(blue),
                           child: Icon(
                             Icons.spa_outlined,
-                            color: rose,
+                            color: LumiAdaptive.color(rose),
                             size: 28,
                           ),
                         );
@@ -215,25 +237,28 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
           const SizedBox(width: 12),
           Expanded(
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _productName(item),
+                  LumiAdaptive.text(_productName(item)),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.dmSans(
-                    color: ink,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
+                  style: LumiAdaptive.style(
+                    GoogleFonts.dmSans(
+                      color: LumiAdaptive.color(ink),
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Số lượng: ${item.quantity}',
-                  style: GoogleFonts.dmSans(
-                    color: muted,
-                    fontSize: 13,
+                  LumiAdaptive.text('Số lượng: ${item.quantity}'),
+                  style: LumiAdaptive.style(
+                    GoogleFonts.dmSans(
+                      color: LumiAdaptive.color(muted),
+                      fontSize: 13,
+                    ),
                   ),
                 ),
               ],
@@ -241,11 +266,13 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
           ),
           const SizedBox(width: 8),
           Text(
-            _money(item.total),
-            style: GoogleFonts.dmSans(
-              color: rose,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
+            LumiAdaptive.text(_money(item.total)),
+            style: LumiAdaptive.style(
+              GoogleFonts.dmSans(
+                color: LumiAdaptive.color(rose),
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
         ],
@@ -253,35 +280,30 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
     );
   }
 
-  Widget _priceRow(
-    String title,
-    num value, {
-    bool isTotal = false,
-  }) {
+  Widget _priceRow(String title, num value, {bool isTotal = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
       child: Row(
-        mainAxisAlignment:
-            MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            title,
-            style: GoogleFonts.dmSans(
-              color: isTotal ? ink : muted,
-              fontSize: isTotal ? 16 : 14,
-              fontWeight: isTotal
-                  ? FontWeight.w700
-                  : FontWeight.w400,
+            LumiAdaptive.text(title),
+            style: LumiAdaptive.style(
+              GoogleFonts.dmSans(
+                color: LumiAdaptive.color(isTotal ? ink : muted),
+                fontSize: isTotal ? 16 : 14,
+                fontWeight: isTotal ? FontWeight.w700 : FontWeight.w400,
+              ),
             ),
           ),
           Text(
-            value == 0 ? 'Miễn phí' : _money(value),
-            style: GoogleFonts.dmSans(
-              color: isTotal ? rose : ink,
-              fontSize: isTotal ? 18 : 14,
-              fontWeight: isTotal
-                  ? FontWeight.w700
-                  : FontWeight.w500,
+            LumiAdaptive.text(value == 0 ? 'Miễn phí' : _money(value)),
+            style: LumiAdaptive.style(
+              GoogleFonts.dmSans(
+                color: LumiAdaptive.color(isTotal ? rose : ink),
+                fontSize: isTotal ? 18 : 14,
+                fontWeight: isTotal ? FontWeight.w700 : FontWeight.w500,
+              ),
             ),
           ),
         ],
@@ -299,41 +321,39 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: LumiAdaptive.color(Colors.white, surface: true),
         borderRadius: BorderRadius.circular(15),
         border: Border.all(
-          color: isSelected ? rose : blush,
+          color: LumiAdaptive.color(isSelected ? rose : blush),
           width: isSelected ? 1.5 : 1,
         ),
       ),
       child: RadioListTile<String>(
         value: value,
         title: Text(
-          title,
-          style: GoogleFonts.dmSans(
-            color: ink,
-            fontWeight: FontWeight.w700,
+          LumiAdaptive.text(title),
+          style: LumiAdaptive.style(
+            GoogleFonts.dmSans(
+              color: LumiAdaptive.color(ink),
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ),
         subtitle: Text(
-          subtitle,
-          style: GoogleFonts.dmSans(
-            color: muted,
-            fontSize: 13,
+          LumiAdaptive.text(subtitle),
+          style: LumiAdaptive.style(
+            GoogleFonts.dmSans(color: LumiAdaptive.color(muted), fontSize: 13),
           ),
         ),
         secondary: Icon(
           icon,
-          color: isSelected ? rose : muted,
+          color: LumiAdaptive.color(isSelected ? rose : muted),
           size: 28,
         ),
-        activeColor: rose,
+        activeColor: LumiAdaptive.color(rose),
         selected: isSelected,
         enabled: !_isSubmitting,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 12,
-          vertical: 4,
-        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       ),
     );
   }
@@ -342,26 +362,29 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 9),
       child: Row(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
             width: 105,
             child: Text(
-              label,
-              style: GoogleFonts.dmSans(
-                color: muted,
-                fontSize: 13,
+              LumiAdaptive.text(label),
+              style: LumiAdaptive.style(
+                GoogleFonts.dmSans(
+                  color: LumiAdaptive.color(muted),
+                  fontSize: 13,
+                ),
               ),
             ),
           ),
           Expanded(
             child: Text(
-              value,
-              style: GoogleFonts.dmSans(
-                color: ink,
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
+              LumiAdaptive.text(value),
+              style: LumiAdaptive.style(
+                GoogleFonts.dmSans(
+                  color: LumiAdaptive.color(ink),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
           ),
@@ -380,12 +403,11 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
       margin: const EdgeInsets.only(top: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: blue,
+        color: LumiAdaptive.color(blue, surface: true),
         borderRadius: BorderRadius.circular(15),
       ),
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Center(
             child: Container(
@@ -393,17 +415,17 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
               height: 210,
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: LumiAdaptive.color(Colors.white, surface: true),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Image.asset(
                 'assets/images/lumi_bank_qr.jpg',
                 fit: BoxFit.contain,
                 errorBuilder: (_, _, _) {
-                  return const Center(
+                  return Center(
                     child: Icon(
                       Icons.qr_code_2,
-                      color: rose,
+                      color: LumiAdaptive.color(rose),
                       size: 80,
                     ),
                   );
@@ -413,33 +435,33 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            'Thông tin chuyển khoản',
-            style: GoogleFonts.dmSans(
-              color: ink,
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
+            LumiAdaptive.text('Thông tin chuyển khoản'),
+            style: LumiAdaptive.style(
+              GoogleFonts.dmSans(
+                color: LumiAdaptive.color(ink),
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
           const SizedBox(height: 12),
           _bankInfoRow('Ngân hàng', bankName),
           _bankInfoRow('Số tài khoản', bankAccount),
           _bankInfoRow('Chủ tài khoản', bankOwner),
-          _bankInfoRow(
-            'Số tiền',
-            _money(grandTotal),
-          ),
-          _bankInfoRow(
-            'Nội dung',
-            'LUMI THANH TOAN',
-          ),
+          _bankInfoRow('Số tiền', _money(grandTotal)),
+          _bankInfoRow('Nội dung', 'LUMI THANH TOAN'),
           const SizedBox(height: 5),
           Text(
-            'Sau khi chuyển khoản, vui lòng giữ lại ảnh '
-            'chụp giao dịch để đối chiếu khi cần.',
-            style: GoogleFonts.dmSans(
-              color: muted,
-              fontSize: 12,
-              height: 1.4,
+            LumiAdaptive.text(
+              'Sau khi chuyển khoản, vui lòng giữ lại ảnh '
+              'chụp giao dịch để đối chiếu khi cần.',
+            ),
+            style: LumiAdaptive.style(
+              GoogleFonts.dmSans(
+                color: LumiAdaptive.color(muted),
+                fontSize: 12,
+                height: 1.4,
+              ),
             ),
           ),
         ],
@@ -466,8 +488,7 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
       return;
     }
 
-    final isValid =
-        _formKey.currentState?.validate() ?? false;
+    final isValid = _formKey.currentState?.validate() ?? false;
 
     if (!isValid) {
       return;
@@ -479,15 +500,12 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
 
     FocusScope.of(context).unfocus();
 
-    await Future<void>.delayed(
-      const Duration(milliseconds: 500),
-    );
+    await Future<void>.delayed(const Duration(milliseconds: 500));
 
     final orderId =
         'LUMI-${DateTime.now().millisecondsSinceEpoch.toString().substring(6)}';
 
     final orderTotal = grandTotal;
-
     final now = DateTime.now();
 
     final formattedDate =
@@ -497,11 +515,11 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
 
     final items = widget.cartItems.map((item) {
       return <String, dynamic>{
-        'productId': item.product['id']?.toString() ??
+        'productId':
+            item.product['id']?.toString() ??
             item.product['_id']?.toString() ??
             '',
-        'name': item.product['name']?.toString() ??
-            'Sản phẩm LUMI',
+        'name': item.product['name']?.toString() ?? 'Sản phẩm LUMI',
         'quantity': item.quantity,
         'price': item.product['price'] ?? 0,
       };
@@ -512,9 +530,60 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
     final customerPhone = _phoneController.text.trim();
     final customerAddress = _addressController.text.trim();
     final customerNote = _noteController.text.trim();
+
     final paymentMethodLabel = _paymentMethod == 'bank'
         ? 'Chuyển khoản ngân hàng'
         : 'Thanh toán khi nhận hàng (COD)';
+
+    try {
+      await FirebaseFirestore.instance.collection('orders').doc(orderId).set({
+        'id': orderId,
+        'orderId': orderId,
+        'customerName': customerName,
+        'customerEmail': user?.email ?? '',
+        'phone': customerPhone,
+        'shippingAddress': customerAddress,
+        'note': customerNote,
+        'total': orderTotal,
+        'formattedTotal': _money(orderTotal),
+        'paymentMethod': paymentMethodLabel,
+        'status': 'pending',
+        'items': items,
+        'userId': user?.uid ?? '',
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    } catch (error) {
+      debugPrint('Lưu đơn hàng thất bại: $error');
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _isSubmitting = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            LumiAdaptive.text('Không thể tạo đơn hàng. Vui lòng thử lại.'),
+          ),
+        ),
+      );
+
+      return;
+    }
+
+    try {
+      await _saveCustomerInfo(
+        name: customerName,
+        phone: customerPhone,
+        address: customerAddress,
+      );
+    } catch (error) {
+      debugPrint('Lưu thông tin khách hàng thất bại: $error');
+    }
 
     LumiOrderStore.addOrder(
       id: orderId,
@@ -529,31 +598,11 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
     );
 
     try {
-      await FirebaseFirestore.instance.collection('orders').doc(orderId).set({
-        'id': orderId,
-        'orderId': orderId,
-        'customerName': customerName,
-        'customerEmail': user?.email ?? 'lumispa.project@gmail.com',
-        'phone': customerPhone,
-        'shippingAddress': customerAddress,
-        'note': customerNote,
-        'total': orderTotal,
-        'formattedTotal': _money(orderTotal),
-        'paymentMethod': paymentMethodLabel,
-        'status': 'pending',
-        'items': items,
-        'userId': user?.uid ?? '',
-        'createdAt': FieldValue.serverTimestamp(),
-        'updatedAt': FieldValue.serverTimestamp(),
-      });
-      debugPrint('✅ [Checkout] Đã lưu đơn hàng lên Firestore: $orderId');
-    } catch (e) {
-      debugPrint('⚠️ [Checkout] Lưu Firestore error: $e');
-    }
+      final url = Uri.parse(
+        '${ApiConfig.baseUrl}/api/orders/$orderId/notify-status',
+      );
 
-    try {
-      final url = Uri.parse('${ApiConfig.baseUrl}/api/orders/$orderId/notify-status');
-      http.post(
+      await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
@@ -567,8 +616,10 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
           'paymentMethod': paymentMethodLabel,
           'userId': user?.uid ?? '',
         }),
-      ).catchError((_) => http.Response('', 500));
-    } catch (_) {}
+      );
+    } catch (error) {
+      debugPrint('Gửi thông báo đơn hàng thất bại: $error');
+    }
 
     LumiShopCatalog.clearCart();
 
@@ -594,37 +645,38 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
       width: double.infinity,
       height: 56,
       child: FilledButton.icon(
-        onPressed: _isSubmitting
-            ? null
-            : _placeOrder,
+        onPressed: _isSubmitting ? null : _placeOrder,
         icon: _isSubmitting
-            ? const SizedBox(
+            ? SizedBox(
                 width: 20,
                 height: 20,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  color: Colors.white,
+                  color: LumiAdaptive.color(Colors.white),
                 ),
               )
-            : const Icon(
-                Icons.check_circle_outline,
-              ),
+            : const Icon(Icons.check_circle_outline),
         label: Text(
-          _isSubmitting
-              ? 'ĐANG XỬ LÝ...'
-              : 'ĐẶT HÀNG · ${_money(grandTotal)}',
-          style: GoogleFonts.dmSans(
-            fontWeight: FontWeight.w700,
-            letterSpacing: .4,
+          LumiAdaptive.text(
+            _isSubmitting
+                ? 'ĐANG XỬ LÝ...'
+                : 'ĐẶT HÀNG · ${_money(grandTotal)}',
+          ),
+          style: LumiAdaptive.style(
+            GoogleFonts.dmSans(fontWeight: FontWeight.w700, letterSpacing: .4),
           ),
         ),
-        style: FilledButton.styleFrom(
-          backgroundColor: rose,
-          disabledBackgroundColor:
+        style: LumiAdaptive.style(
+          FilledButton.styleFrom(
+            backgroundColor: LumiAdaptive.color(rose, surface: true),
+            disabledBackgroundColor: LumiAdaptive.color(
               rose.withValues(alpha: .65),
-          foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
+              surface: true,
+            ),
+            foregroundColor: LumiAdaptive.color(Colors.white),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15),
+            ),
           ),
         ),
       ),
@@ -633,38 +685,36 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
 
   @override
   Widget build(BuildContext context) {
+    LumiAdaptive.depend(context);
     return Scaffold(
-      backgroundColor: cream,
+      backgroundColor: LumiAdaptive.color(cream, surface: true),
       appBar: AppBar(
-        backgroundColor: cream,
-        foregroundColor: ink,
+        backgroundColor: LumiAdaptive.color(cream, surface: true),
+        foregroundColor: LumiAdaptive.color(ink),
         elevation: 0,
         title: Text(
-          'Thanh toán',
-          style: GoogleFonts.dmSans(
-            color: ink,
-            fontWeight: FontWeight.w700,
+          LumiAdaptive.text('Thanh toán'),
+          style: LumiAdaptive.style(
+            GoogleFonts.dmSans(
+              color: LumiAdaptive.color(ink),
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ),
       ),
       body: widget.cartItems.isEmpty
           ? Center(
               child: Text(
-                'Giỏ hàng đang trống.',
-                style: GoogleFonts.dmSans(
-                  color: muted,
+                LumiAdaptive.text('Giỏ hàng đang trống.'),
+                style: LumiAdaptive.style(
+                  GoogleFonts.dmSans(color: LumiAdaptive.color(muted)),
                 ),
               ),
             )
           : Form(
               key: _formKey,
               child: ListView(
-                padding: const EdgeInsets.fromLTRB(
-                  20,
-                  10,
-                  20,
-                  30,
-                ),
+                padding: const EdgeInsets.fromLTRB(20, 10, 20, 30),
                 children: [
                   _sectionTitle(
                     'Thông tin nhận hàng',
@@ -673,16 +723,14 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
                   const SizedBox(height: 14),
                   TextFormField(
                     controller: _nameController,
-                    textCapitalization:
-                        TextCapitalization.words,
+                    textCapitalization: TextCapitalization.words,
                     decoration: _inputDecoration(
                       label: 'Họ và tên',
                       icon: Icons.person_outline,
                       hint: 'Nhập tên người nhận',
                     ),
                     validator: (value) {
-                      if (value == null ||
-                          value.trim().isEmpty) {
+                      if (value == null || value.trim().isEmpty) {
                         return 'Vui lòng nhập họ và tên';
                       }
 
@@ -714,8 +762,7 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
                       hint: 'Số nhà, đường, phường/xã...',
                     ),
                     validator: (value) {
-                      if (value == null ||
-                          value.trim().isEmpty) {
+                      if (value == null || value.trim().isEmpty) {
                         return 'Vui lòng nhập địa chỉ giao hàng';
                       }
 
@@ -767,16 +814,14 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
                         _paymentOption(
                           value: 'cod',
                           title: 'Thanh toán khi nhận hàng',
-                          subtitle:
-                              'COD - trả tiền mặt khi nhận sản phẩm',
+                          subtitle: 'COD - trả tiền mặt khi nhận sản phẩm',
                           icon: Icons.local_atm_outlined,
                         ),
                         const SizedBox(height: 12),
                         _paymentOption(
                           value: 'bank',
                           title: 'Chuyển khoản ngân hàng',
-                          subtitle:
-                              'Chuyển khoản trước khi nhận hàng',
+                          subtitle: 'Chuyển khoản trước khi nhận hàng',
                           icon: Icons.account_balance_outlined,
                         ),
                       ],
@@ -792,28 +837,19 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
                   Container(
                     padding: const EdgeInsets.all(17),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: LumiAdaptive.color(Colors.white, surface: true),
                       borderRadius: BorderRadius.circular(17),
-                      border: Border.all(color: blush),
+                      border: Border.all(color: LumiAdaptive.color(blush)),
                     ),
                     child: Column(
                       children: [
                         _priceRow('Tạm tính', subtotal),
-                        _priceRow(
-                          'Phí giao hàng',
-                          shippingFee,
-                        ),
+                        _priceRow('Phí giao hàng', shippingFee),
                         const Padding(
-                          padding: EdgeInsets.symmetric(
-                            vertical: 7,
-                          ),
+                          padding: EdgeInsets.symmetric(vertical: 7),
                           child: Divider(),
                         ),
-                        _priceRow(
-                          'Tổng cộng',
-                          grandTotal,
-                          isTotal: true,
-                        ),
+                        _priceRow('Tổng cộng', grandTotal, isTotal: true),
                       ],
                     ),
                   ),
@@ -821,11 +857,16 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
                   _submitButton(),
                   const SizedBox(height: 12),
                   Text(
-                    'Đây là giao diện thử nghiệm. Đơn hàng chưa được lưu vào hệ thống backend.',
+                    LumiAdaptive.text(
+                      'Đơn hàng sẽ được lưu vào hệ thống sau khi '
+                      'bạn hoàn tất đặt hàng.',
+                    ),
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.dmSans(
-                      color: muted,
-                      fontSize: 12,
+                    style: LumiAdaptive.style(
+                      GoogleFonts.dmSans(
+                        color: LumiAdaptive.color(muted),
+                        fontSize: 12,
+                      ),
                     ),
                   ),
                 ],

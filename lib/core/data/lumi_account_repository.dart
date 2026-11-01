@@ -40,15 +40,15 @@ class LumiMembership {
     final rawPoints = json['points'];
     final rawTotalSpent = json['totalSpent'];
     final rawIsDefault = json['isDefault'];
-    final points = rawPoints is num &&
+    final points =
+        rawPoints is num &&
             rawPoints.isFinite &&
             rawPoints >= 0 &&
             rawPoints == rawPoints.toInt()
         ? rawPoints.toInt()
         : null;
-    final totalSpent = rawTotalSpent is num &&
-            rawTotalSpent.isFinite &&
-            rawTotalSpent >= 0
+    final totalSpent =
+        rawTotalSpent is num && rawTotalSpent.isFinite && rawTotalSpent >= 0
         ? rawTotalSpent
         : null;
 

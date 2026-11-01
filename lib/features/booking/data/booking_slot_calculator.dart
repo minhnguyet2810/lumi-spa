@@ -48,18 +48,12 @@ class BookingSlotCalculator {
 
       // 1. Quá giờ đóng cửa spa (18:00)
       if (h * 60 + durationMinutes > 18 * 60) {
-        return SlotAvailability(
-          hour: h,
-          status: SlotStatus.closedExceeded,
-        );
+        return SlotAvailability(hour: h, status: SlotStatus.closedExceeded);
       }
 
       // 2. Đã qua thời gian thực tế
       if (slotStart.isBefore(effectiveNow)) {
-        return SlotAvailability(
-          hour: h,
-          status: SlotStatus.past,
-        );
+        return SlotAvailability(hour: h, status: SlotStatus.past);
       }
 
       // 3. Trùng lịch của khách hàng hiện tại
@@ -104,7 +98,8 @@ class BookingSlotCalculator {
       int overlappingCategoryBookings = 0;
       for (final b in activeBookings) {
         if (b.startAt == null) continue;
-        final matchesCategory = categoryId == null ||
+        final matchesCategory =
+            categoryId == null ||
             b.categoryId == null ||
             b.categoryId == categoryId;
 

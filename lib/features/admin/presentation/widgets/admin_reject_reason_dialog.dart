@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import '../../../../core/theme/lumi_style.dart';
 import '../../../booking/data/models/booking_item.dart';
 
@@ -43,7 +44,11 @@ class _AdminRejectReasonDialogState extends State<AdminRejectReasonDialog> {
               color: Colors.red.shade50,
               shape: BoxShape.circle,
             ),
-            child: Icon(Icons.cancel_outlined, color: Colors.red.shade700, size: 24),
+            child: Icon(
+              Icons.cancel_outlined,
+              color: Colors.red.shade700,
+              size: 24,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -106,7 +111,10 @@ class _AdminRejectReasonDialogState extends State<AdminRejectReasonDialog> {
               style: GoogleFonts.dmSans(fontSize: 13),
               decoration: InputDecoration(
                 hintText: 'Nhập lý do gửi đến khách hàng...',
-                hintStyle: GoogleFonts.dmSans(fontSize: 12, color: LumiStyle.muted),
+                hintStyle: GoogleFonts.dmSans(
+                  fontSize: 12,
+                  color: LumiStyle.muted,
+                ),
                 filled: true,
                 fillColor: Colors.white,
                 contentPadding: const EdgeInsets.all(12),
@@ -145,11 +153,12 @@ class _AdminRejectReasonDialogState extends State<AdminRejectReasonDialog> {
           ),
           style: FilledButton.styleFrom(
             backgroundColor: Colors.red.shade700,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
           ),
         ),
       ],
     );
   }
 }
-

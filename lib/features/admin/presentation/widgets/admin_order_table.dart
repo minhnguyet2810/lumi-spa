@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import '../../../../core/theme/lumi_style.dart';
 import '../../data/models/admin_order_item.dart';
 
@@ -28,7 +29,11 @@ class AdminOrderTable extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.inbox_outlined, size: 48, color: LumiStyle.muted),
+              const Icon(
+                Icons.inbox_outlined,
+                size: 48,
+                color: LumiStyle.muted,
+              ),
               const SizedBox(height: 12),
               Text(
                 'Không có đơn hàng nào trong danh mục này',
@@ -56,7 +61,9 @@ class AdminOrderTable extends StatelessWidget {
         child: SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: DataTable(
-            headingRowColor: WidgetStateProperty.all(LumiStyle.blushSurface.withValues(alpha: 0.5)),
+            headingRowColor: WidgetStateProperty.all(
+              LumiStyle.blushSurface.withValues(alpha: 0.5),
+            ),
             headingTextStyle: GoogleFonts.dmSans(
               fontSize: 12,
               fontWeight: FontWeight.w700,
@@ -97,7 +104,10 @@ class AdminOrderTable extends StatelessWidget {
                   DataCell(
                     Text(
                       order.formattedCreatedAt,
-                      style: GoogleFonts.dmSans(fontSize: 12, color: LumiStyle.muted),
+                      style: GoogleFonts.dmSans(
+                        fontSize: 12,
+                        color: LumiStyle.muted,
+                      ),
                     ),
                   ),
 
@@ -117,7 +127,10 @@ class AdminOrderTable extends StatelessWidget {
                         if (order.phone.isNotEmpty)
                           Text(
                             order.phone,
-                            style: GoogleFonts.dmSans(fontSize: 11.5, color: LumiStyle.muted),
+                            style: GoogleFonts.dmSans(
+                              fontSize: 11.5,
+                              color: LumiStyle.muted,
+                            ),
                           ),
                       ],
                     ),
@@ -151,14 +164,20 @@ class AdminOrderTable extends StatelessWidget {
                   DataCell(
                     Text(
                       order.paymentMethod,
-                      style: GoogleFonts.dmSans(fontSize: 12, color: LumiStyle.muted),
+                      style: GoogleFonts.dmSans(
+                        fontSize: 12,
+                        color: LumiStyle.muted,
+                      ),
                     ),
                   ),
 
                   // 7. Trạng thái badge
                   DataCell(
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: order.statusColor.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(12),
@@ -199,41 +218,60 @@ class AdminOrderTable extends StatelessWidget {
                             label: const Text('Duyệt'),
                             style: FilledButton.styleFrom(
                               backgroundColor: LumiStyle.rose,
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 6,
+                              ),
                               visualDensity: VisualDensity.compact,
                             ),
                           ),
                           const SizedBox(width: 4),
                           IconButton(
-                            icon: const Icon(Icons.close, size: 18, color: Colors.red),
+                            icon: const Icon(
+                              Icons.close,
+                              size: 18,
+                              color: Colors.red,
+                            ),
                             tooltip: 'Hủy đơn',
                             onPressed: () => onCancel(order),
                           ),
                         ],
 
                         // Nút Giao hàng nếu Confirmed
-                        if (order.status == 'confirmed' || order.status == 'processing') ...[
+                        if (order.status == 'confirmed' ||
+                            order.status == 'processing') ...[
                           const SizedBox(width: 4),
                           FilledButton.icon(
                             onPressed: () => onUpdateStatus(order, 'shipping'),
-                            icon: const Icon(Icons.local_shipping_outlined, size: 14),
+                            icon: const Icon(
+                              Icons.local_shipping_outlined,
+                              size: 14,
+                            ),
                             label: const Text('Giao hàng'),
                             style: FilledButton.styleFrom(
                               backgroundColor: const Color(0xFF2563EB),
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 6,
+                              ),
                               visualDensity: VisualDensity.compact,
                             ),
                           ),
                           const SizedBox(width: 4),
                           IconButton(
-                            icon: const Icon(Icons.close, size: 18, color: Colors.red),
+                            icon: const Icon(
+                              Icons.close,
+                              size: 18,
+                              color: Colors.red,
+                            ),
                             tooltip: 'Hủy đơn',
                             onPressed: () => onCancel(order),
                           ),
                         ],
 
                         // Nút Hoàn tất nếu Shipping
-                        if (order.status == 'shipping' || order.status == 'delivering') ...[
+                        if (order.status == 'shipping' ||
+                            order.status == 'delivering') ...[
                           const SizedBox(width: 4),
                           FilledButton.icon(
                             onPressed: () => onUpdateStatus(order, 'completed'),
@@ -241,7 +279,10 @@ class AdminOrderTable extends StatelessWidget {
                             label: const Text('Đã giao'),
                             style: FilledButton.styleFrom(
                               backgroundColor: const Color(0xFF16A34A),
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 6,
+                              ),
                               visualDensity: VisualDensity.compact,
                             ),
                           ),
@@ -258,4 +299,3 @@ class AdminOrderTable extends StatelessWidget {
     );
   }
 }
-

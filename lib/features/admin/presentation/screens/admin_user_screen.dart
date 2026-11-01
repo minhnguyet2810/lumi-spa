@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import '../../../../core/theme/lumi_style.dart';
 import '../../data/admin_user_repository.dart';
 import '../../data/models/admin_user_item.dart';
@@ -87,17 +88,14 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(color: Colors.black12),
                   ),
-                  child: SelectableText(
-                    '''rules_version = '2';
+                  child: SelectableText('''rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     match /users/{id} { allow read, write: if true; }
     match /users/{id}/{document=**} { allow read, write: if true; }
     match /{document=**} { allow read, write: if true; }
   }
-}''',
-                    style: GoogleFonts.spaceMono(fontSize: 11),
-                  ),
+}''', style: GoogleFonts.spaceMono(fontSize: 11)),
                 ),
               ],
             ),
@@ -106,8 +104,9 @@ service cloud.firestore {
         actions: [
           TextButton(
             onPressed: () {
-              Clipboard.setData(const ClipboardData(
-                text: '''rules_version = '2';
+              Clipboard.setData(
+                const ClipboardData(
+                  text: '''rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     match /users/{id} { allow read, write: if true; }
@@ -115,7 +114,8 @@ service cloud.firestore {
     match /{document=**} { allow read, write: if true; }
   }
 }''',
-              ));
+                ),
+              );
               Navigator.of(ctx).pop();
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Đã sao chép nội dung Rules!')),
@@ -123,7 +123,10 @@ service cloud.firestore {
             },
             child: Text(
               'Sao chép Rules',
-              style: GoogleFonts.dmSans(fontWeight: FontWeight.w700, color: LumiStyle.rose),
+              style: GoogleFonts.dmSans(
+                fontWeight: FontWeight.w700,
+                color: LumiStyle.rose,
+              ),
             ),
           ),
           FilledButton(
@@ -179,7 +182,11 @@ service cloud.firestore {
       ),
       child: Row(
         children: [
-          const Icon(Icons.cloud_sync_rounded, color: Color(0xFFB45309), size: 22),
+          const Icon(
+            Icons.cloud_sync_rounded,
+            color: Color(0xFFB45309),
+            size: 22,
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -234,7 +241,8 @@ service cloud.firestore {
         List<AdminUserItem> allUsers = [];
         bool isUsingFallback = false;
 
-        if (snapshot.connectionState == ConnectionState.waiting && _fallbackApiUsers == null) {
+        if (snapshot.connectionState == ConnectionState.waiting &&
+            _fallbackApiUsers == null) {
           return const Center(
             child: CircularProgressIndicator(color: LumiStyle.rose),
           );
@@ -260,7 +268,10 @@ service cloud.firestore {
                     const SizedBox(height: 16),
                     Text(
                       'Phát hiện lỗi Firestore Rules. Đang chuyển sang nạp qua Backend API...',
-                      style: GoogleFonts.dmSans(fontSize: 13, color: LumiStyle.muted),
+                      style: GoogleFonts.dmSans(
+                        fontSize: 13,
+                        color: LumiStyle.muted,
+                      ),
                     ),
                   ],
                 ),
@@ -273,7 +284,11 @@ service cloud.firestore {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                    const Icon(
+                      Icons.error_outline,
+                      size: 48,
+                      color: Colors.red,
+                    ),
                     const SizedBox(height: 12),
                     Text(
                       'Lỗi kết nối người dùng Firestore',
@@ -287,7 +302,10 @@ service cloud.firestore {
                     Text(
                       '${snapshot.error}',
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.dmSans(fontSize: 12, color: LumiStyle.muted),
+                      style: GoogleFonts.dmSans(
+                        fontSize: 12,
+                        color: LumiStyle.muted,
+                      ),
                     ),
                     const SizedBox(height: 16),
                     Row(
@@ -295,15 +313,26 @@ service cloud.firestore {
                       children: [
                         FilledButton.icon(
                           onPressed: _fetchFallbackApi,
-                          style: FilledButton.styleFrom(backgroundColor: LumiStyle.rose),
-                          icon: const Icon(Icons.cloud_download_rounded, size: 16),
-                          label: Text('Tải qua Backend API', style: GoogleFonts.dmSans()),
+                          style: FilledButton.styleFrom(
+                            backgroundColor: LumiStyle.rose,
+                          ),
+                          icon: const Icon(
+                            Icons.cloud_download_rounded,
+                            size: 16,
+                          ),
+                          label: Text(
+                            'Tải qua Backend API',
+                            style: GoogleFonts.dmSans(),
+                          ),
                         ),
                         const SizedBox(width: 12),
                         OutlinedButton.icon(
                           onPressed: _showRulesGuideDialog,
                           icon: const Icon(Icons.security_rounded, size: 16),
-                          label: Text('Cách sửa Rules', style: GoogleFonts.dmSans()),
+                          label: Text(
+                            'Cách sửa Rules',
+                            style: GoogleFonts.dmSans(),
+                          ),
                         ),
                       ],
                     ),
@@ -319,7 +348,9 @@ service cloud.firestore {
         final filteredUsers = _filterUsers(allUsers);
         final customerCount = allUsers.where((u) => !u.isAdmin).length;
         final adminCount = allUsers.where((u) => u.isAdmin).length;
-        final activeCount = allUsers.where((u) => u.bookingCount > 0 || u.orderCount > 0).length;
+        final activeCount = allUsers
+            .where((u) => u.bookingCount > 0 || u.orderCount > 0)
+            .length;
 
         return LayoutBuilder(
           builder: (context, constraints) {
@@ -383,10 +414,16 @@ service cloud.firestore {
                                     fontSize: 13,
                                     color: LumiStyle.muted,
                                   ),
-                                  prefixIcon: const Icon(Icons.search, color: LumiStyle.rose),
+                                  prefixIcon: const Icon(
+                                    Icons.search,
+                                    color: LumiStyle.rose,
+                                  ),
                                   suffixIcon: _searchController.text.isNotEmpty
                                       ? IconButton(
-                                          icon: const Icon(Icons.clear, size: 18),
+                                          icon: const Icon(
+                                            Icons.clear,
+                                            size: 18,
+                                          ),
                                           onPressed: () {
                                             _searchController.clear();
                                             setState(() {});
@@ -397,17 +434,27 @@ service cloud.firestore {
                                   fillColor: Colors.white,
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(color: LumiStyle.line),
+                                    borderSide: BorderSide(
+                                      color: LumiStyle.line,
+                                    ),
                                   ),
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(color: LumiStyle.line),
+                                    borderSide: BorderSide(
+                                      color: LumiStyle.line,
+                                    ),
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
-                                    borderSide: const BorderSide(color: LumiStyle.rose, width: 1.5),
+                                    borderSide: const BorderSide(
+                                      color: LumiStyle.rose,
+                                      width: 1.5,
+                                    ),
                                   ),
-                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 12,
+                                  ),
                                 ),
                               ),
                             ),
@@ -424,17 +471,23 @@ service cloud.firestore {
                                     tooltip: 'Hiển thị dạng Bảng',
                                     icon: Icon(
                                       Icons.table_chart_rounded,
-                                      color: showTableView ? LumiStyle.rose : LumiStyle.muted,
+                                      color: showTableView
+                                          ? LumiStyle.rose
+                                          : LumiStyle.muted,
                                     ),
-                                    onPressed: () => setState(() => _forceTableView = true),
+                                    onPressed: () =>
+                                        setState(() => _forceTableView = true),
                                   ),
                                   IconButton(
                                     tooltip: 'Hiển thị dạng Thẻ',
                                     icon: Icon(
                                       Icons.grid_view_rounded,
-                                      color: !showTableView ? LumiStyle.rose : LumiStyle.muted,
+                                      color: !showTableView
+                                          ? LumiStyle.rose
+                                          : LumiStyle.muted,
                                     ),
-                                    onPressed: () => setState(() => _forceTableView = false),
+                                    onPressed: () =>
+                                        setState(() => _forceTableView = false),
                                   ),
                                 ],
                               ),
@@ -470,7 +523,11 @@ service cloud.firestore {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.person_search_outlined, size: 56, color: LumiStyle.muted.withValues(alpha: 0.5)),
+                            Icon(
+                              Icons.person_search_outlined,
+                              size: 56,
+                              color: LumiStyle.muted.withValues(alpha: 0.5),
+                            ),
                             const SizedBox(height: 16),
                             Text(
                               'Không tìm thấy người dùng nào',
@@ -483,7 +540,10 @@ service cloud.firestore {
                             const SizedBox(height: 6),
                             Text(
                               'Thử thay đổi từ khóa tìm kiếm hoặc bộ lọc vai trò.',
-                              style: GoogleFonts.dmSans(fontSize: 13, color: LumiStyle.muted),
+                              style: GoogleFonts.dmSans(
+                                fontSize: 13,
+                                color: LumiStyle.muted,
+                              ),
                             ),
                           ],
                         ),
@@ -504,16 +564,13 @@ service cloud.firestore {
                   SliverPadding(
                     padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
                     sliver: SliverList(
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) {
-                          final user = filteredUsers[index];
-                          return AdminUserCard(
-                            user: user,
-                            onTapDetail: () => _showUserDetail(user),
-                          );
-                        },
-                        childCount: filteredUsers.length,
-                      ),
+                      delegate: SliverChildBuilderDelegate((context, index) {
+                        final user = filteredUsers[index];
+                        return AdminUserCard(
+                          user: user,
+                          onTapDetail: () => _showUserDetail(user),
+                        );
+                      }, childCount: filteredUsers.length),
                     ),
                   ),
               ],
@@ -602,9 +659,7 @@ service cloud.firestore {
         },
         selectedColor: LumiStyle.plum,
         backgroundColor: Colors.white,
-        side: BorderSide(
-          color: isSelected ? LumiStyle.plum : LumiStyle.line,
-        ),
+        side: BorderSide(color: isSelected ? LumiStyle.plum : LumiStyle.line),
         labelStyle: GoogleFonts.dmSans(
           fontSize: 12,
           fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
@@ -616,4 +671,3 @@ service cloud.firestore {
     );
   }
 }
-

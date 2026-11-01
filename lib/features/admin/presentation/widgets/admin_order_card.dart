@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import '../../../../core/theme/lumi_style.dart';
 import '../../data/models/admin_order_item.dart';
 
@@ -56,7 +57,11 @@ class AdminOrderCard extends StatelessWidget {
                         color: LumiStyle.blushSurface,
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Icon(Icons.shopping_bag_outlined, color: LumiStyle.rose, size: 16),
+                      child: const Icon(
+                        Icons.shopping_bag_outlined,
+                        color: LumiStyle.rose,
+                        size: 16,
+                      ),
                     ),
                     const SizedBox(width: 8),
                     Text(
@@ -70,11 +75,16 @@ class AdminOrderCard extends StatelessWidget {
                   ],
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 9,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
                     color: order.statusColor.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: order.statusColor.withValues(alpha: 0.3)),
+                    border: Border.all(
+                      color: order.statusColor.withValues(alpha: 0.3),
+                    ),
                   ),
                   child: Text(
                     order.statusLabel,
@@ -92,7 +102,11 @@ class AdminOrderCard extends StatelessWidget {
             // Khách hàng & SĐT
             Row(
               children: [
-                const Icon(Icons.person_outline, size: 15, color: LumiStyle.muted),
+                const Icon(
+                  Icons.person_outline,
+                  size: 15,
+                  color: LumiStyle.muted,
+                ),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
@@ -105,11 +119,18 @@ class AdminOrderCard extends StatelessWidget {
                   ),
                 ),
                 if (order.phone.isNotEmpty) ...[
-                  const Icon(Icons.phone_outlined, size: 14, color: LumiStyle.muted),
+                  const Icon(
+                    Icons.phone_outlined,
+                    size: 14,
+                    color: LumiStyle.muted,
+                  ),
                   const SizedBox(width: 4),
                   Text(
                     order.phone,
-                    style: GoogleFonts.dmSans(fontSize: 12.5, color: LumiStyle.plum),
+                    style: GoogleFonts.dmSans(
+                      fontSize: 12.5,
+                      color: LumiStyle.plum,
+                    ),
                   ),
                 ],
               ],
@@ -120,14 +141,21 @@ class AdminOrderCard extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.location_on_outlined, size: 15, color: LumiStyle.rose),
+                const Icon(
+                  Icons.location_on_outlined,
+                  size: 15,
+                  color: LumiStyle.rose,
+                ),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
                     order.shippingAddress,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.dmSans(fontSize: 12.5, color: LumiStyle.muted),
+                    style: GoogleFonts.dmSans(
+                      fontSize: 12.5,
+                      color: LumiStyle.muted,
+                    ),
                   ),
                 ),
               ],
@@ -143,14 +171,21 @@ class AdminOrderCard extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.inventory_2_outlined, size: 15, color: LumiStyle.rose),
+                  const Icon(
+                    Icons.inventory_2_outlined,
+                    size: 15,
+                    color: LumiStyle.rose,
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       order.itemsSummary,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.dmSans(fontSize: 12, color: LumiStyle.plum),
+                      style: GoogleFonts.dmSans(
+                        fontSize: 12,
+                        color: LumiStyle.plum,
+                      ),
                     ),
                   ),
                 ],
@@ -167,7 +202,10 @@ class AdminOrderCard extends StatelessWidget {
                   children: [
                     Text(
                       'Tổng thanh toán',
-                      style: GoogleFonts.dmSans(fontSize: 11, color: LumiStyle.muted),
+                      style: GoogleFonts.dmSans(
+                        fontSize: 11,
+                        color: LumiStyle.muted,
+                      ),
                     ),
                     Text(
                       order.displayTotal,
@@ -192,7 +230,10 @@ class AdminOrderCard extends StatelessWidget {
                     ),
                     Text(
                       order.formattedCreatedAt,
-                      style: GoogleFonts.dmSans(fontSize: 11, color: LumiStyle.muted),
+                      style: GoogleFonts.dmSans(
+                        fontSize: 11,
+                        color: LumiStyle.muted,
+                      ),
                     ),
                   ],
                 ),
@@ -208,7 +249,10 @@ class AdminOrderCard extends StatelessWidget {
                   style: OutlinedButton.styleFrom(
                     foregroundColor: LumiStyle.plum,
                     side: const BorderSide(color: LumiStyle.line),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
                     visualDensity: VisualDensity.compact,
                   ),
                   child: const Text('Chi tiết'),
@@ -227,7 +271,9 @@ class AdminOrderCard extends StatelessWidget {
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
+                    style: TextButton.styleFrom(
+                      visualDensity: VisualDensity.compact,
+                    ),
                   ),
                   const SizedBox(width: 6),
                   FilledButton.icon(
@@ -242,7 +288,8 @@ class AdminOrderCard extends StatelessWidget {
                 ],
 
                 // Khi status == confirmed: Giao hàng
-                if (order.status == 'confirmed' || order.status == 'processing') ...[
+                if (order.status == 'confirmed' ||
+                    order.status == 'processing') ...[
                   FilledButton.icon(
                     onPressed: () => onUpdateStatus('shipping'),
                     icon: const Icon(Icons.local_shipping_outlined, size: 15),
@@ -255,7 +302,8 @@ class AdminOrderCard extends StatelessWidget {
                 ],
 
                 // Khi status == shipping: Hoàn tất
-                if (order.status == 'shipping' || order.status == 'delivering') ...[
+                if (order.status == 'shipping' ||
+                    order.status == 'delivering') ...[
                   FilledButton.icon(
                     onPressed: () => onUpdateStatus('completed'),
                     icon: const Icon(Icons.done_all, size: 15),
@@ -274,4 +322,3 @@ class AdminOrderCard extends StatelessWidget {
     );
   }
 }
-

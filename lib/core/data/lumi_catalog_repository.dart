@@ -94,18 +94,12 @@ class LumiCatalogRepository {
   };
 
   static const Map<String, String> _categoryFallbackImages = <String, String>{
-    'Làm sạch & Cân bằng':
-        'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=900&auto=format&fit=crop',
-    'Tinh chất đặc trị & Tế bào gốc':
-        'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=900&auto=format&fit=crop',
-    'Dưỡng ẩm & Khóa dưỡng':
-        'https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?w=900&auto=format&fit=crop',
-    'Mặt nạ chăm sóc chuyên sâu':
-        'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=900&auto=format&fit=crop',
-    'Chống nắng & Bảo vệ quang học':
-        'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=900&auto=format&fit=crop',
-    'Chăm sóc cơ thể & Dưỡng sinh':
-        'https://images.unsplash.com/photo-1556228722-d0b5de75d776?w=900&auto=format&fit=crop',
+    'Làm sạch & Cân bằng': 'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=900&auto=format&fit=crop',
+    'Tinh chất đặc trị & Tế bào gốc': 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=900&auto=format&fit=crop',
+    'Dưỡng ẩm & Khóa dưỡng': 'https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?w=900&auto=format&fit=crop',
+    'Mặt nạ chăm sóc chuyên sâu': 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=900&auto=format&fit=crop',
+    'Chống nắng & Bảo vệ quang học': 'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=900&auto=format&fit=crop',
+    'Chăm sóc cơ thể & Dưỡng sinh': 'https://images.unsplash.com/photo-1556228722-d0b5de75d776?w=900&auto=format&fit=crop',
   };
 
   static const String defaultProductImage =
@@ -127,19 +121,16 @@ class LumiCatalogRepository {
     final id = item['id']?.toString() ?? '';
     final existing = item['imageUrls'];
     final hasRealImages =
-        existing is List &&
-        existing.any((v) => _isValidRealImage(v));
+        existing is List && existing.any((v) => _isValidRealImage(v));
 
     if (hasRealImages) {
       final first = existing.firstWhere(
         (v) => _isValidRealImage(v),
         orElse: () => null,
       );
-      if (first != null && (item['imageUrl'] == null || !_isValidRealImage(item['imageUrl']))) {
-        return {
-          ...item,
-          'imageUrl': first,
-        };
+      if (first != null &&
+          (item['imageUrl'] == null || !_isValidRealImage(item['imageUrl']))) {
+        return {...item, 'imageUrl': first};
       }
       return item;
     }

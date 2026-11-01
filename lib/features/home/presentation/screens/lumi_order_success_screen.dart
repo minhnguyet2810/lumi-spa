@@ -1,3 +1,5 @@
+import '../../../../core/theme/lumi_adaptive.dart';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -25,87 +27,84 @@ class LumiOrderSuccessScreen extends StatelessWidget {
   String _money(num value) {
     final digits = value.toInt().toString();
 
-    return '${digits.replaceAllMapped(
-      RegExp(r'\B(?=(\d{3})+(?!\d))'),
-      (match) => '.',
-    )} đ';
+    return '${digits.replaceAllMapped(RegExp(r'\B(?=(\d{3})+(?!\d))'), (match) => '.')} đ';
   }
 
   void _continueShopping(BuildContext context) {
-    Navigator.of(context).popUntil(
-      (route) => route.isFirst,
-    );
+    Navigator.of(context).popUntil((route) => route.isFirst);
   }
 
   void _viewOrders(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => const LumiMyOrdersScreen(),
-      ),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute<void>(builder: (_) => const LumiMyOrdersScreen()));
   }
 
   @override
   Widget build(BuildContext context) {
+    LumiAdaptive.depend(context);
     return Scaffold(
-      backgroundColor: cream,
+      backgroundColor: LumiAdaptive.color(cream, surface: true),
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        backgroundColor: cream,
+        backgroundColor: LumiAdaptive.color(cream, surface: true),
         elevation: 0,
         centerTitle: true,
         title: Text(
-          'Đặt hàng thành công',
-          style: GoogleFonts.dmSans(
-            color: ink,
-            fontWeight: FontWeight.w700,
+          LumiAdaptive.text('Đặt hàng thành công'),
+          style: LumiAdaptive.style(
+            GoogleFonts.dmSans(
+              color: LumiAdaptive.color(ink),
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ),
       ),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(
-              24,
-              25,
-              24,
-              30,
-            ),
+            padding: const EdgeInsets.fromLTRB(24, 25, 24, 30),
             child: Column(
               children: [
                 Container(
                   width: 100,
                   height: 100,
-                  decoration: const BoxDecoration(
-                    color: blush,
+                  decoration: BoxDecoration(
+                    color: LumiAdaptive.color(blush, surface: true),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.check_rounded,
                     size: 62,
-                    color: rose,
+                    color: LumiAdaptive.color(rose),
                   ),
                 ),
                 const SizedBox(height: 25),
                 Text(
-                  'Cảm ơn bạn đã\nmua sắm tại LUMI',
+                  LumiAdaptive.text('Cảm ơn bạn đã\nmua sắm tại LUMI'),
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.cormorantGaramond(
-                    color: ink,
-                    fontSize: 36,
-                    height: 1.05,
-                    fontWeight: FontWeight.w600,
+                  style: LumiAdaptive.style(
+                    GoogleFonts.cormorantGaramond(
+                      color: LumiAdaptive.color(ink),
+                      fontSize: 36,
+                      height: 1.05,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 14),
                 Text(
-                  'Đơn hàng của bạn đã được ghi nhận. '
-                  'LUMI sẽ liên hệ để xác nhận đơn hàng sớm nhất.',
+                  LumiAdaptive.text(
+                    'Đơn hàng của bạn đã được ghi nhận. '
+                    'LUMI sẽ liên hệ để xác nhận đơn hàng sớm nhất.',
+                  ),
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.dmSans(
-                    color: muted,
-                    fontSize: 15,
-                    height: 1.5,
+                  style: LumiAdaptive.style(
+                    GoogleFonts.dmSans(
+                      color: LumiAdaptive.color(muted),
+                      fontSize: 15,
+                      height: 1.5,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 28),
@@ -113,31 +112,19 @@ class LumiOrderSuccessScreen extends StatelessWidget {
                   width: double.infinity,
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: LumiAdaptive.color(Colors.white, surface: true),
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: blush),
+                    border: Border.all(color: LumiAdaptive.color(blush)),
                   ),
                   child: Column(
                     children: [
-                      _infoRow(
-                        'Mã đơn hàng',
-                        orderId,
-                      ),
+                      _infoRow('Mã đơn hàng', orderId),
                       const Divider(height: 25),
-                      _infoRow(
-                        'Tổng thanh toán',
-                        _money(total),
-                      ),
+                      _infoRow('Tổng thanh toán', _money(total)),
                       const Divider(height: 25),
-                      _infoRow(
-                        'Thanh toán',
-                        'COD',
-                      ),
+                      _infoRow('Thanh toán', paymentMethod),
                       const Divider(height: 25),
-                      _infoRow(
-                        'Trạng thái',
-                         paymentMethod,
-                      ),
+                      _infoRow('Trạng thái', 'Chờ xác nhận'),
                     ],
                   ),
                 ),
@@ -146,27 +133,30 @@ class LumiOrderSuccessScreen extends StatelessWidget {
                   width: double.infinity,
                   padding: const EdgeInsets.all(17),
                   decoration: BoxDecoration(
-                    color: blue,
+                    color: LumiAdaptive.color(blue, surface: true),
                     borderRadius: BorderRadius.circular(17),
                   ),
                   child: Row(
-                    crossAxisAlignment:
-                        CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.local_shipping_outlined,
-                        color: rose,
+                        color: LumiAdaptive.color(rose),
                         size: 25,
                       ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
-                          'Đơn hàng sẽ được giao đến địa chỉ bạn đã cung cấp. '
-                          'Vui lòng giữ điện thoại để nhận cuộc gọi xác nhận.',
-                          style: GoogleFonts.dmSans(
-                            color: ink,
-                            fontSize: 13,
-                            height: 1.5,
+                          LumiAdaptive.text(
+                            'Đơn hàng sẽ được giao đến địa chỉ bạn đã cung cấp. '
+                            'Vui lòng giữ điện thoại để nhận cuộc gọi xác nhận.',
+                          ),
+                          style: LumiAdaptive.style(
+                            GoogleFonts.dmSans(
+                              color: LumiAdaptive.color(ink),
+                              fontSize: 13,
+                              height: 1.5,
+                            ),
                           ),
                         ),
                       ),
@@ -179,21 +169,26 @@ class LumiOrderSuccessScreen extends StatelessWidget {
                   height: 54,
                   child: FilledButton.icon(
                     onPressed: () => _viewOrders(context),
-                    icon: const Icon(
-                      Icons.receipt_long_outlined,
-                    ),
+                    icon: const Icon(Icons.receipt_long_outlined),
                     label: Text(
-                      'XEM ĐƠN HÀNG',
-                      style: GoogleFonts.dmSans(
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: .6,
+                      LumiAdaptive.text('XEM ĐƠN HÀNG'),
+                      style: LumiAdaptive.style(
+                        GoogleFonts.dmSans(
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: .6,
+                        ),
                       ),
                     ),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: rose,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
+                    style: LumiAdaptive.style(
+                      FilledButton.styleFrom(
+                        backgroundColor: LumiAdaptive.color(
+                          rose,
+                          surface: true,
+                        ),
+                        foregroundColor: LumiAdaptive.color(Colors.white),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
                       ),
                     ),
                   ),
@@ -204,18 +199,22 @@ class LumiOrderSuccessScreen extends StatelessWidget {
                   height: 54,
                   child: OutlinedButton(
                     onPressed: () => _continueShopping(context),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: rose,
-                      side: const BorderSide(color: rose),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
+                    style: LumiAdaptive.style(
+                      OutlinedButton.styleFrom(
+                        foregroundColor: LumiAdaptive.color(rose),
+                        side: BorderSide(color: LumiAdaptive.color(rose)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
                       ),
                     ),
                     child: Text(
-                      'TIẾP TỤC MUA SẮM',
-                      style: GoogleFonts.dmSans(
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: .6,
+                      LumiAdaptive.text('TIẾP TỤC MUA SẮM'),
+                      style: LumiAdaptive.style(
+                        GoogleFonts.dmSans(
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: .6,
+                        ),
                       ),
                     ),
                   ),
@@ -224,10 +223,12 @@ class LumiOrderSuccessScreen extends StatelessWidget {
                 TextButton(
                   onPressed: () => _continueShopping(context),
                   child: Text(
-                    'Về trang chủ',
-                    style: GoogleFonts.dmSans(
-                      color: rose,
-                      fontWeight: FontWeight.w600,
+                    LumiAdaptive.text('Về trang chủ'),
+                    style: LumiAdaptive.style(
+                      GoogleFonts.dmSans(
+                        color: LumiAdaptive.color(rose),
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ),
@@ -244,20 +245,21 @@ class LumiOrderSuccessScreen extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
-          label,
-          style: GoogleFonts.dmSans(
-            color: muted,
-            fontSize: 14,
+          LumiAdaptive.text(label),
+          style: LumiAdaptive.style(
+            GoogleFonts.dmSans(color: LumiAdaptive.color(muted), fontSize: 14),
           ),
         ),
         Flexible(
           child: Text(
-            value,
+            LumiAdaptive.text(value),
             textAlign: TextAlign.right,
-            style: GoogleFonts.dmSans(
-              color: ink,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
+            style: LumiAdaptive.style(
+              GoogleFonts.dmSans(
+                color: LumiAdaptive.color(ink),
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
         ),

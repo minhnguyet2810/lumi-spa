@@ -1,4 +1,8 @@
+import 'lumi_order_ui.dart';
+import '../../../../core/theme/lumi_adaptive.dart';
+
 import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -33,26 +37,30 @@ class _LumiMyOrdersScreenState extends State<LumiMyOrdersScreen> {
     try {
       final user = FirebaseAuth.instance.currentUser;
       final query = (user != null && user.uid.isNotEmpty)
-          ? FirebaseFirestore.instance.collection('orders').where('userId', isEqualTo: user.uid)
+          ? FirebaseFirestore.instance
+                .collection('orders')
+                .where('userId', isEqualTo: user.uid)
           : FirebaseFirestore.instance.collection('orders');
 
-      _ordersSub = query.snapshots().listen((snapshot) {
-        for (final doc in snapshot.docs) {
-          LumiOrderStore.syncOrderFromFirestore(doc.data(), doc.id);
-        }
-        if (mounted) setState(() {});
-      }, onError: (e) {
-        debugPrint('Firestore orders stream error: $e');
-      });
+      _ordersSub = query.snapshots().listen(
+        (snapshot) {
+          for (final doc in snapshot.docs) {
+            LumiOrderStore.syncOrderFromFirestore(doc.data(), doc.id);
+          }
+          if (mounted) setState(() {});
+        },
+        onError: (e) {
+          debugPrint('Firestore orders stream error: $e');
+        },
+      );
     } catch (_) {}
   }
 
-  static const rose = Color(0xFFB56F86);
-  static const ink = Color(0xFF503B42);
-  static const muted = Color(0xFF78676B);
-  static const cream = Color(0xFFFFFAF8);
-  static const blush = Color(0xFFF4E4E8);
-  static const blue = Color(0xFFDDECEF);
+  static const rose = Color(0xFFA5553E);
+  static const ink = Color(0xFF403735);
+  static const muted = Color(0xFF756863);
+  static const cream = Color(0xFFFFF8EF);
+  static const blush = Color(0xFFFBE7DC);
 
   String selectedStatus = 'Tất cả';
 
@@ -74,25 +82,7 @@ class _LumiMyOrdersScreenState extends State<LumiMyOrdersScreen> {
       return orders;
     }
 
-    return orders
-        .where((order) => order['status'] == selectedStatus)
-        .toList();
-  }
-
-  Color _statusColor(String status) {
-    switch (status) {
-      case 'Đã giao':
-        return Colors.green.shade700;
-      case 'Đã xác nhận':
-      case 'Đã duyệt':
-        return const Color(0xFF2563EB);
-      case 'Đã hủy':
-        return Colors.red.shade700;
-      case 'Đang giao':
-        return Colors.blue.shade700;
-      default:
-        return rose;
-    }
+    return orders.where((order) => order['status'] == selectedStatus).toList();
   }
 
   Widget _emptyState(String message) {
@@ -100,26 +90,30 @@ class _LumiMyOrdersScreenState extends State<LumiMyOrdersScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
+          Icon(
             Icons.shopping_bag_outlined,
             size: 65,
-            color: rose,
+            color: LumiAdaptive.color(rose),
           ),
           const SizedBox(height: 15),
           Text(
-            message,
+            LumiAdaptive.text(message),
             textAlign: TextAlign.center,
-            style: GoogleFonts.dmSans(
-              color: ink,
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
+            style: LumiAdaptive.style(
+              GoogleFonts.dmSans(
+                color: LumiAdaptive.color(ink),
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            'Các đơn hàng của bạn sẽ xuất hiện ở đây.',
+            LumiAdaptive.text('Các đơn hàng của bạn sẽ xuất hiện ở đây.'),
             textAlign: TextAlign.center,
-            style: GoogleFonts.dmSans(color: muted),
+            style: LumiAdaptive.style(
+              GoogleFonts.dmSans(color: LumiAdaptive.color(muted)),
+            ),
           ),
         ],
       ),
@@ -128,7 +122,7 @@ class _LumiMyOrdersScreenState extends State<LumiMyOrdersScreen> {
 
   Widget _statusFilter() {
     return SizedBox(
-      height: 42,
+      height: 54,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: statuses.length,
@@ -138,23 +132,25 @@ class _LumiMyOrdersScreenState extends State<LumiMyOrdersScreen> {
           final isSelected = selectedStatus == status;
 
           return ChoiceChip(
-            label: Text(status),
+            label: Text(LumiAdaptive.text(status)),
             selected: isSelected,
             onSelected: (_) {
               setState(() {
                 selectedStatus = status;
               });
             },
-            selectedColor: rose,
-            backgroundColor: Colors.white,
+            selectedColor: LumiAdaptive.color(rose, surface: true),
+            backgroundColor: LumiAdaptive.color(Colors.white, surface: true),
             checkmarkColor: Colors.white,
             side: BorderSide(
-              color: isSelected ? rose : blush,
+              color: LumiAdaptive.color(isSelected ? rose : blush),
             ),
-            labelStyle: GoogleFonts.dmSans(
-              color: isSelected ? Colors.white : ink,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
+            labelStyle: LumiAdaptive.style(
+              GoogleFonts.dmSans(
+                color: LumiAdaptive.color(isSelected ? Colors.white : ink),
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           );
         },
@@ -162,134 +158,97 @@ class _LumiMyOrdersScreenState extends State<LumiMyOrdersScreen> {
     );
   }
 
-  Widget _orderCard(
-    BuildContext context,
-    Map<String, String> order,
-  ) {
+  Widget _orderCard(BuildContext context, Map<String, String> order) {
+    final colors = Theme.of(context).colorScheme;
     final status = order['status'] ?? 'Chờ xác nhận';
-    final statusColor = _statusColor(status);
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 15),
-      padding: const EdgeInsets.all(17),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: blush),
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              const Icon(
-                Icons.receipt_long_outlined,
-                color: rose,
-                size: 25,
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 18),
+      child: LumiOrderUi.panel(
+        context,
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                Text(
                   order['id'] ?? '',
                   style: GoogleFonts.dmSans(
-                    color: ink,
-                    fontSize: 16,
+                    fontSize: 19,
                     fontWeight: FontWeight.w700,
+                    color: colors.onSurface,
                   ),
                 ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: statusColor.withValues(alpha: .12),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  status,
-                  style: GoogleFonts.dmSans(
-                    color: statusColor,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const Divider(height: 25),
-          _infoRow('Ngày đặt', order['date'] ?? ''),
-          const SizedBox(height: 8),
-          _infoRow('Tổng tiền', order['total'] ?? ''),
-          const SizedBox(height: 15),
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton(
-              onPressed: () async {
-                await Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (_) => LumiOrderDetailScreen(
-                      order: order,
-                    ),
-                  ),
-                );
-
-                setState(() {});
-              },
-              style: OutlinedButton.styleFrom(
-                foregroundColor: rose,
-                side: const BorderSide(color: rose),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: const Text('Xem chi tiết'),
+                LumiOrderUi.badge(context, status),
+              ],
             ),
-          ),
-        ],
+            const SizedBox(height: 18),
+            Text(
+              LumiAdaptive.text('Tổng tiền'),
+              style: GoogleFonts.dmSans(
+                fontSize: 15,
+                color: colors.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 5),
+            Text(
+              order['total'] ?? '',
+              style: GoogleFonts.dmSans(
+                fontSize: 28,
+                fontWeight: FontWeight.w700,
+                color: colors.primary,
+              ),
+            ),
+            const SizedBox(height: 10),
+            _infoRow('Ngày đặt', order['date'] ?? ''),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: () async {
+                  await Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => LumiOrderDetailScreen(order: order),
+                    ),
+                  );
+                  if (mounted) {
+                    setState(() {});
+                  }
+                },
+                icon: const Icon(Icons.arrow_forward_rounded, size: 20),
+                label: Text(LumiAdaptive.text('Xem chi tiết')),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _infoRow(String label, String value) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: GoogleFonts.dmSans(
-            color: muted,
-            fontSize: 14,
-          ),
-        ),
-        Text(
-          value,
-          style: GoogleFonts.dmSans(
-            color: ink,
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ],
-    );
-  }
+  Widget _infoRow(String label, String value) =>
+      LumiOrderUi.row(context, label, value);
 
   @override
   Widget build(BuildContext context) {
+    LumiAdaptive.depend(context);
     final hasOrders = orders.isNotEmpty;
     final hasFilteredOrders = filteredOrders.isNotEmpty;
 
     return Scaffold(
-      backgroundColor: cream,
+      backgroundColor: LumiAdaptive.color(cream, surface: true),
       appBar: AppBar(
-        backgroundColor: cream,
-        foregroundColor: ink,
+        backgroundColor: LumiAdaptive.color(cream, surface: true),
+        foregroundColor: LumiAdaptive.color(ink),
         elevation: 0,
         title: Text(
-          'Đơn hàng của tôi',
-          style: GoogleFonts.dmSans(
-            color: ink,
-            fontWeight: FontWeight.w700,
+          LumiAdaptive.text('Đơn hàng của tôi'),
+          style: LumiAdaptive.style(
+            GoogleFonts.dmSans(
+              color: LumiAdaptive.color(ink),
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ),
       ),
@@ -298,21 +257,39 @@ class _LumiMyOrdersScreenState extends State<LumiMyOrdersScreen> {
           : ListView(
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 30),
               children: [
-                Container(
-                  padding: const EdgeInsets.all(17),
-                  decoration: BoxDecoration(
-                    color: blue,
-                    borderRadius: BorderRadius.circular(17),
+                LumiOrderUi.panel(
+                  context,
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(
+                        Icons.shopping_bag_outlined,
+                        size: 32,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        LumiAdaptive.text('Đơn hàng của tôi'),
+                        style: GoogleFonts.dmSans(
+                          fontSize: 28,
+                          fontWeight: FontWeight.w700,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        LumiAdaptive.text(
+                          'Theo dõi lịch sử mua sắm và trạng thái các đơn hàng của bạn tại LUMI.',
+                        ),
+                        style: GoogleFonts.dmSans(
+                          fontSize: 16,
+                          height: 1.5,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                      ),
+                    ],
                   ),
-                  child: Text(
-                    'Theo dõi lịch sử mua sắm và trạng thái '
-                    'các đơn hàng của bạn tại LUMI.',
-                    style: GoogleFonts.dmSans(
-                      color: ink,
-                      fontSize: 14,
-                      height: 1.5,
-                    ),
-                  ),
+                  hero: true,
                 ),
                 const SizedBox(height: 20),
                 _statusFilter(),
@@ -325,9 +302,7 @@ class _LumiMyOrdersScreenState extends State<LumiMyOrdersScreen> {
                     ),
                   )
                 else
-                  ...filteredOrders.map(
-                    (order) => _orderCard(context, order),
-                  ),
+                  ...filteredOrders.map((order) => _orderCard(context, order)),
               ],
             ),
     );

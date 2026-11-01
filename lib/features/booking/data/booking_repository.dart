@@ -1,7 +1,9 @@
 import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+
 import 'booking_api_service.dart';
 import 'booking_slot_calculator.dart';
 import 'models/booking_item.dart';
@@ -43,10 +45,9 @@ class BookingRepository {
       return Stream.value([]);
     }
 
-    return _bookingsCol
-        .where('userId', isEqualTo: userId)
-        .snapshots()
-        .map((snapshot) {
+    return _bookingsCol.where('userId', isEqualTo: userId).snapshots().map((
+      snapshot,
+    ) {
       final list = snapshot.docs.map((doc) {
         return BookingItem.fromFirestore(doc);
       }).toList();
@@ -69,7 +70,9 @@ class BookingRepository {
           .where('userId', isEqualTo: userId)
           .get();
 
-      final list = snapshot.docs.map((doc) => BookingItem.fromFirestore(doc)).toList();
+      final list = snapshot.docs
+          .map((doc) => BookingItem.fromFirestore(doc))
+          .toList();
       list.sort((a, b) {
         final dateA = a.startAt ?? DateTime(0);
         final dateB = b.startAt ?? DateTime(0);
@@ -89,7 +92,12 @@ class BookingRepository {
       debugPrint('API fetch error: $e');
       if (_localBookings.isNotEmpty) {
         return _localBookings
-            .where((b) => b.userId == userId || b.userId == null || (b.userId?.isEmpty ?? false))
+            .where(
+              (b) =>
+                  b.userId == userId ||
+                  b.userId == null ||
+                  (b.userId?.isEmpty ?? false),
+            )
             .toList();
       }
       rethrow;
@@ -103,11 +111,16 @@ class BookingRepository {
 
     try {
       final snapshot = await _bookingsCol
-          .where('startAt', isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay))
+          .where(
+            'startAt',
+            isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay),
+          )
           .where('startAt', isLessThanOrEqualTo: Timestamp.fromDate(endOfDay))
           .get();
 
-      return snapshot.docs.map((doc) => BookingItem.fromFirestore(doc)).toList();
+      return snapshot.docs
+          .map((doc) => BookingItem.fromFirestore(doc))
+          .toList();
     } catch (e) {
       debugPrint('Error getting bookings for date from Firestore: $e');
       return [];
@@ -236,8 +249,11 @@ class BookingRepository {
       }
 
       // Nếu lỗi kết nối backend (port 3000 chưa bật), fallback ghi trực tiếp Firestore
-      if (apiEx.message.contains('Không thể kết nối') || apiEx.statusCode == null) {
-        debugPrint('Backend unreachable, saving booking directly to Firestore: $apiEx');
+      if (apiEx.message.contains('Không thể kết nối') ||
+          apiEx.statusCode == null) {
+        debugPrint(
+          'Backend unreachable, saving booking directly to Firestore: $apiEx',
+        );
         return await _createBookingDirectInFirestore(
           userId: userId,
           serviceId: serviceId,

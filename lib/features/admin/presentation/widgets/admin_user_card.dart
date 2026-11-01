@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import '../../../../core/theme/lumi_style.dart';
 import '../../data/models/admin_user_item.dart';
 
@@ -41,7 +42,8 @@ class AdminUserCard extends StatelessWidget {
                 CircleAvatar(
                   radius: 24,
                   backgroundColor: LumiStyle.blushSurface,
-                  backgroundImage: user.photoUrl != null && user.photoUrl!.isNotEmpty
+                  backgroundImage:
+                      user.photoUrl != null && user.photoUrl!.isNotEmpty
                       ? NetworkImage(user.photoUrl!)
                       : null,
                   child: user.photoUrl == null || user.photoUrl!.isEmpty
@@ -76,7 +78,10 @@ class AdminUserCard extends StatelessWidget {
                           ),
                           const SizedBox(width: 8),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 7,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
                               color: user.roleBgColor,
                               borderRadius: BorderRadius.circular(10),
@@ -95,29 +100,50 @@ class AdminUserCard extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         user.email.isNotEmpty ? user.email : user.phone,
-                        style: GoogleFonts.dmSans(fontSize: 12, color: LumiStyle.muted),
+                        style: GoogleFonts.dmSans(
+                          fontSize: 12,
+                          color: LumiStyle.muted,
+                        ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 8),
                       Row(
                         children: [
-                          Icon(Icons.calendar_month, size: 14, color: LumiStyle.rose),
+                          Icon(
+                            Icons.calendar_month,
+                            size: 14,
+                            color: LumiStyle.rose,
+                          ),
                           const SizedBox(width: 4),
                           Text(
                             '${user.bookingCount} lịch',
-                            style: GoogleFonts.dmSans(fontSize: 11, fontWeight: FontWeight.w600),
+                            style: GoogleFonts.dmSans(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                           const SizedBox(width: 14),
-                          const Icon(Icons.shopping_bag, size: 14, color: Color(0xFFD97706)),
+                          const Icon(
+                            Icons.shopping_bag,
+                            size: 14,
+                            color: Color(0xFFD97706),
+                          ),
                           const SizedBox(width: 4),
                           Text(
                             '${user.orderCount} đơn',
-                            style: GoogleFonts.dmSans(fontSize: 11, fontWeight: FontWeight.w600),
+                            style: GoogleFonts.dmSans(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                           if (user.totalSpent > 0) ...[
                             const SizedBox(width: 14),
-                            const Icon(Icons.payments, size: 14, color: Color(0xFF16A34A)),
+                            const Icon(
+                              Icons.payments,
+                              size: 14,
+                              color: Color(0xFF16A34A),
+                            ),
                             const SizedBox(width: 4),
                             Text(
                               user.displayTotalSpent,
@@ -142,4 +168,3 @@ class AdminUserCard extends StatelessWidget {
     );
   }
 }
-

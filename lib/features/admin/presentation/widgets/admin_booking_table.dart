@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import '../../../../core/theme/lumi_style.dart';
 import '../../../booking/data/models/booking_item.dart';
 
@@ -72,8 +73,10 @@ class AdminBookingTable extends StatelessWidget {
             ],
             rows: bookings.map((item) {
               final isPending = item.status == 'pending';
-              final isApproved = item.status == 'approved' || item.status == 'confirmed';
-              final isRejected = item.status == 'rejected' || item.status == 'cancelled';
+              final isApproved =
+                  item.status == 'approved' || item.status == 'confirmed';
+              final isRejected =
+                  item.status == 'rejected' || item.status == 'cancelled';
 
               Color badgeBg;
               Color badgeText;
@@ -125,7 +128,9 @@ class AdminBookingTable extends StatelessWidget {
                           item.contactName.isNotEmpty
                               ? item.contactName
                               : 'Khách hàng',
-                          style: GoogleFonts.dmSans(fontWeight: FontWeight.w600),
+                          style: GoogleFonts.dmSans(
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                         if (item.contactPhone.isNotEmpty)
                           Text(
@@ -255,4 +260,3 @@ class AdminBookingTable extends StatelessWidget {
     );
   }
 }
-

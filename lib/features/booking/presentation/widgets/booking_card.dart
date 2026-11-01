@@ -1,3 +1,5 @@
+import '../../../../core/theme/lumi_adaptive.dart';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -22,15 +24,19 @@ class BookingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    LumiAdaptive.depend(context);
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: LumiAdaptive.color(Colors.white, surface: true),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFF0E5E7)),
+        border: Border.all(color: LumiAdaptive.color(const Color(0xFFF0E5E7))),
         boxShadow: [
           BoxShadow(
-            color: plum.withValues(alpha: 0.04),
+            color: LumiAdaptive.color(
+              plum.withValues(alpha: 0.04),
+              surface: true,
+            ),
             blurRadius: 10,
             offset: const Offset(0, 3),
           ),
@@ -51,10 +57,17 @@ class BookingCard extends StatelessWidget {
                     width: 44,
                     height: 44,
                     decoration: BoxDecoration(
-                      color: blush.withValues(alpha: 0.4),
+                      color: LumiAdaptive.color(
+                        blush.withValues(alpha: 0.4),
+                        surface: true,
+                      ),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(Icons.spa_outlined, color: rose, size: 24),
+                    child: Icon(
+                      Icons.spa_outlined,
+                      color: LumiAdaptive.color(rose),
+                      size: 24,
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -62,19 +75,27 @@ class BookingCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          booking.serviceName,
-                          style: GoogleFonts.cormorantGaramond(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w700,
-                            color: plum,
+                          LumiAdaptive.text(booking.serviceName),
+                          style: LumiAdaptive.style(
+                            GoogleFonts.cormorantGaramond(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                              color: LumiAdaptive.color(plum),
+                            ),
                           ),
                         ),
                         const SizedBox(height: 3),
                         Text(
-                          '${booking.durationMinutes} phút · ${booking.formattedPrice}',
-                          style: GoogleFonts.dmSans(
-                            fontSize: 12,
-                            color: plum.withValues(alpha: 0.65),
+                          LumiAdaptive.text(
+                            '${booking.durationMinutes} phút · ${booking.formattedPrice}',
+                          ),
+                          style: LumiAdaptive.style(
+                            GoogleFonts.dmSans(
+                              fontSize: 12,
+                              color: LumiAdaptive.color(
+                                plum.withValues(alpha: 0.65),
+                              ),
+                            ),
                           ),
                         ),
                       ],
@@ -83,23 +104,32 @@ class BookingCard extends StatelessWidget {
                   _statusBadge(booking),
                 ],
               ),
-              const Padding(
+              Padding(
                 padding: EdgeInsets.symmetric(vertical: 12),
-                child: Divider(height: 1, color: Color(0xFFF4EBEC)),
+                child: Divider(
+                  height: 1,
+                  color: LumiAdaptive.color(Color(0xFFF4EBEC), surface: true),
+                ),
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.calendar_today_outlined, size: 14, color: rose),
+                      Icon(
+                        Icons.calendar_today_outlined,
+                        size: 14,
+                        color: LumiAdaptive.color(rose),
+                      ),
                       const SizedBox(width: 6),
                       Text(
-                        booking.formattedDateTime,
-                        style: GoogleFonts.dmSans(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: plum,
+                        LumiAdaptive.text(booking.formattedDateTime),
+                        style: LumiAdaptive.style(
+                          GoogleFonts.dmSans(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: LumiAdaptive.color(plum),
+                          ),
                         ),
                       ),
                     ],
@@ -108,16 +138,20 @@ class BookingCard extends StatelessWidget {
                     children: [
                       TextButton(
                         onPressed: onTap,
-                        style: TextButton.styleFrom(
-                          visualDensity: VisualDensity.compact,
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                        style: LumiAdaptive.style(
+                          TextButton.styleFrom(
+                            visualDensity: VisualDensity.compact,
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                          ),
                         ),
                         child: Text(
-                          'Chi tiết',
-                          style: GoogleFonts.dmSans(
-                            color: rose,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 12,
+                          LumiAdaptive.text('Chi tiết'),
+                          style: LumiAdaptive.style(
+                            GoogleFonts.dmSans(
+                              color: LumiAdaptive.color(rose),
+                              fontWeight: FontWeight.w700,
+                              fontSize: 12,
+                            ),
                           ),
                         ),
                       ),
@@ -125,16 +159,24 @@ class BookingCard extends StatelessWidget {
                         const SizedBox(width: 4),
                         TextButton(
                           onPressed: onCancel,
-                          style: TextButton.styleFrom(
-                            visualDensity: VisualDensity.compact,
-                            foregroundColor: Colors.red.shade600,
-                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                          style: LumiAdaptive.style(
+                            TextButton.styleFrom(
+                              visualDensity: VisualDensity.compact,
+                              foregroundColor: LumiAdaptive.color(
+                                Colors.red.shade600,
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                              ),
+                            ),
                           ),
                           child: Text(
-                            'Hủy lịch',
-                            style: GoogleFonts.dmSans(
-                              fontWeight: FontWeight.w700,
-                              fontSize: 12,
+                            LumiAdaptive.text('Hủy lịch'),
+                            style: LumiAdaptive.style(
+                              GoogleFonts.dmSans(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 12,
+                              ),
                             ),
                           ),
                         ),
@@ -178,15 +220,17 @@ class BookingCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
       decoration: BoxDecoration(
-        color: bg,
+        color: LumiAdaptive.color(bg, surface: true),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Text(
-        item.statusLabel,
-        style: GoogleFonts.dmSans(
-          color: fg,
-          fontSize: 10,
-          fontWeight: FontWeight.w700,
+        LumiAdaptive.text(item.statusLabel),
+        style: LumiAdaptive.style(
+          GoogleFonts.dmSans(
+            color: LumiAdaptive.color(fg),
+            fontSize: 10,
+            fontWeight: FontWeight.w700,
+          ),
         ),
       ),
     );

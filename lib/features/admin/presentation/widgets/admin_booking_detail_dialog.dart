@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import '../../../../core/theme/lumi_style.dart';
 import '../../../booking/data/models/booking_item.dart';
 
@@ -57,8 +58,10 @@ class AdminBookingDetailDialog extends StatelessWidget {
               _row('Thời lượng:', '${booking.durationMinutes} phút'),
               _row('Tổng chi phí:', booking.formattedPrice),
               _row('Trạng thái:', booking.statusLabel),
-              if (booking.roomId != null) _row('Phòng phục vụ:', booking.roomId!),
-              if (booking.staffId != null) _row('KTV phục vụ:', booking.staffId!),
+              if (booking.roomId != null)
+                _row('Phòng phục vụ:', booking.roomId!),
+              if (booking.staffId != null)
+                _row('KTV phục vụ:', booking.staffId!),
               const SizedBox(height: 20),
               if (booking.status == 'pending') ...[
                 Row(
@@ -72,7 +75,9 @@ class AdminBookingDetailDialog extends StatelessWidget {
                         icon: const Icon(Icons.close_rounded, size: 16),
                         label: Text(
                           'TỪ CHỐI',
-                          style: GoogleFonts.dmSans(fontWeight: FontWeight.w700),
+                          style: GoogleFonts.dmSans(
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: Colors.red.shade700,
@@ -94,7 +99,9 @@ class AdminBookingDetailDialog extends StatelessWidget {
                         icon: const Icon(Icons.check_rounded, size: 16),
                         label: Text(
                           'DUYỆT ĐƠN',
-                          style: GoogleFonts.dmSans(fontWeight: FontWeight.w700),
+                          style: GoogleFonts.dmSans(
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                         style: FilledButton.styleFrom(
                           backgroundColor: LumiStyle.rose,
@@ -147,4 +154,3 @@ class AdminBookingDetailDialog extends StatelessWidget {
     );
   }
 }
-

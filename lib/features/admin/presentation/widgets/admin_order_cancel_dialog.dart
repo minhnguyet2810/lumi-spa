@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import '../../../../core/theme/lumi_style.dart';
 import '../../data/models/admin_order_item.dart';
 
 class AdminOrderCancelDialog extends StatefulWidget {
-  const AdminOrderCancelDialog({
-    super.key,
-    required this.order,
-  });
+  const AdminOrderCancelDialog({super.key, required this.order});
 
   final AdminOrderItem order;
 
@@ -54,7 +52,11 @@ class _AdminOrderCancelDialogState extends State<AdminOrderCancelDialog> {
                       color: Colors.red.shade50,
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(Icons.cancel_outlined, color: Colors.red.shade700, size: 24),
+                    child: Icon(
+                      Icons.cancel_outlined,
+                      color: Colors.red.shade700,
+                      size: 24,
+                    ),
                   ),
                   const SizedBox(width: 14),
                   Expanded(
@@ -118,7 +120,9 @@ class _AdminOrderCancelDialogState extends State<AdminOrderCancelDialog> {
                     labelStyle: GoogleFonts.dmSans(
                       fontSize: 11,
                       color: isSelected ? Colors.red.shade900 : LumiStyle.plum,
-                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                      fontWeight: isSelected
+                          ? FontWeight.w700
+                          : FontWeight.w500,
                     ),
                   );
                 }).toList(),
@@ -129,8 +133,12 @@ class _AdminOrderCancelDialogState extends State<AdminOrderCancelDialog> {
                 maxLines: 3,
                 style: GoogleFonts.dmSans(fontSize: 13, color: LumiStyle.plum),
                 decoration: InputDecoration(
-                  hintText: 'Nhập lý do cụ thể hoặc ghi chú thêm cho khách hàng...',
-                  hintStyle: GoogleFonts.dmSans(fontSize: 12, color: LumiStyle.muted),
+                  hintText:
+                      'Nhập lý do cụ thể hoặc ghi chú thêm cho khách hàng...',
+                  hintStyle: GoogleFonts.dmSans(
+                    fontSize: 12,
+                    color: LumiStyle.muted,
+                  ),
                   filled: true,
                   fillColor: Colors.white,
                   border: OutlineInputBorder(
@@ -162,7 +170,9 @@ class _AdminOrderCancelDialogState extends State<AdminOrderCancelDialog> {
                     onPressed: () {
                       final reason = _reasonController.text.trim();
                       Navigator.of(context).pop(
-                        reason.isNotEmpty ? reason : 'Đơn hàng bị hủy bởi Quản trị viên LUMI SPA',
+                        reason.isNotEmpty
+                            ? reason
+                            : 'Đơn hàng bị hủy bởi Quản trị viên LUMI SPA',
                       );
                     },
                     icon: const Icon(Icons.check, size: 18),
@@ -172,8 +182,13 @@ class _AdminOrderCancelDialogState extends State<AdminOrderCancelDialog> {
                     ),
                     style: FilledButton.styleFrom(
                       backgroundColor: Colors.red.shade700,
-                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 18,
+                        vertical: 12,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
                   ),
                 ],
@@ -185,4 +200,3 @@ class _AdminOrderCancelDialogState extends State<AdminOrderCancelDialog> {
     );
   }
 }
-

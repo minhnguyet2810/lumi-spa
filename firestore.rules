@@ -1,6 +1,23 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    // LUMI Journal: public published content; no app writes.
+    match /articles/{lumiArticleId} {
+      allow read: if resource.data.isPublished == true;
+      allow write: if false;
+    }
+    match /app_config/about_lumi {
+      allow read: if true;
+      allow write: if false;
+    }
+
+
+    // Thông tin liên hệ công khai; ứng dụng không được sửa.
+    match /app_config/support {
+      allow read: if true;
+      allow write: if false;
+    }
+
     
     // 1. Quản lý Lịch hẹn Spa (Bookings)
     // Cho phép đọc và ghi để khách hàng đặt lịch và Admin duyệt lịch real-time

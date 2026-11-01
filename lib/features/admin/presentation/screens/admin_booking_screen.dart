@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import '../../../../core/theme/lumi_style.dart';
 import '../../../booking/data/models/booking_item.dart';
 import '../../data/admin_booking_repository.dart';
@@ -20,7 +21,8 @@ class AdminBookingScreen extends StatefulWidget {
 
 class _AdminBookingScreenState extends State<AdminBookingScreen> {
   final _searchController = TextEditingController();
-  int _selectedFilter = 0; // 0: Chờ duyệt (Pending), 1: Tất cả, 2: Đã duyệt, 3: Đã từ chối
+  int _selectedFilter =
+      0; // 0: Chờ duyệt (Pending), 1: Tất cả, 2: Đã duyệt, 3: Đã từ chối
   bool? _forceTableView; // null: auto-detect by screen width
 
   List<BookingItem>? _fallbackApiBookings;
@@ -85,14 +87,22 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
                 const SizedBox(height: 12),
                 Text(
                   '👉 Các bước khắc phục:',
-                  style: GoogleFonts.dmSans(fontSize: 13, fontWeight: FontWeight.w700, color: LumiStyle.plum),
+                  style: GoogleFonts.dmSans(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: LumiStyle.plum,
+                  ),
                 ),
                 const SizedBox(height: 6),
                 Text(
                   '1. Truy cập Firebase Console -> Firestore Database -> Thẻ Rules.\n'
                   '2. Dán nội dung quy tắc bên dưới và nhấn "Publish" (Xuất bản).\n'
                   '3. Hệ thống sẽ ngay lập tức cho phép đọc/ghi real-time!',
-                  style: GoogleFonts.dmSans(fontSize: 12, height: 1.5, color: LumiStyle.muted),
+                  style: GoogleFonts.dmSans(
+                    fontSize: 12,
+                    height: 1.5,
+                    color: LumiStyle.muted,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 Container(
@@ -102,8 +112,7 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(color: Colors.black12),
                   ),
-                  child: SelectableText(
-                    '''rules_version = '2';
+                  child: SelectableText('''rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     match /bookings/{id} { allow read, write: if true; }
@@ -111,9 +120,7 @@ service cloud.firestore {
     match /notifications/{id} { allow read, write: if true; }
     match /{document=**} { allow read, write: if true; }
   }
-}''',
-                    style: GoogleFonts.spaceMono(fontSize: 11),
-                  ),
+}''', style: GoogleFonts.spaceMono(fontSize: 11)),
                 ),
               ],
             ),
@@ -122,8 +129,9 @@ service cloud.firestore {
         actions: [
           TextButton(
             onPressed: () {
-              Clipboard.setData(const ClipboardData(
-                text: '''rules_version = '2';
+              Clipboard.setData(
+                const ClipboardData(
+                  text: '''rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     match /bookings/{id} { allow read, write: if true; }
@@ -132,15 +140,21 @@ service cloud.firestore {
     match /{document=**} { allow read, write: if true; }
   }
 }''',
-              ));
+                ),
+              );
               Navigator.of(ctx).pop();
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Đã sao chép nội dung Rules vào bộ nhớ tạm!')),
+                const SnackBar(
+                  content: Text('Đã sao chép nội dung Rules vào bộ nhớ tạm!'),
+                ),
               );
             },
             child: Text(
               'Sao chép Rules',
-              style: GoogleFonts.dmSans(fontWeight: FontWeight.w700, color: LumiStyle.rose),
+              style: GoogleFonts.dmSans(
+                fontWeight: FontWeight.w700,
+                color: LumiStyle.rose,
+              ),
             ),
           ),
           FilledButton(
@@ -198,7 +212,9 @@ service cloud.firestore {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Đã duyệt đơn #${booking.id.substring(0, 8).toUpperCase()} thành công!'),
+          content: Text(
+            'Đã duyệt đơn #${booking.id.substring(0, 8).toUpperCase()} thành công!',
+          ),
           backgroundColor: Colors.green.shade800,
           behavior: SnackBarBehavior.floating,
         ),
@@ -228,11 +244,16 @@ service cloud.firestore {
     if (reason == null || !mounted) return;
 
     try {
-      await AdminBookingRepository.instance.rejectBooking(booking, reason: reason);
+      await AdminBookingRepository.instance.rejectBooking(
+        booking,
+        reason: reason,
+      );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Đã từ chối đơn #${booking.id.substring(0, 8).toUpperCase()}!'),
+          content: Text(
+            'Đã từ chối đơn #${booking.id.substring(0, 8).toUpperCase()}!',
+          ),
           backgroundColor: Colors.grey.shade800,
           behavior: SnackBarBehavior.floating,
         ),
@@ -280,7 +301,11 @@ service cloud.firestore {
       ),
       child: Row(
         children: [
-          const Icon(Icons.cloud_sync_rounded, color: Color(0xFFB45309), size: 22),
+          const Icon(
+            Icons.cloud_sync_rounded,
+            color: Color(0xFFB45309),
+            size: 22,
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -334,58 +359,65 @@ service cloud.firestore {
 
     return Scaffold(
       backgroundColor: LumiStyle.ivory,
-      appBar: widget.showAppBar ? AppBar(
-        backgroundColor: LumiStyle.ivory,
-        elevation: 0,
-        centerTitle: false,
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: LumiStyle.blushSurface,
-                borderRadius: BorderRadius.circular(10),
+      appBar: widget.showAppBar
+          ? AppBar(
+              backgroundColor: LumiStyle.ivory,
+              elevation: 0,
+              centerTitle: false,
+              title: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: LumiStyle.blushSurface,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(
+                      Icons.admin_panel_settings_rounded,
+                      color: LumiStyle.rose,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    'LUMI SPA — Portal Quản Trị',
+                    style: GoogleFonts.cormorantGaramond(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w700,
+                      color: LumiStyle.plum,
+                    ),
+                  ),
+                ],
               ),
-              child: const Icon(
-                Icons.admin_panel_settings_rounded,
-                color: LumiStyle.rose,
-                size: 20,
-              ),
-            ),
-            const SizedBox(width: 10),
-            Text(
-              'LUMI SPA — Portal Quản Trị',
-              style: GoogleFonts.cormorantGaramond(
-                fontSize: 22,
-                fontWeight: FontWeight.w700,
-                color: LumiStyle.plum,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            tooltip: useTableView ? 'Xem dạng Thẻ (Cards)' : 'Xem dạng Bảng (Table)',
-            onPressed: () {
-              setState(() {
-                _forceTableView = !useTableView;
-              });
-            },
-            icon: Icon(
-              useTableView ? Icons.grid_view_rounded : Icons.table_chart_rounded,
-              color: LumiStyle.plum,
-            ),
-          ),
-          const SizedBox(width: 8),
-        ],
-      ) : null,
+              actions: [
+                IconButton(
+                  tooltip: useTableView
+                      ? 'Xem dạng Thẻ (Cards)'
+                      : 'Xem dạng Bảng (Table)',
+                  onPressed: () {
+                    setState(() {
+                      _forceTableView = !useTableView;
+                    });
+                  },
+                  icon: Icon(
+                    useTableView
+                        ? Icons.grid_view_rounded
+                        : Icons.table_chart_rounded,
+                    color: LumiStyle.plum,
+                  ),
+                ),
+                const SizedBox(width: 8),
+              ],
+            )
+          : null,
       body: StreamBuilder<List<BookingItem>>(
         stream: AdminBookingRepository.instance.streamAllBookings(),
         builder: (context, snapshot) {
           List<BookingItem> allBookings = [];
           bool isUsingFallback = false;
 
-          if (snapshot.connectionState == ConnectionState.waiting && _fallbackApiBookings == null) {
+          if (snapshot.connectionState == ConnectionState.waiting &&
+              _fallbackApiBookings == null) {
             return const Center(
               child: CircularProgressIndicator(color: LumiStyle.rose),
             );
@@ -412,7 +444,10 @@ service cloud.firestore {
                       const SizedBox(height: 16),
                       Text(
                         'Phát hiện lỗi Firestore Rules. Đang chuyển sang nạp qua Backend API...',
-                        style: GoogleFonts.dmSans(fontSize: 13, color: LumiStyle.muted),
+                        style: GoogleFonts.dmSans(
+                          fontSize: 13,
+                          color: LumiStyle.muted,
+                        ),
                       ),
                     ],
                   ),
@@ -425,17 +460,27 @@ service cloud.firestore {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.error_outline_rounded, size: 48, color: Colors.red.shade400),
+                      Icon(
+                        Icons.error_outline_rounded,
+                        size: 48,
+                        color: Colors.red.shade400,
+                      ),
                       const SizedBox(height: 12),
                       Text(
                         'Lỗi kết nối Firestore',
-                        style: GoogleFonts.cormorantGaramond(fontSize: 22, fontWeight: FontWeight.w700),
+                        style: GoogleFonts.cormorantGaramond(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                       const SizedBox(height: 6),
                       Text(
                         snapshot.error.toString(),
                         textAlign: TextAlign.center,
-                        style: GoogleFonts.dmSans(fontSize: 12, color: LumiStyle.muted),
+                        style: GoogleFonts.dmSans(
+                          fontSize: 12,
+                          color: LumiStyle.muted,
+                        ),
                       ),
                       const SizedBox(height: 16),
                       Row(
@@ -443,15 +488,26 @@ service cloud.firestore {
                         children: [
                           FilledButton.icon(
                             onPressed: _fetchFallbackApi,
-                            style: FilledButton.styleFrom(backgroundColor: LumiStyle.rose),
-                            icon: const Icon(Icons.cloud_download_rounded, size: 16),
-                            label: Text('Tải qua Backend API', style: GoogleFonts.dmSans()),
+                            style: FilledButton.styleFrom(
+                              backgroundColor: LumiStyle.rose,
+                            ),
+                            icon: const Icon(
+                              Icons.cloud_download_rounded,
+                              size: 16,
+                            ),
+                            label: Text(
+                              'Tải qua Backend API',
+                              style: GoogleFonts.dmSans(),
+                            ),
                           ),
                           const SizedBox(width: 12),
                           OutlinedButton.icon(
                             onPressed: _showRulesGuideDialog,
                             icon: const Icon(Icons.security_rounded, size: 16),
-                            label: Text('Cách sửa Rules', style: GoogleFonts.dmSans()),
+                            label: Text(
+                              'Cách sửa Rules',
+                              style: GoogleFonts.dmSans(),
+                            ),
                           ),
                         ],
                       ),
@@ -465,18 +521,28 @@ service cloud.firestore {
           }
 
           // Thống kê nhanh
-          final pendingCount = allBookings.where((b) => b.status == 'pending').length;
-          final approvedCount = allBookings.where((b) => b.status == 'approved' || b.status == 'confirmed').length;
-          final rejectedCount = allBookings.where((b) => b.status == 'rejected' || b.status == 'cancelled').length;
+          final pendingCount = allBookings
+              .where((b) => b.status == 'pending')
+              .length;
+          final approvedCount = allBookings
+              .where((b) => b.status == 'approved' || b.status == 'confirmed')
+              .length;
+          final rejectedCount = allBookings
+              .where((b) => b.status == 'rejected' || b.status == 'cancelled')
+              .length;
 
           // Lọc danh sách theo Tab
           List<BookingItem> filtered = allBookings;
           if (_selectedFilter == 0) {
             filtered = allBookings.where((b) => b.status == 'pending').toList();
           } else if (_selectedFilter == 2) {
-            filtered = allBookings.where((b) => b.status == 'approved' || b.status == 'confirmed').toList();
+            filtered = allBookings
+                .where((b) => b.status == 'approved' || b.status == 'confirmed')
+                .toList();
           } else if (_selectedFilter == 3) {
-            filtered = allBookings.where((b) => b.status == 'rejected' || b.status == 'cancelled').toList();
+            filtered = allBookings
+                .where((b) => b.status == 'rejected' || b.status == 'cancelled')
+                .toList();
           }
 
           // Tìm kiếm theo từ khóa
@@ -506,7 +572,12 @@ service cloud.firestore {
               const SizedBox(height: 20),
 
               // 2. Toolbar: Search bar & Tab lọc trạng thái
-              _buildToolbar(pendingCount, allBookings.length, approvedCount, rejectedCount),
+              _buildToolbar(
+                pendingCount,
+                allBookings.length,
+                approvedCount,
+                rejectedCount,
+              ),
               const SizedBox(height: 16),
 
               // 3. Hiển thị danh sách: Dạng Bảng (DataTable) hoặc Dạng Thẻ (Card/ListView)
@@ -533,7 +604,11 @@ service cloud.firestore {
                   alignment: Alignment.center,
                   child: Column(
                     children: [
-                      Icon(Icons.inbox_outlined, size: 54, color: LumiStyle.line),
+                      Icon(
+                        Icons.inbox_outlined,
+                        size: 54,
+                        color: LumiStyle.line,
+                      ),
                       const SizedBox(height: 12),
                       Text(
                         'Không tìm thấy lịch hẹn phù hợp',
@@ -671,7 +746,12 @@ service cloud.firestore {
     );
   }
 
-  Widget _buildToolbar(int pendingCount, int totalCount, int approvedCount, int rejectedCount) {
+  Widget _buildToolbar(
+    int pendingCount,
+    int totalCount,
+    int approvedCount,
+    int rejectedCount,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -679,9 +759,14 @@ service cloud.firestore {
           controller: _searchController,
           onChanged: (_) => setState(() {}),
           decoration: InputDecoration(
-            hintText: 'Tìm kiếm theo tên khách, SĐT, dịch vụ hoặc mã lịch hẹn...',
+            hintText:
+                'Tìm kiếm theo tên khách, SĐT, dịch vụ hoặc mã lịch hẹn...',
             hintStyle: GoogleFonts.dmSans(fontSize: 13, color: LumiStyle.muted),
-            prefixIcon: const Icon(Icons.search, color: LumiStyle.rose, size: 20),
+            prefixIcon: const Icon(
+              Icons.search,
+              color: LumiStyle.rose,
+              size: 20,
+            ),
             suffixIcon: _searchController.text.isNotEmpty
                 ? IconButton(
                     icon: const Icon(Icons.clear, size: 18),
@@ -693,7 +778,10 @@ service cloud.firestore {
                 : null,
             filled: true,
             fillColor: Colors.white,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(color: LumiStyle.line),
@@ -713,13 +801,25 @@ service cloud.firestore {
           scrollDirection: Axis.horizontal,
           child: Row(
             children: [
-              _filterTab(0, 'Chờ duyệt ($pendingCount)', Icons.hourglass_top_rounded),
+              _filterTab(
+                0,
+                'Chờ duyệt ($pendingCount)',
+                Icons.hourglass_top_rounded,
+              ),
               const SizedBox(width: 8),
               _filterTab(1, 'Tất cả ($totalCount)', Icons.all_inbox_rounded),
               const SizedBox(width: 8),
-              _filterTab(2, 'Đã duyệt ($approvedCount)', Icons.check_circle_outline_rounded),
+              _filterTab(
+                2,
+                'Đã duyệt ($approvedCount)',
+                Icons.check_circle_outline_rounded,
+              ),
               const SizedBox(width: 8),
-              _filterTab(3, 'Đã từ chối ($rejectedCount)', Icons.cancel_outlined),
+              _filterTab(
+                3,
+                'Đã từ chối ($rejectedCount)',
+                Icons.cancel_outlined,
+              ),
             ],
           ),
         ),
@@ -738,9 +838,7 @@ service cloud.firestore {
         decoration: BoxDecoration(
           color: selected ? LumiStyle.rose : Colors.white,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: selected ? LumiStyle.rose : LumiStyle.line,
-          ),
+          border: Border.all(color: selected ? LumiStyle.rose : LumiStyle.line),
           boxShadow: selected
               ? [
                   BoxShadow(

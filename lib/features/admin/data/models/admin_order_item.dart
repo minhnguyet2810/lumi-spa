@@ -41,9 +41,9 @@ class AdminOrderItem {
       return formattedTotal!;
     }
     final p = total.toInt().toString().replaceAllMapped(
-        RegExp(r'\B(?=(\d{3})+(?!\d))'),
-        (match) => '.',
-      );
+      RegExp(r'\B(?=(\d{3})+(?!\d))'),
+      (match) => '.',
+    );
     return '$p đ';
   }
 
@@ -99,11 +99,13 @@ class AdminOrderItem {
 
   String get itemsSummary {
     if (items.isEmpty) return 'Chưa có thông tin sản phẩm';
-    return items.map((it) {
-      final name = it['name'] ?? it['productName'] ?? 'Sản phẩm';
-      final qty = it['quantity'] ?? 1;
-      return '$name (x$qty)';
-    }).join(', ');
+    return items
+        .map((it) {
+          final name = it['name'] ?? it['productName'] ?? 'Sản phẩm';
+          final qty = it['quantity'] ?? 1;
+          return '$name (x$qty)';
+        })
+        .join(', ');
   }
 
   int get totalQuantity {
@@ -115,7 +117,9 @@ class AdminOrderItem {
     });
   }
 
-  factory AdminOrderItem.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
+  factory AdminOrderItem.fromFirestore(
+    DocumentSnapshot<Map<String, dynamic>> doc,
+  ) {
     final data = doc.data() ?? {};
     return AdminOrderItem.fromMap(data, doc.id);
   }
@@ -145,14 +149,15 @@ class AdminOrderItem {
 
     return AdminOrderItem(
       id: data['id']?.toString() ?? data['orderId']?.toString() ?? docId,
-      customerName: data['customerName']?.toString() ??
+      customerName:
+          data['customerName']?.toString() ??
           data['name']?.toString() ??
           'Khách hàng LUMI',
-      customerEmail: data['customerEmail']?.toString() ??
-          data['email']?.toString() ??
-          '',
+      customerEmail:
+          data['customerEmail']?.toString() ?? data['email']?.toString() ?? '',
       phone: data['phone']?.toString() ?? '',
-      shippingAddress: data['shippingAddress']?.toString() ??
+      shippingAddress:
+          data['shippingAddress']?.toString() ??
           data['address']?.toString() ??
           'Tại cửa hàng',
       note: data['note']?.toString() ?? '',
@@ -182,7 +187,9 @@ class AdminOrderItem {
       'status': status,
       'items': items,
       'userId': userId,
-      'createdAt': createdAt != null ? Timestamp.fromDate(createdAt!) : FieldValue.serverTimestamp(),
+      'createdAt': createdAt != null
+          ? Timestamp.fromDate(createdAt!)
+          : FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
       if (cancelReason != null) 'cancelReason': cancelReason,
     };

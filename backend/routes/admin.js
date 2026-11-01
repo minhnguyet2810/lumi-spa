@@ -10,6 +10,10 @@ const router = express.Router();
 
 router.use(requireAuth);
 router.use(requireAdmin);
+router.use((req, res, next) => {
+  if (!db.hasCredentials) return res.status(503).json({ success: false, message: 'LUMI chưa thể kết nối dữ liệu.' });
+  return next();
+});
 
 function serialize(value) {
   if (value == null) return value;
@@ -235,6 +239,9 @@ router.patch('/bookings/:id/reject', async (req, res) => {
       b.rejectedReason = req.body?.reason || 'Hết chỗ';
       return res.json({ success: true, message: 'Đã từ chối lịch hẹn.' });
     }
+    const reason = req.body?.reason || '';
+    if (typeof reason !== 'string' || reason.length > 1000) return res.status(400).json({ success: false, message: 'Lý do không hợp lệ.' });
+    let rejectedBooking;
     const bookingRef = db.collection('bookings').doc(req.params.id);
 
     await db.runTransaction(async tx => {
@@ -247,6 +254,7 @@ router.patch('/bookings/:id/reject', async (req, res) => {
       }
 
       const booking = snapshot.data();
+      rejectedBooking = booking;
 
       if (booking.status !== 'pending') {
         const error = new Error('Chỉ có thể từ chối lịch đang chờ.');
@@ -284,8 +292,19 @@ router.patch('/bookings/:id/reject', async (req, res) => {
         status: 'cancelled',
         rejectedAt: FieldValue.serverTimestamp(),
         rejectedBy: req.user.uid,
+        rejectionReason: reason.trim(),
+        updatedAt: FieldValue.serverTimestamp(),
       });
     });
+
+    if (rejectedBooking?.userId) {
+      db.collection('notifications').add({
+        userId: rejectedBooking.userId,
+        title: 'Lịch hẹn chưa thể tiếp nhận',
+        message: 'LUMI chưa thể tiếp nhận lịch hẹn của bạn.' + (reason.trim() ? ' Lý do: ' + reason.trim() : ''),
+        type: 'appointment', isRead: false, createdAt: FieldValue.serverTimestamp(),
+      }).catch(error => console.error('Booking rejection notification:', error.message));
+    }
 
     return res.json({
       success: true,

@@ -1,7 +1,9 @@
 import 'dart:convert';
 
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
+
+import 'api_config.dart';
+
 import 'package:http/http.dart' as http;
 
 class LumiApiException implements Exception {
@@ -18,21 +20,13 @@ class LumiApiClient {
   LumiApiClient._();
 
   static final LumiApiClient instance = LumiApiClient._();
-  static const _configuredBaseUrl = String.fromEnvironment('LUMI_API_BASE_URL');
   static const _timeout = Duration(seconds: 20);
 
-  Uri get _baseUri {
-    if (_configuredBaseUrl.isNotEmpty) {
-      return Uri.parse(_configuredBaseUrl);
-    }
-    if (kIsWeb) return Uri.parse('http://localhost:3000');
-    if (defaultTargetPlatform == TargetPlatform.android) {
-      return Uri.parse('http://10.0.2.2:3000');
-    }
-    return Uri.parse('http://localhost:3000');
-  }
-
   Future<Map<String, dynamic>> get(String path) => _request('GET', path);
+  Future<Map<String, dynamic>> post(
+    String path, {
+    Map<String, dynamic>? body,
+  }) => _request('POST', path, body: body);
 
   Future<Map<String, dynamic>> patch(
     String path, {
@@ -44,7 +38,8 @@ class LumiApiClient {
     String path, {
     Map<String, dynamic>? body,
   }) async {
-    final uri = _baseUri.resolve(path);
+    final base = ApiConfig.baseUrl.replaceFirst(RegExp(r'/+$'), '');
+    final uri = Uri.parse('$base$path');
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       throw const LumiApiException('Vui lòng đăng nhập để tiếp tục.');
@@ -57,6 +52,9 @@ class LumiApiClient {
       );
     }
 
+    if (FirebaseAuth.instance.currentUser?.uid != user.uid) {
+      throw const LumiApiException('Tài khoản đã thay đổi. Vui lòng thử lại.');
+    }
     final headers = <String, String>{
       'Accept': 'application/json',
       'Authorization': 'Bearer $token',
@@ -67,13 +65,19 @@ class LumiApiClient {
     try {
       if (method == 'GET') {
         response = await http.get(uri, headers: headers).timeout(_timeout);
+      } else if (method == 'POST') {
+        response = await http
+            .post(uri, headers: headers, body: jsonEncode(body))
+            .timeout(_timeout);
       } else {
         response = await http
             .patch(uri, headers: headers, body: jsonEncode(body))
             .timeout(_timeout);
       }
     } on Exception catch (error) {
-      if (error is LumiApiException) rethrow;
+      if (error is LumiApiException) {
+        rethrow;
+      }
       throw const LumiApiException(
         'Không thể kết nối máy chủ. Hãy kiểm tra mạng và thử lại.',
       );
@@ -101,6 +105,9 @@ class LumiApiClient {
             'Yêu cầu không thành công (${response.statusCode}).',
         statusCode: response.statusCode,
       );
+    }
+    if (FirebaseAuth.instance.currentUser?.uid != user.uid) {
+      throw const LumiApiException('Tài khoản đã thay đổi. Vui lòng tải lại.');
     }
     return payload;
   }

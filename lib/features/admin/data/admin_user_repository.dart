@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../../../core/network/api_config.dart';
 import 'models/admin_user_item.dart';
@@ -13,6 +14,21 @@ class AdminUserRepository {
   static final AdminUserRepository instance = AdminUserRepository._();
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  Future<Map<String, String>> _authHeaders() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      throw StateError('Vui lòng đăng nhập quản trị.');
+    }
+    final result = await user.getIdTokenResult();
+    if (result.claims?['admin'] != true || result.token == null) {
+      throw StateError('Bạn không có quyền quản trị.');
+    }
+    return {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ${result.token}',
+    };
+  }
 
   CollectionReference<Map<String, dynamic>> get _usersCol =>
       _firestore.collection('users');
@@ -37,14 +53,20 @@ class AdminUserRepository {
   }) async {
     try {
       final queryParams = <String, String>{};
-      if (query != null && query.isNotEmpty) queryParams['q'] = query;
-      if (role != null && role.isNotEmpty) queryParams['role'] = role;
+      if (query != null && query.isNotEmpty) {
+        queryParams['q'] = query;
+      }
+      if (role != null && role.isNotEmpty) {
+        queryParams['role'] = role;
+      }
 
       final uri = Uri.parse(
         '${ApiConfig.baseUrl}/api/admin-users',
       ).replace(queryParameters: queryParams.isNotEmpty ? queryParams : null);
 
-      final res = await http.get(uri).timeout(const Duration(seconds: 8));
+      final res = await http
+          .get(uri, headers: await _authHeaders())
+          .timeout(const Duration(seconds: 8));
       if (res.statusCode == 200) {
         final data = jsonDecode(utf8.decode(res.bodyBytes));
         if (data['success'] == true && data['data'] is List) {
@@ -76,7 +98,7 @@ class AdminUserRepository {
       final res = await http
           .post(
             uri,
-            headers: {'Content-Type': 'application/json'},
+            headers: await _authHeaders(),
             body: jsonEncode({'target': target}),
           )
           .timeout(const Duration(seconds: 10));

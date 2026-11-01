@@ -19,12 +19,20 @@ const membershipRoutes = require('./routes/membership');
 const orderRoutes = require('./routes/orders');
 const bookingRoutes = require('./routes/bookings');
 const profileRoutes = require('./routes/profile');
+const { requireAuth, requireAdmin } = require('./admin_auth');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
+app.use(['/api/admin-bookings', '/api/admin-orders', '/api/admin-users', '/api/admin-dev'], requireAuth, requireAdmin, (req, res, next) => {
+  if (!db.hasCredentials) return res.status(503).json({ success: false, message: 'LUMI chưa thể kết nối dữ liệu.' });
+  return next();
+});
+// Compatibility alias is administrative, never a customer-supplied mail trigger.
+app.post('/api/orders/:id/notify-status', requireAuth, requireAdmin);
+
 
 app.use('/api/admin', adminRoutes);
 app.use('/api/notifications', notificationRoutes);
@@ -371,118 +379,14 @@ app.get('/api/admin-bookings', async (req, res) => {
 
 // POST / PATCH /api/admin-bookings/:id/status
 // Cập nhật trạng thái duyệt/từ chối lịch hẹn, gửi Gmail và Push FCM
-async function handleAdminBookingStatus(req, res) {
-  try {
-    const { id } = req.params;
-    const { status, reason = '' } = req.body || {};
-
-    if (!['approved', 'confirmed', 'rejected', 'cancelled'].includes(status)) {
-      return res.status(400).json({ success: false, message: 'Trạng thái không hợp lệ.' });
-    }
-
-    if (!db.hasCredentials) {
-      const b = devBookings.find(item => item.id === id);
-      if (b) {
-        b.status = status;
-        if (status === 'approved' || status === 'confirmed') {
-          b.approvedAt = new Date().toISOString();
-        } else {
-          b.rejectedAt = new Date().toISOString();
-          b.rejectReason = reason;
-        }
-      }
-      return res.json({ success: true, message: 'Đã cập nhật trạng thái (dev store).' });
-    }
-
-    const docRef = db.collection('bookings').doc(id);
-    const docSnap = await docRef.get();
-    if (!docSnap.exists) {
-      return res.status(404).json({ success: false, message: 'Không tìm thấy lịch hẹn.' });
-    }
-    const booking = docSnap.data();
-
-    const isApprove = ['approved', 'confirmed'].includes(status);
-    const updateData = {
-      status,
-      updatedAt: FieldValue.serverTimestamp(),
-    };
-    if (isApprove) {
-      updateData.approvedAt = FieldValue.serverTimestamp();
-      updateData.approvedBy = 'admin';
-    } else {
-      updateData.rejectedAt = FieldValue.serverTimestamp();
-      updateData.rejectReason = reason;
-    }
-
-    await docRef.update(updateData);
-
-    // Gửi thông báo In-App trong Firestore
-    if (booking.userId) {
-      try {
-        await db.collection('notifications').add({
-          userId: booking.userId,
-          title: isApprove ? 'Lịch hẹn đã được duyệt ✨' : 'Lịch hẹn đã bị từ chối ⚠️',
-          message: isApprove
-            ? `Lịch hẹn "${booking.serviceName || 'Dịch vụ Spa'}" đã được lễ tân duyệt thành công!`
-            : `Lịch hẹn "${booking.serviceName || 'Dịch vụ Spa'}" đã bị từ chối.${reason ? ' Lý do: ' + reason : ''}`,
-          type: 'appointment',
-          isRead: false,
-          createdAt: FieldValue.serverTimestamp(),
-        });
-      } catch (notifErr) {
-        console.warn('Booking notification error:', notifErr.message);
-      }
-    }
-
-    // Gửi Gmail xác nhận
-    const targetEmail = booking.contactEmail || booking.email;
-    if (targetEmail && isApprove) {
-      try {
-        let startTimeStr = '';
-        if (booking.startAt) {
-          const d = booking.startAt.toDate ? booking.startAt.toDate() : new Date(booking.startAt);
-          startTimeStr = d.toLocaleString('vi-VN');
-        }
-        await mailService.sendBookingConfirmedEmail({
-          to: targetEmail,
-          customerName: booking.contactName || 'Quý khách',
-          customerPhone: booking.contactPhone || '',
-          bookingId: id,
-          serviceName: booking.serviceName || 'Dịch vụ Spa',
-          startAt: startTimeStr,
-          durationMinutes: booking.durationMinutes || 60,
-          price: booking.price || 0,
-        });
-      } catch (mailErr) {
-        console.warn('Booking mail error:', mailErr.message);
-      }
-    }
-
-    // Gửi FCM Push notification
-    if (booking.userId) {
-      try {
-        if (isApprove) {
-          await pushService.sendBookingConfirmedPush({
-            userId: booking.userId,
-            bookingId: id,
-            serviceName: booking.serviceName || 'Dịch vụ Spa',
-            date: '',
-            hour: '',
-          });
-        }
-      } catch (pushErr) {
-        console.warn('Booking push error:', pushErr.message);
-      }
-    }
-
-    return res.json({
-      success: true,
-      message: isApprove ? 'Duyệt lịch hẹn thành công!' : 'Đã từ chối lịch hẹn.',
-    });
-  } catch (err) {
-    console.error('Error updating admin booking:', err);
-    return res.status(500).json({ success: false, message: 'Lỗi cập nhật lịch hẹn: ' + err.message });
-  }
+function handleAdminBookingStatus(req, res, next) {
+  const { status } = req.body || {};
+  const action = ['approved', 'confirmed'].includes(status) ? 'confirm' :
+    (['rejected', 'cancelled'].includes(status) ? 'reject' : null);
+  if (!action) return res.status(400).json({ success: false, message: 'Trạng thái không hợp lệ.' });
+  req.method = 'PATCH';
+  req.url = `/bookings/${encodeURIComponent(req.params.id)}/${action}`;
+  return adminRoutes(req, res, next);
 }
 
 app.patch('/api/admin-bookings/:id/status', handleAdminBookingStatus);
@@ -582,49 +486,46 @@ app.get('/api/admin-orders/:id', async (req, res) => {
 async function handleAdminOrderStatus(req, res) {
   try {
     const { id } = req.params;
-    const {
-      status,
-      reason = '',
-      customerEmail,
-      customerName,
-      items,
-      total,
-      shippingAddress,
-      phone,
-      paymentMethod,
-      userId,
-    } = req.body || {};
+    const { status, reason = '' } = req.body || {};
+    if (typeof reason !== 'string' || reason.length > 1000) return res.status(400).json({ success: false, message: 'Lý do không hợp lệ.' });
 
-    if (!status) {
+    if (!['confirmed', 'shipping', 'completed', 'cancelled'].includes(status)) {
       return res.status(400).json({ success: false, message: 'Thiếu trạng thái status.' });
     }
 
-    let orderDocData = null;
-    if (db.hasCredentials) {
-      try {
-        const orderRef = db.collection('orders').doc(id);
-        const docSnap = await orderRef.get();
-        if (docSnap.exists) {
-          orderDocData = docSnap.data();
-          await orderRef.update({
-            status,
-            cancelReason: reason || '',
-            updatedAt: FieldValue.serverTimestamp(),
-          });
-        }
-      } catch (dbErr) {
-        console.warn('[OrdersAPI] Firestore update warning:', dbErr.message);
+    const orderRef = db.collection('orders').doc(id);
+    let orderDocData;
+    await db.runTransaction(async tx => {
+      const snap = await tx.get(orderRef);
+      if (!snap.exists) throw Object.assign(new Error('Không tìm thấy đơn hàng.'), { statusCode: 404 });
+      orderDocData = snap.data();
+      const transitions = {
+        pending: ['confirmed', 'cancelled'], approved: ['shipping', 'cancelled'],
+        confirmed: ['shipping', 'cancelled'], processing: ['shipping', 'cancelled'],
+        shipping: ['completed'], delivering: ['completed'], completed: [], cancelled: [], rejected: [],
+      };
+      if (!(transitions[orderDocData.status] || []).includes(status)) {
+        throw Object.assign(new Error('Trạng thái đơn hàng đã thay đổi. Vui lòng tải lại.'), { statusCode: 409 });
       }
-    }
+      const itemsToRestore = status === 'cancelled' && orderDocData.inventoryReserved === true ? (orderDocData.items || []) : [];
+      const refs = itemsToRestore.map(item => db.collection('products').doc(item.productId));
+      const products = refs.length ? await tx.getAll(...refs) : [];
+      products.forEach((doc, i) => {
+        if (doc.exists && Number.isSafeInteger(doc.data().stock)) {
+          tx.update(refs[i], { stock: FieldValue.increment(itemsToRestore[i].quantity) });
+        }
+      });
+      tx.update(orderRef, { status, cancelReason: reason || '', updatedAt: FieldValue.serverTimestamp(), updatedBy: req.user.uid });
+    });
 
-    const effectiveUserId = userId || orderDocData?.userId;
-    const effectiveEmail = customerEmail || orderDocData?.customerEmail || orderDocData?.email;
-    const effectiveName = customerName || orderDocData?.customerName;
-    const effectivePhone = phone || orderDocData?.phone;
-    const effectiveAddress = shippingAddress || orderDocData?.shippingAddress || orderDocData?.address;
-    const effectiveTotal = total ?? orderDocData?.total ?? 0;
-    const effectiveItems = items || orderDocData?.items || [];
-    const effectivePayment = paymentMethod || orderDocData?.paymentMethod || 'COD';
+    const effectiveUserId = orderDocData?.userId;
+    const effectiveEmail = orderDocData?.customerEmail || orderDocData?.email;
+    const effectiveName = orderDocData?.customerName;
+    const effectivePhone = orderDocData?.phone;
+    const effectiveAddress = orderDocData?.shippingAddress || orderDocData?.address;
+    const effectiveTotal = orderDocData?.total ?? 0;
+    const effectiveItems = orderDocData?.items || [];
+    const effectivePayment = orderDocData?.paymentMethod || 'COD';
 
     if (effectiveUserId && db.hasCredentials) {
       const statusLabels = {
@@ -685,8 +586,8 @@ async function handleAdminOrderStatus(req, res) {
       emailSent: emailResult?.success ?? false,
     });
   } catch (error) {
-    console.error('Order notify status error:', error);
-    return res.status(500).json({ success: false, message: error.message });
+    if (!error.statusCode) console.error('Order notify status error:', error);
+    return res.status(error.statusCode || 500).json({ success: false, message: error.message });
   }
 }
 
@@ -785,6 +686,9 @@ app.get('/api/admin-users', async (req, res) => {
 // POST /api/admin-dev/clear-test-data
 // D?n d?p don h�ng v� l?ch h?n th? nghi?m (reset test state)
 app.post('/api/admin-dev/clear-test-data', async (req, res) => {
+  if (process.env.LUMI_ALLOW_TEST_RESET !== 'true') {
+    return res.status(403).json({ success: false, message: 'Chức năng dọn dữ liệu thử nghiệm đang tắt.' });
+  }
   try {
     const { target = 'all' } = req.body || {};
     let deletedOrders = 0;

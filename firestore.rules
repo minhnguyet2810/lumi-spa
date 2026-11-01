@@ -1,68 +1,52 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // LUMI Journal: public published content; no app writes.
-    match /articles/{lumiArticleId} {
-      allow read: if resource.data.isPublished == true;
+    function signedIn() { return request.auth != null; }
+    function admin() { return signedIn() && request.auth.token.get('admin', false) == true; }
+    function owner() { return signedIn() && resource.data.userId == request.auth.uid; }
+    match /articles/{id} {
+      allow read: if admin() || resource.data.isPublished == true;
+      allow write: if admin();
+    }
+    match /app_config/{id} {
+      allow read: if id in ['support', 'about_lumi'] || admin();
+      allow write: if admin();
+    }
+    match /{collection}/{id} {
+      allow read: if collection in ['services', 'products', 'categories', 'banners'];
+      allow write: if collection in ['services', 'products', 'categories', 'banners'] && admin();
+    }
+    // Transactions, prices, resource locks and status changes go through the backend.
+    match /bookings/{id} { allow read: if admin() || owner(); allow write: if false; }
+    match /orders/{id} { allow read: if admin() || owner(); allow write: if false; }
+    match /notifications/{id} {
+      allow read: if admin() || owner();
+      allow create, delete: if false;
+      allow update: if owner()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isRead', 'readAt'])
+        && request.resource.data.isRead == true
+        && (!('readAt' in request.resource.data) || request.resource.data.readAt == request.time);
+    }
+    function profileValid(data) {
+      return (!('displayName' in data) || (data.displayName is string && data.displayName.size() <= 100))
+        && (!('phone' in data) || (data.phone is string && data.phone.size() <= 30))
+        && (!('fcmToken' in data) || (data.fcmToken is string && data.fcmToken.size() <= 4096))
+        && (!('fcmTokens' in data) || (data.fcmTokens is list && data.fcmTokens.size() <= 50));
+    }
+    match /users/{uid} {
+      allow read: if admin() || (signedIn() && request.auth.uid == uid);
+      allow create: if signedIn() && request.auth.uid == uid && profileValid(request.resource.data)
+        && request.resource.data.keys().hasOnly(['uid', 'displayName', 'email', 'phone', 'createdAt', 'updatedAt', 'fcmToken', 'fcmTokens', 'fcmUpdatedAt'])
+        && (!('uid' in request.resource.data) || request.resource.data.uid == uid)
+        && (!('email' in request.resource.data) || request.resource.data.email == request.auth.token.get('email', ''));
+      allow update: if signedIn() && request.auth.uid == uid && profileValid(request.resource.data)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName', 'phone', 'updatedAt', 'fcmToken', 'fcmTokens', 'fcmUpdatedAt']);
+      allow delete: if false;
+    }
+    match /memberships/{uid} {
+      allow read: if admin() || (signedIn() && request.auth.uid == uid);
       allow write: if false;
     }
-    match /app_config/about_lumi {
-      allow read: if true;
-      allow write: if false;
-    }
-
-
-    // Thông tin liên hệ công khai; ứng dụng không được sửa.
-    match /app_config/support {
-      allow read: if true;
-      allow write: if false;
-    }
-
-    
-    // 1. Quản lý Lịch hẹn Spa (Bookings)
-    // Cho phép đọc và ghi để khách hàng đặt lịch và Admin duyệt lịch real-time
-    match /bookings/{bookingId} {
-      allow read, write: if true;
-    }
-
-    // 2. Quản lý Đơn hàng mỹ phẩm (Orders)
-    // Cho phép đọc và ghi để khách hàng mua sắm và Admin duyệt đơn real-time
-    match /orders/{orderId} {
-      allow read, write: if true;
-    }
-
-    // 3. Hệ thống Thông báo In-App (Notifications)
-    // Cho phép đọc và ghi thông báo trạng thái đơn hàng & lịch hẹn
-    match /notifications/{notifId} {
-      allow read, write: if true;
-    }
-
-    // 4. Danh mục Dịch vụ, Sản phẩm & Banner (Catalog)
-    // Khách hàng và Admin đều có quyền xem (read public)
-    match /services/{serviceId} {
-      allow read: if true;
-      allow write: if true;
-    }
-    match /products/{productId} {
-      allow read: if true;
-      allow write: if true;
-    }
-    match /categories/{categoryId} {
-      allow read: if true;
-      allow write: if true;
-    }
-    match /banners/{bannerId} {
-      allow read: if true;
-      allow write: if true;
-    }
-
-    // 5. Hồ sơ người dùng (Users)
-    match /users/{userId} {
-      allow read, write: if true;
-    }
-    match /users/{userId}/{document=**} {
-      allow read, write: if true;
-    }
+    match /{document=**} { allow read, write: if false; }
   }
 }
-

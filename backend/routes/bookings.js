@@ -9,8 +9,6 @@ const pushService = require('../services/push_service');
 const router = express.Router();
 
 const VALID_HOURS = new Set([9, 10, 11, 12, 13, 14, 15, 16, 17]);
-// Bộ nhớ cục bộ khi chạy local chưa có quyền Google Cloud Firestore
-const { devBookings } = require('../dev_store');
 
 function fail(res, status, message) {
   return res.status(status).json({ success: false, message });
@@ -35,49 +33,23 @@ router.get('/slots', async (req, res) => {
       return fail(res, 400, 'Tham số date không hợp lệ (định dạng YYYY-MM-DD).');
     }
 
-    let durationMinutes = 60;
-    let categoryId = null;
-
-    if (serviceId && db.hasCredentials) {
-      try {
-        const sDoc = await db.collection('services').doc(serviceId).get();
-        if (sDoc.exists) {
-          const sData = sDoc.data();
-          durationMinutes = Number(sData.durationMinutes) || 60;
-          categoryId = sData.categoryId || null;
-        }
-      } catch (_) {}
-    }
+    if (!db.hasCredentials) return fail(res, 503, 'Chưa tải được khung giờ. Vui lòng thử lại sau.');
+    if (typeof serviceId !== 'string' || !/^[A-Za-z0-9_-]{1,100}$/.test(serviceId)) return fail(res, 400, 'Dịch vụ không hợp lệ.');
+    const sDoc = await db.collection('services').doc(serviceId).get();
+    if (!sDoc.exists || sDoc.data().isActive === false) return fail(res, 404, 'Dịch vụ không còn khả dụng.');
+    const durationMinutes = Number(sDoc.data().durationMinutes);
+    const categoryId = sDoc.data().categoryId || null;
+    if (!Number.isInteger(durationMinutes) || durationMinutes < 1 || durationMinutes > 540) return fail(res, 422, 'Thông tin dịch vụ chưa hợp lệ.');
 
     const [year, month, day] = date.split('-').map(Number);
-    const startOfDay = new Date(Date.UTC(year, month - 1, day, 0, 0, 0));
-    const endOfDay = new Date(Date.UTC(year, month - 1, day, 23, 59, 59));
+    const startOfDay = new Date(Date.UTC(year, month - 1, day, -7));
+    const endOfDay = new Date(startOfDay.getTime() + 24 * 60 * 60 * 1000 - 1);
 
-    const activeBookings = [];
-    if (!db.hasCredentials) {
-      activeBookings.push(...devBookings.filter(b => {
-        if (!b.startAt || !['pending', 'confirmed'].includes(b.status)) return false;
-        const bDate = new Date(b.startAt);
-        return bDate >= startOfDay && bDate <= endOfDay;
-      }));
-    } else {
-      try {
-        const bookingsSnap = await db.collection('bookings')
-          .where('startAt', '>=', Timestamp.fromDate(startOfDay))
-          .where('startAt', '<=', Timestamp.fromDate(endOfDay))
-          .get();
-
-        activeBookings.push(...bookingsSnap.docs
-          .map(d => d.data())
-          .filter(b => ['pending', 'confirmed'].includes(b.status)));
-      } catch (_) {
-        activeBookings.push(...devBookings.filter(b => {
-          if (!b.startAt || !['pending', 'confirmed'].includes(b.status)) return false;
-          const bDate = new Date(b.startAt);
-          return bDate >= startOfDay && bDate <= endOfDay;
-        }));
-      }
-    }
+    const bookingsSnap = await db.collection('bookings')
+      .where('startAt', '>=', Timestamp.fromDate(startOfDay))
+      .where('startAt', '<=', Timestamp.fromDate(endOfDay)).get();
+    const activeBookings = bookingsSnap.docs.map(d => d.data())
+      .filter(b => ['pending', 'confirmed', 'approved'].includes(b.status));
 
     let capacity = 2;
     if (categoryId === 'beauty') capacity = 1;
@@ -134,15 +106,13 @@ router.get('/slots', async (req, res) => {
 
 // Các API bên dưới yêu cầu Firebase ID Token
 router.use(requireAuth);
+router.use((req, res, next) => {
+  if (!db.hasCredentials) return fail(res, 503, 'LUMI chưa thể kết nối dữ liệu. Vui lòng thử lại sau.');
+  return next();
+});
 
 // GET /api/bookings
 router.get('/', async (req, res) => {
-  if (!db.hasCredentials) {
-    const userBookings = devBookings
-      .filter(b => b.userId === req.user.uid)
-      .sort((a, b) => (b.startAt || '').localeCompare(a.startAt || ''));
-    return res.json({ success: true, data: userBookings });
-  }
 
   try {
     const snapshot = await db.collection('bookings')
@@ -154,18 +124,15 @@ router.get('/', async (req, res) => {
 
     return res.json({ success: true, data: bookings });
   } catch (error) {
-    console.warn('Firestore booking query failed, using local dev store:', error.message);
-    const userBookings = devBookings
-      .filter(b => b.userId === req.user.uid)
-      .sort((a, b) => (b.startAt || '').localeCompare(a.startAt || ''));
-    return res.json({ success: true, data: userBookings });
+    console.error('Booking query failed:', error.message);
+    return fail(res, 503, 'Chưa tải được lịch hẹn. Vui lòng thử lại.');
   }
 });
 
 // POST /api/bookings
 router.post('/', async (req, res) => {
   try {
-    const { serviceId, date, hour, contactName, contactPhone, serviceName, durationMinutes: customDuration, price: customPrice, categoryId: customCategory } = req.body || {};
+    const { serviceId, date, hour, contactName, contactPhone } = req.body || {};
 
     if (
       typeof serviceId !== 'string' ||
@@ -204,49 +171,22 @@ router.post('/', async (req, res) => {
       return fail(res, 400, 'Chỉ được đặt lịch trong 60 ngày tới.');
     }
 
-    let service = {};
-    if (db.hasCredentials) {
-      try {
-        const serviceDoc = await db.collection('services').doc(serviceId).get();
-        if (serviceDoc.exists) {
-          service = serviceDoc.data();
-        }
-      } catch (_) {}
+    const serviceDoc = await db.collection('services').doc(serviceId).get();
+    if (!serviceDoc.exists || serviceDoc.data().isActive === false) {
+      return fail(res, 404, 'Dịch vụ không còn khả dụng.');
     }
-
-    const price = Number(service.price ?? customPrice ?? 0);
-    const durationMinutes = Number(service.durationMinutes ?? customDuration ?? 60);
-    const categoryId = service.categoryId ?? customCategory ?? 'general';
+    const service = serviceDoc.data();
+    const price = service.price;
+    const durationMinutes = service.durationMinutes;
+    const categoryId = service.categoryId || 'general';
+    if (!Number.isSafeInteger(price) || price < 0 ||
+        !Number.isInteger(durationMinutes) || durationMinutes < 1 || durationMinutes > 540) {
+      return fail(res, 422, 'Thông tin dịch vụ chưa hợp lệ.');
+    }
 
     // Spa hoạt động 09:00–18:00, dịch vụ phải kết thúc trước 18:00.
     if (hour * 60 + durationMinutes > 18 * 60) {
       return fail(res, 400, 'Dịch vụ phải kết thúc trước 18:00.');
-    }
-
-    if (!db.hasCredentials) {
-      const devItem = {
-        id: `book_${Date.now()}`,
-        userId: req.user.uid,
-          userEmail: req.user.email || null,
-        contactName: contactName.trim(),
-        contactPhone: contactPhone.trim(),
-        serviceId,
-        serviceName: service.name || serviceName || serviceId,
-        categoryId,
-        price,
-        durationMinutes,
-        status: 'pending',
-        startAt: startAt.toISOString(),
-        createdAt: new Date().toISOString(),
-        resourceSlotIds: [`slot_${Date.now()}`],
-      };
-      devBookings.push(devItem);
-
-      return res.status(201).json({
-        success: true,
-        data: devItem,
-        message: 'Đã tiếp nhận yêu cầu đặt lịch, đang chờ spa xác nhận.',
-      });
     }
 
     try {
@@ -256,10 +196,11 @@ router.post('/', async (req, res) => {
         bookingRef,
         bookingData: {
           userId: req.user.uid,
+          contactEmail: req.user.email || null,
           contactName: contactName.trim(),
           contactPhone: contactPhone.trim(),
           serviceId,
-          serviceName: service.name || serviceName || serviceId,
+          serviceName: service.name || serviceId,
           categoryId,
           price,
           durationMinutes,
@@ -275,7 +216,7 @@ router.post('/', async (req, res) => {
         customerName: contactName.trim(),
         customerPhone: contactPhone.trim(),
         bookingId: bId,
-        serviceName: service.name || serviceName || serviceId,
+        serviceName: service.name || serviceId,
         startAt,
         durationMinutes,
         price,
@@ -284,7 +225,7 @@ router.post('/', async (req, res) => {
       pushService.sendBookingCreatedPush({
         userId: req.user.uid,
         bookingId: bId,
-        serviceName: service.name || serviceName || serviceId,
+        serviceName: service.name || serviceId,
         date,
         hour,
       }).catch(err => console.error('Booking push error:', err));
@@ -293,7 +234,7 @@ router.post('/', async (req, res) => {
         db.collection('notifications').add({
           userId: req.user.uid,
           title: 'Đã gửi yêu cầu đặt lịch hẹn 🌸',
-          message: 'Lịch hẹn "' + (service.name || serviceName || serviceId) + '" (' + date + ' lúc ' + hour + ':00) đang chờ lễ tân xác nhận.',
+          message: 'Lịch hẹn "' + (service.name || serviceId) + '" (' + date + ' lúc ' + hour + ':00) đang chờ lễ tân xác nhận.',
           type: 'appointment',
           isRead: false,
           createdAt: FieldValue.serverTimestamp(),
@@ -302,37 +243,15 @@ router.post('/', async (req, res) => {
 
       return res.status(201).json({
         success: true,
-        data: result,
+        data: bookingData(await bookingRef.get()),
         message: 'Đã tiếp nhận yêu cầu đặt lịch, đang chờ spa xác nhận.',
       });
     } catch (reserveError) {
       if (reserveError.code === 'SLOT_TAKEN' || reserveError.code === 'NO_RESOURCES') {
         return fail(res, 409, reserveError.message);
       }
-      console.warn('Firestore transaction unavailable, storing in devBookings:', reserveError.message);
-
-      const devItem = {
-        id: `book_${Date.now()}`,
-        userId: req.user.uid,
-        contactName: contactName.trim(),
-        contactPhone: contactPhone.trim(),
-        serviceId,
-        serviceName: service.name || serviceName || serviceId,
-        categoryId,
-        price,
-        durationMinutes,
-        status: 'pending',
-        startAt: startAt.toISOString(),
-        createdAt: new Date().toISOString(),
-        resourceSlotIds: [`slot_${Date.now()}`],
-      };
-      devBookings.push(devItem);
-
-      return res.status(201).json({
-        success: true,
-        data: devItem,
-        message: 'Đã tiếp nhận yêu cầu đặt lịch, đang chờ spa xác nhận.',
-      });
+      console.error('Booking transaction failed:', reserveError.message);
+      return fail(res, 503, 'Chưa thể xác nhận việc đặt lịch. Vui lòng kiểm tra lịch hẹn trước khi thử lại.');
     }
   } catch (error) {
     console.error('Booking create error:', error);
@@ -343,16 +262,6 @@ router.post('/', async (req, res) => {
 // PATCH /api/bookings/:id/cancel
 router.patch('/:id/cancel', async (req, res) => {
   try {
-    if (!db.hasCredentials) {
-      const localItem = devBookings.find(b => b.id === req.params.id && b.userId === req.user.uid);
-      if (localItem) {
-        localItem.status = 'cancelled';
-        localItem.cancelledAt = new Date().toISOString();
-        return res.json({ success: true, message: 'Đã hủy lịch hẹn thành công.' });
-      }
-      return fail(res, 404, 'Không tìm thấy lịch hẹn.');
-    }
-
     const bookingRef = db.collection('bookings').doc(req.params.id);
 
     try {
@@ -405,12 +314,6 @@ router.patch('/:id/cancel', async (req, res) => {
         return fail(res, 400, txError.message);
       }
 
-      const localItem = devBookings.find(b => b.id === req.params.id && b.userId === req.user.uid);
-      if (localItem) {
-        localItem.status = 'cancelled';
-        localItem.cancelledAt = new Date().toISOString();
-        return res.json({ success: true, message: 'Đã hủy lịch hẹn thành công.' });
-      }
       throw txError;
     }
   } catch (error) {

@@ -20,40 +20,62 @@ class LumiMyOrdersScreen extends StatefulWidget {
 
 class _LumiMyOrdersScreenState extends State<LumiMyOrdersScreen> {
   StreamSubscription? _ordersSub;
+  StreamSubscription<User?>? _authSub;
+  int _accountGeneration = 0;
 
   @override
   void initState() {
     super.initState();
-    _listenFirestoreOrders();
+    _authSub = FirebaseAuth.instance.authStateChanges().listen(
+      (_) => _listenFirestoreOrders(),
+    );
   }
 
   @override
   void dispose() {
+    _accountGeneration++;
     _ordersSub?.cancel();
+    _authSub?.cancel();
     super.dispose();
   }
 
   void _listenFirestoreOrders() {
-    try {
-      final user = FirebaseAuth.instance.currentUser;
-      final query = (user != null && user.uid.isNotEmpty)
-          ? FirebaseFirestore.instance
-                .collection('orders')
-                .where('userId', isEqualTo: user.uid)
-          : FirebaseFirestore.instance.collection('orders');
-
-      _ordersSub = query.snapshots().listen(
-        (snapshot) {
-          for (final doc in snapshot.docs) {
-            LumiOrderStore.syncOrderFromFirestore(doc.data(), doc.id);
-          }
-          if (mounted) setState(() {});
-        },
-        onError: (e) {
-          debugPrint('Firestore orders stream error: $e');
-        },
-      );
-    } catch (_) {}
+    final generation = ++_accountGeneration;
+    _ordersSub?.cancel();
+    LumiOrderStore.orders.clear();
+    if (mounted) {
+      setState(() {});
+    }
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      return;
+    }
+    _ordersSub = FirebaseFirestore.instance
+        .collection('orders')
+        .where('userId', isEqualTo: user.uid)
+        .snapshots()
+        .listen(
+          (snapshot) {
+            if (!mounted ||
+                generation != _accountGeneration ||
+                FirebaseAuth.instance.currentUser?.uid != user.uid) {
+              return;
+            }
+            LumiOrderStore.orders.clear();
+            for (final doc in snapshot.docs) {
+              LumiOrderStore.syncOrderFromFirestore(doc.data(), doc.id);
+            }
+            setState(() {});
+          },
+          onError: (Object error) {
+            if (!mounted || generation != _accountGeneration) {
+              return;
+            }
+            LumiOrderStore.orders.clear();
+            setState(() {});
+            debugPrint('Cannot load own orders: $error');
+          },
+        );
   }
 
   static const rose = Color(0xFFA5553E);

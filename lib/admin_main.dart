@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 
 import 'core/theme/lumi_style.dart';
+import 'features/admin/presentation/screens/admin_access_gate.dart';
 import 'features/admin/presentation/screens/admin_portal_hub_screen.dart';
 import 'firebase_options.dart';
 
@@ -28,6 +29,9 @@ class LumiAdminApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: LumiStyle.theme.copyWith(scaffoldBackgroundColor: LumiStyle.ivory),
       home: const AdminPortalHubScreen(),
+      builder: (context, child) => Overlay.wrap(
+        child: AdminAccessGate(child: child ?? const SizedBox.shrink()),
+      ),
     );
   }
 }

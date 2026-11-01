@@ -1,16 +1,12 @@
 import '../../../../core/theme/lumi_adaptive.dart';
 
-import 'dart:convert';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../core/data/lumi_order_store.dart';
-import '../../../../core/network/api_config.dart';
+import '../../../../core/network/lumi_api_client.dart';
 import 'lumi_order_success_screen.dart';
 import 'lumi_shop_catalog.dart';
 
@@ -35,9 +31,11 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
   static const bankAccount = '104882453416';
   static const bankOwner = 'Nha Doan LUMI SPA';
 
-  static const savedNameKey = 'lumi_customer_name';
-  static const savedPhoneKey = 'lumi_customer_phone';
-  static const savedAddressKey = 'lumi_customer_address';
+  String get _customerScope =>
+      FirebaseAuth.instance.currentUser?.uid ?? 'guest';
+  String get savedNameKey => 'lumi_customer_name_$_customerScope';
+  String get savedPhoneKey => 'lumi_customer_phone_$_customerScope';
+  String get savedAddressKey => 'lumi_customer_address_$_customerScope';
 
   final _formKey = GlobalKey<FormState>();
 
@@ -65,9 +63,10 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
   }
 
   Future<void> _loadSavedCustomerInfo() async {
+    final scope = _customerScope;
     final prefs = await SharedPreferences.getInstance();
 
-    if (!mounted) {
+    if (!mounted || scope != _customerScope) {
       return;
     }
 
@@ -85,11 +84,14 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
     required String phone,
     required String address,
   }) async {
+    final scope = _customerScope;
     final prefs = await SharedPreferences.getInstance();
-
-    await prefs.setString(savedNameKey, name);
-    await prefs.setString(savedPhoneKey, phone);
-    await prefs.setString(savedAddressKey, address);
+    if (scope != _customerScope) {
+      return;
+    }
+    await prefs.setString('lumi_customer_name_$scope', name);
+    await prefs.setString('lumi_customer_phone_$scope', phone);
+    await prefs.setString('lumi_customer_address_$scope', address);
   }
 
   num get subtotal {
@@ -502,10 +504,8 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
 
     await Future<void>.delayed(const Duration(milliseconds: 500));
 
-    final orderId =
-        'LUMI-${DateTime.now().millisecondsSinceEpoch.toString().substring(6)}';
-
-    final orderTotal = grandTotal;
+    late String orderId;
+    late num orderTotal;
     final now = DateTime.now();
 
     final formattedDate =
@@ -513,7 +513,7 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
         '${now.month.toString().padLeft(2, '0')}/'
         '${now.year}';
 
-    final items = widget.cartItems.map((item) {
+    var items = widget.cartItems.map((item) {
       return <String, dynamic>{
         'productId':
             item.product['id']?.toString() ??
@@ -525,7 +525,6 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
       };
     }).toList();
 
-    final user = FirebaseAuth.instance.currentUser;
     final customerName = _nameController.text.trim();
     final customerPhone = _phoneController.text.trim();
     final customerAddress = _addressController.text.trim();
@@ -536,23 +535,30 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
         : 'Thanh toán khi nhận hàng (COD)';
 
     try {
-      await FirebaseFirestore.instance.collection('orders').doc(orderId).set({
-        'id': orderId,
-        'orderId': orderId,
-        'customerName': customerName,
-        'customerEmail': user?.email ?? '',
-        'phone': customerPhone,
-        'shippingAddress': customerAddress,
-        'note': customerNote,
-        'total': orderTotal,
-        'formattedTotal': _money(orderTotal),
-        'paymentMethod': paymentMethodLabel,
-        'status': 'pending',
-        'items': items,
-        'userId': user?.uid ?? '',
-        'createdAt': FieldValue.serverTimestamp(),
-        'updatedAt': FieldValue.serverTimestamp(),
-      });
+      final response = await LumiApiClient.instance.post(
+        '/api/orders',
+        body: {
+          'items': items
+              .map(
+                (item) => {
+                  'productId': item['productId'],
+                  'quantity': item['quantity'],
+                },
+              )
+              .toList(),
+          'customerName': customerName,
+          'phone': customerPhone,
+          'shippingAddress': customerAddress,
+          'note': customerNote,
+          'paymentMethod': _paymentMethod,
+        },
+      );
+      final receipt = Map<String, dynamic>.from(response['data'] as Map);
+      orderId = receipt['id'] as String;
+      orderTotal = receipt['total'] as num;
+      items = (receipt['items'] as List)
+          .map((item) => Map<String, dynamic>.from(item as Map))
+          .toList();
     } catch (error) {
       debugPrint('Lưu đơn hàng thất bại: $error');
 
@@ -596,30 +602,6 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
       items: items,
       paymentMethod: paymentMethodLabel,
     );
-
-    try {
-      final url = Uri.parse(
-        '${ApiConfig.baseUrl}/api/orders/$orderId/notify-status',
-      );
-
-      await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'status': 'pending',
-          'customerEmail': user?.email ?? 'lumispa.project@gmail.com',
-          'customerName': customerName,
-          'items': items,
-          'total': orderTotal,
-          'shippingAddress': customerAddress,
-          'phone': customerPhone,
-          'paymentMethod': paymentMethodLabel,
-          'userId': user?.uid ?? '',
-        }),
-      );
-    } catch (error) {
-      debugPrint('Gửi thông báo đơn hàng thất bại: $error');
-    }
 
     LumiShopCatalog.clearCart();
 

@@ -3,7 +3,8 @@ import '../../../../core/theme/lumi_adaptive.dart';
 
 import 'dart:convert';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../../../core/network/lumi_api_client.dart';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -320,8 +321,8 @@ class _LumiOrderDetailScreenState extends State<LumiOrderDetailScreen> {
     final orderId = widget.order['id'] ?? '';
 
     try {
-      await FirebaseFirestore.instance.collection('orders').doc(orderId).update(
-        {'status': 'cancelled', 'updatedAt': FieldValue.serverTimestamp()},
+      await LumiApiClient.instance.patch(
+        '/api/orders/${Uri.encodeComponent(orderId)}/cancel',
       );
 
       LumiOrderStore.cancelOrder(orderId);

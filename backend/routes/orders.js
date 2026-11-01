@@ -104,7 +104,12 @@ router.get('/:id', async (req, res) => {
 // POST /api/orders
 router.post('/', async (req, res) => {
   try {
-    const { items, shippingAddress, phone } = req.body || {};
+    const { items, shippingAddress, phone, customerName = '', note = '', paymentMethod = 'cod' } = req.body || {};
+    if (typeof customerName !== 'string' || customerName.trim().length > 100 ||
+        typeof note !== 'string' || note.length > 1000 || !['cod', 'bank'].includes(paymentMethod)) {
+      return fail(res, 400, 'Thông tin đơn hàng không hợp lệ.');
+    }
+    const paymentLabel = paymentMethod === 'bank' ? 'Chuyển khoản ngân hàng' : 'Thanh toán khi nhận hàng (COD)';
 
     if (!Array.isArray(items) || items.length < 1 || items.length > 30) {
       return fail(res, 400, 'Giỏ hàng không hợp lệ.');
@@ -185,14 +190,16 @@ router.post('/', async (req, res) => {
         orderItems.push({
           productId: id,
           productName: product.name || id,
+          name: product.name || id,
+          price: unitPrice,
           quantity,
           unitPrice,
           subtotal: lineTotal,
         });
       }
 
-      // MVP: free shipping, COD only.
-      const shippingFee = 0;
+      // Same shipping policy as checkout; calculated from trusted catalogue prices.
+      const shippingFee = subtotal >= 500000 ? 0 : 30000;
       const total = subtotal + shippingFee;
 
       for (let i = 0; i < docs.length; i++) {
@@ -205,6 +212,12 @@ router.post('/', async (req, res) => {
       }
 
       tx.create(orderRef, {
+        id: orderRef.id,
+        orderId: orderRef.id,
+        customerName: customerName.trim() || req.user.name || '',
+        customerEmail: req.user.email || '',
+        note: note.trim(),
+        inventoryReserved: true,
         userId: req.user.uid,
         items: orderItems,
         shippingAddress: shippingAddress.trim(),
@@ -212,7 +225,7 @@ router.post('/', async (req, res) => {
         subtotal,
         shippingFee,
         total,
-        paymentMethod: 'COD',
+        paymentMethod: paymentLabel,
         paymentStatus: 'unpaid',
         status: 'pending',
         createdAt: FieldValue.serverTimestamp(),
@@ -234,7 +247,7 @@ router.post('/', async (req, res) => {
 
         await mailService.sendOrderSuccessEmail({
           to: customerEmail,
-          customerName: req.user.name || phone.trim(),
+          customerName: customerName.trim() || req.user.name || phone.trim(),
           orderId: result.id,
           items: result.items,
           subtotal: result.subtotal,
@@ -242,7 +255,7 @@ router.post('/', async (req, res) => {
           total: result.total,
           shippingAddress: shippingAddress.trim(),
           phone: phone.trim(),
-          paymentMethod: 'COD',
+          paymentMethod: paymentLabel,
         });
 
         if (req.user.uid) {
@@ -269,7 +282,7 @@ router.post('/', async (req, res) => {
 
     return res.status(201).json({
       success: true,
-      data: { ...result, status: 'pending', paymentMethod: 'COD' },
+      data: { ...result, status: 'pending', paymentMethod: paymentLabel },
     });
   } catch (error) {
     const known = {
@@ -304,20 +317,22 @@ router.patch('/:id/cancel', async (req, res) => {
       }
 
       const items = order.data().items || [];
-      const refs = items.map(item =>
+      // Historical client-created orders did not decrement inventory.
+      const inventoryItems = order.data().inventoryReserved === true ? items : [];
+      const refs = inventoryItems.map(item =>
         db.collection('products').doc(item.productId)
       );
 
       const docs = refs.length ? await tx.getAll(...refs) : [];
 
-      for (let i = 0; i < items.length; i++) {
+      for (let i = 0; i < inventoryItems.length; i++) {
         if (
           docs[i].exists &&
           docs[i].data().stock !== undefined &&
           docs[i].data().stock !== null
         ) {
           tx.update(refs[i], {
-            stock: FieldValue.increment(items[i].quantity),
+            stock: FieldValue.increment(inventoryItems[i].quantity),
           });
         }
       }

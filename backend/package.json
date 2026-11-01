@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "test:permissions": "node --test tests/permissions_test.js",
+    "test:rules": "node --test tests/permissions_rules_test.js"
   },
   "keywords": [],
   "author": "",
@@ -19,7 +21,9 @@
     "nodemailer": "^10.3.1"
   },
   "devDependencies": {
-    "supertest": "^7.3.1"
+    "supertest": "^7.3.1",
+    "@firebase/rules-unit-testing": "^6.0.0",
+    "firebase": "^13.1.0"
   },
   "engines": {
     "node": "22"

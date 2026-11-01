@@ -1,5 +1,3 @@
-import 'dart:io' show Platform;
-
 import 'package:flutter/foundation.dart';
 
 /// Centralized API configuration for LUMI SPA.
@@ -16,7 +14,11 @@ class ApiConfig {
     if (_customBaseUrl != null && _customBaseUrl!.isNotEmpty) {
       return _customBaseUrl!;
     }
-    if (!kIsWeb && Platform.isAndroid) {
+    const configured = String.fromEnvironment('LUMI_API_BASE_URL');
+    if (configured.isNotEmpty) {
+      return configured;
+    }
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
       return 'http://10.0.2.2:3000';
     }
     return 'http://localhost:3000';

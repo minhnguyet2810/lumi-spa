@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/theme/lumi_style.dart';
@@ -33,7 +32,9 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
   }
 
   Future<void> _fetchFallbackApi() async {
-    if (_isFetchingFallback) return;
+    if (_isFetchingFallback) {
+      return;
+    }
     setState(() {
       _isFetchingFallback = true;
       _fallbackFailed = false;
@@ -41,14 +42,18 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
 
     try {
       final list = await AdminOrderRepository.instance.fetchOrdersFromApi();
-      if (!mounted) return;
+      if (!mounted) {
+        return;
+      }
       setState(() {
         _fallbackApiOrders = list;
         _isFetchingFallback = false;
         _fallbackFailed = list.isEmpty;
       });
     } catch (_) {
-      if (!mounted) return;
+      if (!mounted) {
+        return;
+      }
       setState(() {
         _isFetchingFallback = false;
         _fallbackFailed = true;
@@ -57,107 +62,17 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
   }
 
   void _showRulesGuideDialog() {
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: LumiStyle.ivory,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text(
-          'Cấu hình Firestore Security Rules',
-          style: GoogleFonts.cormorantGaramond(
-            fontSize: 22,
-            fontWeight: FontWeight.w700,
-            color: LumiStyle.plum,
-          ),
-        ),
-        content: SizedBox(
-          width: 520,
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Khi chưa đăng nhập tài khoản Firebase hoặc Security Rules bị khóa, Firestore sẽ báo lỗi [permission-denied].',
-                  style: GoogleFonts.dmSans(fontSize: 13, height: 1.4),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  '👉 Các bước khắc phục:',
-                  style: GoogleFonts.dmSans(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: LumiStyle.plum,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  '1. Truy cập Firebase Console -> Firestore Database -> Thẻ Rules.\n'
-                  '2. Dán nội dung quy tắc bên dưới và nhấn "Publish" (Xuất bản).\n'
-                  '3. Hệ thống sẽ ngay lập tức cho phép đọc/ghi real-time!',
-                  style: GoogleFonts.dmSans(
-                    fontSize: 12,
-                    height: 1.5,
-                    color: LumiStyle.muted,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.04),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.black12),
-                  ),
-                  child: SelectableText('''rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /bookings/{id} { allow read, write: if true; }
-    match /orders/{id} { allow read, write: if true; }
-    match /notifications/{id} { allow read, write: if true; }
-    match /{document=**} { allow read, write: if true; }
-  }
-}''', style: GoogleFonts.spaceMono(fontSize: 11)),
-                ),
-              ],
-            ),
-          ),
+        title: const Text('Kiểm tra quyền quản trị'),
+        content: const Text(
+          'Đăng nhập bằng tài khoản đã được cấp quyền admin, sau đó chọn Làm mới quyền. Nếu vẫn không tải được dữ liệu, hãy kiểm tra kết nối máy chủ hoặc liên hệ người quản lý hệ thống.',
         ),
         actions: [
           TextButton(
-            onPressed: () {
-              Clipboard.setData(
-                const ClipboardData(
-                  text: '''rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /bookings/{id} { allow read, write: if true; }
-    match /orders/{id} { allow read, write: if true; }
-    match /notifications/{id} { allow read, write: if true; }
-    match /{document=**} { allow read, write: if true; }
-  }
-}''',
-                ),
-              );
-              Navigator.of(ctx).pop();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Đã sao chép nội dung Rules vào bộ nhớ tạm!'),
-                ),
-              );
-            },
-            child: Text(
-              'Sao chép Rules',
-              style: GoogleFonts.dmSans(
-                fontWeight: FontWeight.w700,
-                color: LumiStyle.rose,
-              ),
-            ),
-          ),
-          FilledButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            style: FilledButton.styleFrom(backgroundColor: LumiStyle.plum),
-            child: Text('Đóng', style: GoogleFonts.dmSans()),
+            child: const Text('Đã hiểu'),
           ),
         ],
       ),
@@ -172,7 +87,7 @@ service cloud.firestore {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
           'Duyệt đơn hàng?',
-          style: GoogleFonts.cormorantGaramond(
+          style: GoogleFonts.dmSans(
             fontSize: 22,
             fontWeight: FontWeight.w700,
             color: LumiStyle.plum,
@@ -202,14 +117,18 @@ service cloud.firestore {
       ),
     );
 
-    if (confirmed != true || !mounted) return;
+    if (confirmed != true || !mounted) {
+      return;
+    }
 
     try {
       await AdminOrderRepository.instance.updateOrderStatus(
         order: order,
         newStatus: 'confirmed',
       );
-      if (!mounted) return;
+      if (!mounted) {
+        return;
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -223,7 +142,9 @@ service cloud.firestore {
         _fetchFallbackApi();
       }
     } catch (e) {
-      if (!mounted) return;
+      if (!mounted) {
+        return;
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Lỗi khi duyệt đơn: $e'),
@@ -240,7 +161,9 @@ service cloud.firestore {
       builder: (_) => AdminOrderCancelDialog(order: order),
     );
 
-    if (reason == null || !mounted) return;
+    if (reason == null || !mounted) {
+      return;
+    }
 
     try {
       await AdminOrderRepository.instance.updateOrderStatus(
@@ -248,7 +171,9 @@ service cloud.firestore {
         newStatus: 'cancelled',
         reason: reason,
       );
-      if (!mounted) return;
+      if (!mounted) {
+        return;
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -262,7 +187,9 @@ service cloud.firestore {
         _fetchFallbackApi();
       }
     } catch (e) {
-      if (!mounted) return;
+      if (!mounted) {
+        return;
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Lỗi khi hủy đơn: $e'),
@@ -284,7 +211,9 @@ service cloud.firestore {
         newStatus: newStatus,
         reason: reason,
       );
-      if (!mounted) return;
+      if (!mounted) {
+        return;
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -298,7 +227,9 @@ service cloud.firestore {
         _fetchFallbackApi();
       }
     } catch (e) {
-      if (!mounted) return;
+      if (!mounted) {
+        return;
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Lỗi cập nhật: $e'),
@@ -434,7 +365,7 @@ service cloud.firestore {
               minimumSize: Size.zero,
             ),
             child: Text(
-              'Cách sửa Rules',
+              'Kiểm tra quyền',
               style: GoogleFonts.dmSans(
                 fontWeight: FontWeight.w700,
                 fontSize: 11,
@@ -506,7 +437,7 @@ service cloud.firestore {
                     const SizedBox(height: 12),
                     Text(
                       'Lỗi kết nối đơn hàng Firestore',
-                      style: GoogleFonts.cormorantGaramond(
+                      style: GoogleFonts.dmSans(
                         fontSize: 22,
                         fontWeight: FontWeight.w700,
                         color: LumiStyle.plum,
@@ -544,7 +475,7 @@ service cloud.firestore {
                           onPressed: _showRulesGuideDialog,
                           icon: const Icon(Icons.security_rounded, size: 16),
                           label: Text(
-                            'Cách sửa Rules',
+                            'Kiểm tra quyền',
                             style: GoogleFonts.dmSans(),
                           ),
                         ),
@@ -594,8 +525,8 @@ service cloud.firestore {
                       children: [
                         if (isUsingFallback) _buildFallbackNoticeBanner(),
 
-                        // KPI Quick Stats Row
-                        Row(
+                        // Responsive summary cards
+                        _statGrid(
                           children: [
                             _buildStatCard(
                               title: 'Chờ duyệt',
@@ -781,7 +712,7 @@ service cloud.firestore {
                             const SizedBox(height: 16),
                             Text(
                               'Không có đơn hàng nào phù hợp',
-                              style: GoogleFonts.cormorantGaramond(
+                              style: GoogleFonts.dmSans(
                                 fontSize: 20,
                                 fontWeight: FontWeight.w700,
                                 color: LumiStyle.plum,
@@ -839,66 +770,93 @@ service cloud.firestore {
     );
   }
 
+  Widget _statGrid({required List<Widget> children}) {
+    final cards = children.where((widget) => widget is! SizedBox).toList();
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final columns = constraints.maxWidth >= 720
+            ? 4
+            : (constraints.maxWidth >= 240 ? 2 : 1);
+        final width = (constraints.maxWidth - (columns - 1) * 12) / columns;
+        return Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: [
+            for (final card in cards) SizedBox(width: width, child: card),
+          ],
+        );
+      },
+    );
+  }
+
   Widget _buildStatCard({
     required String title,
     required int count,
     required Color color,
     required IconData icon,
   }) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: LumiStyle.line),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.02),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
+    return Container(
+      padding: const EdgeInsets.all(15),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [color.withValues(alpha: 0.07), Colors.white],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(21),
+        border: Border.all(color: color.withValues(alpha: 0.13)),
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: 0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(11),
+                ),
+                child: Icon(icon, color: color, size: 20),
               ),
-              child: Icon(icon, color: color, size: 20),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: GoogleFonts.dmSans(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: LumiStyle.muted,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    '$count',
-                    style: GoogleFonts.cormorantGaramond(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w700,
-                      color: LumiStyle.plum,
+              const SizedBox(width: 8),
+              Expanded(
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      '$count',
+                      style: GoogleFonts.dmSans(
+                        fontSize: 28,
+                        height: 1,
+                        fontWeight: FontWeight.w800,
+                        color: const Color(0xFF403735),
+                      ),
                     ),
                   ),
-                ],
+                ),
               ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            title,
+            style: GoogleFonts.dmSans(
+              fontSize: 12,
+              height: 1.4,
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFF756863),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -12,6 +15,38 @@ class LumiMyOrdersScreen extends StatefulWidget {
 }
 
 class _LumiMyOrdersScreenState extends State<LumiMyOrdersScreen> {
+  StreamSubscription? _ordersSub;
+
+  @override
+  void initState() {
+    super.initState();
+    _listenFirestoreOrders();
+  }
+
+  @override
+  void dispose() {
+    _ordersSub?.cancel();
+    super.dispose();
+  }
+
+  void _listenFirestoreOrders() {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      final query = (user != null && user.uid.isNotEmpty)
+          ? FirebaseFirestore.instance.collection('orders').where('userId', isEqualTo: user.uid)
+          : FirebaseFirestore.instance.collection('orders');
+
+      _ordersSub = query.snapshots().listen((snapshot) {
+        for (final doc in snapshot.docs) {
+          LumiOrderStore.syncOrderFromFirestore(doc.data(), doc.id);
+        }
+        if (mounted) setState(() {});
+      }, onError: (e) {
+        debugPrint('Firestore orders stream error: $e');
+      });
+    } catch (_) {}
+  }
+
   static const rose = Color(0xFFB56F86);
   static const ink = Color(0xFF503B42);
   static const muted = Color(0xFF78676B);
@@ -24,6 +59,7 @@ class _LumiMyOrdersScreenState extends State<LumiMyOrdersScreen> {
   final List<String> statuses = [
     'Tất cả',
     'Chờ xác nhận',
+    'Đã xác nhận',
     'Đang giao',
     'Đã giao',
     'Đã hủy',
@@ -47,6 +83,9 @@ class _LumiMyOrdersScreenState extends State<LumiMyOrdersScreen> {
     switch (status) {
       case 'Đã giao':
         return Colors.green.shade700;
+      case 'Đã xác nhận':
+      case 'Đã duyệt':
+        return const Color(0xFF2563EB);
       case 'Đã hủy':
         return Colors.red.shade700;
       case 'Đang giao':

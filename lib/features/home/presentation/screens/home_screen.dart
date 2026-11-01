@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'lumi_booking_screen.dart';
 import 'spa_catalog.dart';
 import 'lumi_shop_catalog.dart';
@@ -12,10 +14,12 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/session/session_store.dart';
+import '../../../../core/services/fcm_service.dart';
 import '../../../../core/theme/lumi_style.dart';
 
 import 'lumi_appointments_screen.dart';
 import '../../../../core/data/lumi_catalog_repository.dart';
+import '../../../profile/presentation/screens/profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -37,11 +41,16 @@ class _HomeScreenState extends State<HomeScreen> {
   late Future<List<Map<String, dynamic>>> _servicesFuture;
   late Future<List<Map<String, dynamic>>> _productsFuture;
 
-  static const _pink = Color(0xFFD98B99);
+  static const _pink = LumiStyle.rose;
   static const _softPink = Color(0xFFF2BDCB);
   static const _blue = Color(0xFF8AA6BF);
   static const _ink = Color(0xFF493C46);
   static const _canvas = Color(0xFFFFFAF9);
+  static const _muted = LumiStyle.muted;
+
+  int _unreadNotifCount = 0;
+  StreamSubscription? _notifSubscription;
+  final Set<String> _seenNotifIds = {};
 
   @override
   void initState() {
@@ -49,6 +58,171 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadSession();
     _servicesFuture = _fetchServices();
     _productsFuture = _fetchProducts();
+    _listenToRealtimeNotifications();
+
+    // Lắng nghe Push Notification khi người dùng đang mở app (Foreground)
+    FcmService.instance.onForegroundMessage = (message) {
+      final notif = message.notification;
+      if (notif != null && mounted) {
+        _showHeadsUpNotification(
+          title: notif.title ?? 'LUMI SPA',
+          message: notif.body ?? '',
+          type: message.data['type']?.toString(),
+        );
+      }
+    };
+
+    // Khi người dùng bấm vào Push Notification trên thanh Status Bar
+    FcmService.instance.onNotificationTap = (message) {
+      if (!mounted) return;
+      final type = message.data['type']?.toString();
+      if (type == 'appointment') {
+        setState(() => _tab = 3); // Mở tab Lịch hẹn
+      } else {
+        _openNotifications();
+      }
+    };
+  }
+
+
+  @override
+  void dispose() {
+    _notifSubscription?.cancel();
+    super.dispose();
+  }
+
+  void _listenToRealtimeNotifications() {
+    FirebaseAuth.instance.authStateChanges().listen((user) {
+      _notifSubscription?.cancel();
+      if (user == null) {
+        if (mounted) setState(() => _unreadNotifCount = 0);
+        return;
+      }
+
+      _notifSubscription = FirebaseFirestore.instance
+          .collection('notifications')
+          .where('userId', isEqualTo: user.uid)
+          .snapshots()
+          .listen((snapshot) {
+        if (!mounted) return;
+
+        for (final change in snapshot.docChanges) {
+          final data = change.doc.data();
+          if (data == null) continue;
+
+          if (change.type == DocumentChangeType.added) {
+            final docId = change.doc.id;
+            if (!_seenNotifIds.contains(docId)) {
+              _seenNotifIds.add(docId);
+              DateTime createdAt = DateTime.now();
+              if (data['createdAt'] is Timestamp) {
+                createdAt = (data['createdAt'] as Timestamp).toDate();
+              }
+              if (DateTime.now().difference(createdAt).inMinutes < 5) {
+                _showHeadsUpNotification(
+                  title: data['title']?.toString() ?? 'Thông báo từ LUMI SPA',
+                  message: data['message']?.toString() ?? '',
+                  type: data['type']?.toString(),
+                );
+              }
+            }
+          }
+        }
+
+        final totalUnread = snapshot.docs.where((d) => d.data()['isRead'] != true).length;
+        setState(() {
+          _unreadNotifCount = totalUnread;
+        });
+      }, onError: (_) {});
+    });
+  }
+
+  void _showHeadsUpNotification({
+    required String title,
+    required String message,
+    String? type,
+  }) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).hideCurrentMaterialBanner();
+    ScaffoldMessenger.of(context).showMaterialBanner(
+      MaterialBanner(
+        elevation: 8,
+        backgroundColor: const Color(0xFFFAF7F4),
+        surfaceTintColor: Colors.transparent,
+        dividerColor: const Color(0xFFF0E4E6),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        leading: Container(
+          width: 42,
+          height: 42,
+          decoration: const BoxDecoration(
+            color: Color(0xFFF4E4E8),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(
+            type == 'appointment'
+                ? Icons.calendar_month_outlined
+                : type == 'order'
+                    ? Icons.shopping_bag_outlined
+                    : Icons.notifications_active_outlined,
+            color: _rose,
+            size: 22,
+          ),
+        ),
+        content: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              title,
+              style: GoogleFonts.dmSans(
+                fontWeight: FontWeight.w700,
+                fontSize: 14,
+                color: _plum,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              message,
+              style: GoogleFonts.dmSans(
+                fontSize: 12.5,
+                color: _muted,
+                height: 1.3,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              ScaffoldMessenger.of(context).hideCurrentMaterialBanner();
+              _openNotifications();
+            },
+            child: Text(
+              'XEM',
+              style: GoogleFonts.dmSans(
+                fontWeight: FontWeight.w700,
+                color: _rose,
+                fontSize: 13,
+              ),
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.close_rounded, size: 18, color: _muted),
+            onPressed: () {
+              ScaffoldMessenger.of(context).hideCurrentMaterialBanner();
+            },
+          ),
+        ],
+      ),
+    );
+
+    Future.delayed(const Duration(seconds: 6), () {
+      if (mounted) {
+        ScaffoldMessenger.of(context).hideCurrentMaterialBanner();
+      }
+    });
   }
 
   Future<void> _loadSession() async {
@@ -1154,12 +1328,15 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _spa() => LumiSpaCatalog(
     servicesFuture: _servicesFuture,
     onRefresh: _refreshServices,
-    onBook: (service) {
-      Navigator.of(context).push(
-        MaterialPageRoute<void>(
+    onBook: (service) async {
+      final booked = await Navigator.of(context).push<bool>(
+        MaterialPageRoute<bool>(
           builder: (_) => LumiBookingScreen(service: service),
         ),
       );
+      if (booked == true && mounted) {
+        setState(() => _tab = 3);
+      }
     },
   );
 
@@ -1236,92 +1413,25 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _profile() {
-    if (!_isLoggedIn) {
-      return _protectedPage(
-        eyebrow: 'TÀI KHOẢN',
-        title: 'Không gian\ncủa riêng bạn.',
-        description:
-            'Đăng nhập để quản lý tài khoản, '
-            'lịch sử mua hàng và thông tin cá nhân.',
-        icon: Icons.person_outline,
-        action: 'quản lý tài khoản',
+  Widget _profile() => ProfileScreen(
+    isLoggedIn: _isLoggedIn,
+    isLoggingOut: _loggingOut,
+    onLogin: () {
+      context.push('/login').then((_) {
+        if (mounted) _loadSession();
+      });
+    },
+    onLogout: _logout,
+    onAppointments: () => setState(() => _tab = 3),
+    onSupport: () => _showComingSoon('Hỗ trợ và liên hệ'),
+    onOrders: () {
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => const LumiMyOrdersScreen(),
+        ),
       );
-    }
-
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(26, 32, 26, 32),
-      children: [
-        Text(
-          'TÀI KHOẢN',
-          style: GoogleFonts.dmSans(
-            fontSize: 11,
-            color: _rose,
-            letterSpacing: 2.1,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(height: 10),
-        Text('Xin chào,\n$_memberName.', style: LumiStyle.heading(size: 46)),
-        const SizedBox(height: 14),
-        Text(
-          'Không gian cá nhân của bạn tại LUMI.',
-          style: LumiStyle.body(size: 15),
-        ),
-        const SizedBox(height: 32),
-        _profileTile(
-          Icons.calendar_month_outlined,
-          'Lịch hẹn của tôi',
-          () => setState(() => _tab = 3),
-        ),
-        _profileTile(
-  Icons.shopping_bag_outlined,
-  'Đơn hàng của tôi',
-  () {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => const LumiMyOrdersScreen(),
-      ),
-    );
-  },
-),
-        _profileTile(
-          Icons.favorite_border,
-          'Yêu thích',
-          () => _showComingSoon('Danh sách yêu thích'),
-        ),
-        const SizedBox(height: 35),
-        _filledButton(
-          _loggingOut ? 'ĐANG ĐĂNG XUẤT...' : 'ĐĂNG XUẤT',
-          _loggingOut ? null : _logout,
-        ),
-        const SizedBox(height: 12),
-        Text(
-          'Bạn đang sử dụng tài khoản demo. '
-          'Xác thực tài khoản thật sẽ được tích hợp sau.',
-          style: LumiStyle.body(size: 12),
-        ),
-      ],
-    );
-  }
-
-  Widget _profileTile(IconData icon, String title, VoidCallback onTap) {
-    return Column(
-      children: [
-        const Divider(height: 20),
-        ListTile(
-          contentPadding: EdgeInsets.zero,
-          leading: Icon(icon, color: _plum),
-          title: Text(
-            title,
-            style: GoogleFonts.dmSans(fontSize: 15, color: _plum),
-          ),
-          trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: _rose),
-          onTap: onTap,
-        ),
-      ],
-    );
-  }
+    },
+  );
 
   Widget _luxuryNavItem(
     int index,
@@ -1401,7 +1511,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       backgroundColor: _canvas,
-      appBar: AppBar(
+      appBar: _tab == 4
+          ? null
+          : AppBar(
         backgroundColor: _canvas,
         elevation: 0,
         scrolledUnderElevation: 0,
@@ -1412,7 +1524,7 @@ class _HomeScreenState extends State<HomeScreen> {
             fontSize: 35,
             fontWeight: FontWeight.w600,
             color: _ink,
-          ),
+                ),
         ),
         actions: [
           // LUMI V4.1: Context-aware action for each tab.
@@ -1488,11 +1600,22 @@ class _HomeScreenState extends State<HomeScreen> {
           IconButton(
             tooltip: 'Thông báo',
             onPressed: _openNotifications,
-            icon: const Icon(
-              Icons.notifications_none_rounded,
-              color: _plum,
-              size: 26,
-            ),
+            icon: _unreadNotifCount > 0
+                ? Badge.count(
+                    count: _unreadNotifCount,
+                    backgroundColor: _rose,
+                    textColor: Colors.white,
+                    child: const Icon(
+                      Icons.notifications_active_rounded,
+                      color: _plum,
+                      size: 26,
+                    ),
+                  )
+                : const Icon(
+                    Icons.notifications_none_rounded,
+                    color: _plum,
+                    size: 26,
+                  ),
           ),
 
           const SizedBox(width: 10),

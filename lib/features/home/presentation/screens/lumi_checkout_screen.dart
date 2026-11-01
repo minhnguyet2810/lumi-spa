@@ -1,9 +1,16 @@
+import 'dart:convert';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
-import 'lumi_shop_catalog.dart';
-import 'lumi_order_success_screen.dart';
 import '../../../../core/data/lumi_order_store.dart';
+import '../../../../core/network/api_config.dart';
+import 'lumi_order_success_screen.dart';
+import 'lumi_shop_catalog.dart';
 
 class LumiCheckoutScreen extends StatefulWidget {
   const LumiCheckoutScreen({
@@ -18,7 +25,8 @@ class LumiCheckoutScreen extends StatefulWidget {
       _LumiCheckoutScreenState();
 }
 
-class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
+class _LumiCheckoutScreenState
+    extends State<LumiCheckoutScreen> {
   static const rose = Color(0xFFB56F86);
   static const ink = Color(0xFF503B42);
   static const muted = Color(0xFF78676B);
@@ -30,6 +38,10 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
   static const bankAccount = '104882453416';
   static const bankOwner = 'Nha Doan LUMI SPA';
 
+  static const savedNameKey = 'lumi_customer_name';
+  static const savedPhoneKey = 'lumi_customer_phone';
+  static const savedAddressKey = 'lumi_customer_address';
+
   final _formKey = GlobalKey<FormState>();
 
   final _nameController = TextEditingController();
@@ -40,19 +52,10 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
   bool _isSubmitting = false;
   String _paymentMethod = 'cod';
 
-  num get subtotal {
-    return widget.cartItems.fold<num>(
-      0,
-      (sum, item) => sum + item.total,
-    );
-  }
-
-  num get shippingFee {
-    return subtotal >= 500000 ? 0 : 30000;
-  }
-
-  num get grandTotal {
-    return subtotal + shippingFee;
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedCustomerInfo();
   }
 
   @override
@@ -62,6 +65,52 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
     _addressController.dispose();
     _noteController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadSavedCustomerInfo() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    if (!mounted) {
+      return;
+    }
+
+    _nameController.text =
+        prefs.getString(savedNameKey) ?? '';
+
+    _phoneController.text =
+        prefs.getString(savedPhoneKey) ?? '';
+
+    _addressController.text =
+        prefs.getString(savedAddressKey) ?? '';
+
+    setState(() {});
+  }
+
+  Future<void> _saveCustomerInfo({
+    required String name,
+    required String phone,
+    required String address,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    await prefs.setString(savedNameKey, name);
+    await prefs.setString(savedPhoneKey, phone);
+    await prefs.setString(savedAddressKey, address);
+  }
+
+  num get subtotal {
+    return widget.cartItems.fold<num>(
+      0,
+      (total, item) => total + item.total,
+    );
+  }
+
+  num get shippingFee {
+    return subtotal >= 500000 ? 0 : 30000;
+  }
+
+  num get grandTotal {
+    return subtotal + shippingFee;
   }
 
   String _money(num value) {
@@ -74,7 +123,8 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
   }
 
   String _productName(LumiCartItem item) {
-    return item.product['name']?.toString() ?? 'Sản phẩm LUMI';
+    return item.product['name']?.toString() ??
+        'Sản phẩm LUMI';
   }
 
   String? _getProductImage(LumiCartItem item) {
@@ -143,7 +193,10 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
     );
   }
 
-  Widget _sectionTitle(String title, IconData icon) {
+  Widget _sectionTitle(
+    String title,
+    IconData icon,
+  ) {
     return Row(
       children: [
         Icon(
@@ -333,7 +386,10 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
     );
   }
 
-  Widget _bankInfoRow(String label, String value) {
+  Widget _bankInfoRow(
+    String label,
+    String value,
+  ) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 9),
       child: Row(
@@ -482,7 +538,6 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
         'LUMI-${DateTime.now().millisecondsSinceEpoch.toString().substring(6)}';
 
     final orderTotal = grandTotal;
-
     final now = DateTime.now();
 
     final formattedDate =
@@ -502,19 +557,114 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
       };
     }).toList();
 
+    final user = FirebaseAuth.instance.currentUser;
+    final customerName = _nameController.text.trim();
+    final customerPhone = _phoneController.text.trim();
+    final customerAddress =
+        _addressController.text.trim();
+    final customerNote = _noteController.text.trim();
+
+    final paymentMethodLabel = _paymentMethod == 'bank'
+        ? 'Chuyển khoản ngân hàng'
+        : 'Thanh toán khi nhận hàng (COD)';
+
+    try {
+      await FirebaseFirestore.instance
+          .collection('orders')
+          .doc(orderId)
+          .set({
+        'id': orderId,
+        'orderId': orderId,
+        'customerName': customerName,
+        'customerEmail': user?.email ?? '',
+        'phone': customerPhone,
+        'shippingAddress': customerAddress,
+        'note': customerNote,
+        'total': orderTotal,
+        'formattedTotal': _money(orderTotal),
+        'paymentMethod': paymentMethodLabel,
+        'status': 'pending',
+        'items': items,
+        'userId': user?.uid ?? '',
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    } catch (error) {
+      debugPrint(
+        'Lưu đơn hàng thất bại: $error',
+      );
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _isSubmitting = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Không thể tạo đơn hàng. Vui lòng thử lại.',
+          ),
+        ),
+      );
+
+      return;
+    }
+
+    try {
+      await _saveCustomerInfo(
+        name: customerName,
+        phone: customerPhone,
+        address: customerAddress,
+      );
+    } catch (error) {
+      debugPrint(
+        'Lưu thông tin khách hàng thất bại: $error',
+      );
+    }
+
     LumiOrderStore.addOrder(
       id: orderId,
       date: formattedDate,
       total: _money(orderTotal),
-      customerName: _nameController.text.trim(),
-      phone: _phoneController.text.trim(),
-      address: _addressController.text.trim(),
-      note: _noteController.text.trim(),
+      customerName: customerName,
+      phone: customerPhone,
+      address: customerAddress,
+      note: customerNote,
       items: items,
-      paymentMethod: _paymentMethod == 'bank'
-          ? 'Chuyển khoản ngân hàng'
-          : 'Thanh toán khi nhận hàng',
+      paymentMethod: paymentMethodLabel,
     );
+
+    try {
+      final url = Uri.parse(
+        '${ApiConfig.baseUrl}/api/orders/$orderId/notify-status',
+      );
+
+      await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'status': 'pending',
+          'customerEmail':
+              user?.email ?? 'lumispa.project@gmail.com',
+          'customerName': customerName,
+          'items': items,
+          'total': orderTotal,
+          'shippingAddress': customerAddress,
+          'phone': customerPhone,
+          'paymentMethod': paymentMethodLabel,
+          'userId': user?.uid ?? '',
+        }),
+      );
+    } catch (error) {
+      debugPrint(
+        'Gửi thông báo đơn hàng thất bại: $error',
+      );
+    }
 
     LumiShopCatalog.clearCart();
 
@@ -712,7 +862,8 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
                       children: [
                         _paymentOption(
                           value: 'cod',
-                          title: 'Thanh toán khi nhận hàng',
+                          title:
+                              'Thanh toán khi nhận hàng',
                           subtitle:
                               'COD - trả tiền mặt khi nhận sản phẩm',
                           icon: Icons.local_atm_outlined,
@@ -720,7 +871,8 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
                         const SizedBox(height: 12),
                         _paymentOption(
                           value: 'bank',
-                          title: 'Chuyển khoản ngân hàng',
+                          title:
+                              'Chuyển khoản ngân hàng',
                           subtitle:
                               'Chuyển khoản trước khi nhận hàng',
                           icon: Icons.account_balance_outlined,
@@ -739,7 +891,8 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
                     padding: const EdgeInsets.all(17),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(17),
+                      borderRadius:
+                          BorderRadius.circular(17),
                       border: Border.all(color: blush),
                     ),
                     child: Column(
@@ -767,7 +920,8 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
                   _submitButton(),
                   const SizedBox(height: 12),
                   Text(
-                    'Đây là giao diện thử nghiệm. Đơn hàng chưa được lưu vào hệ thống backend.',
+                    'Đơn hàng sẽ được lưu vào hệ thống sau khi '
+                    'bạn hoàn tất đặt hàng.',
                     textAlign: TextAlign.center,
                     style: GoogleFonts.dmSans(
                       color: muted,

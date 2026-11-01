@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -50,7 +51,10 @@ class _LumiOrderDetailScreenState
       return value;
     }
 
-    return num.tryParse(value?.toString() ?? '') ?? 0;
+    return num.tryParse(
+          value?.toString() ?? '',
+        ) ??
+        0;
   }
 
   List<Map<String, dynamic>> _orderItems() {
@@ -74,14 +78,48 @@ class _LumiOrderDetailScreenState
 
   Color _statusColor(String status) {
     switch (status) {
-      case 'Đã giao':
-        return Colors.green.shade700;
-      case 'Đã hủy':
-        return Colors.red.shade700;
+      case 'Đã xác nhận':
+        return const Color(0xFF2563EB);
+
       case 'Đang giao':
         return Colors.blue.shade700;
+
+      case 'Đã giao':
+        return Colors.green.shade700;
+
+      case 'Đã hủy':
+        return Colors.red.shade700;
+
       default:
         return rose;
+    }
+  }
+
+  String _statusMessage() {
+    switch (currentStatus) {
+      case 'Chờ xác nhận':
+        return 'LUMI sẽ liên hệ với bạn để xác nhận '
+            'đơn hàng trong thời gian sớm nhất.';
+
+      case 'Đã xác nhận':
+        return 'Đơn hàng đã được xác nhận và đang được '
+            'chuẩn bị để giao đến bạn.';
+
+      case 'Đang giao':
+        return 'Đơn hàng đang trên đường giao đến bạn. '
+            'Vui lòng giữ điện thoại để nhận cuộc gọi '
+            'từ nhân viên giao hàng.';
+
+      case 'Đã giao':
+        return 'Đơn hàng đã được giao thành công. '
+            'Cảm ơn bạn đã mua sắm tại LUMI.';
+
+      case 'Đã hủy':
+        return 'Đơn hàng này đã được hủy.';
+
+      default:
+        return 'LUMI đang cập nhật thông tin '
+            'đơn hàng của bạn.';
     }
   }
 
@@ -245,7 +283,9 @@ class _LumiOrderDetailScreenState
     );
   }
 
-  Widget _productCard(Map<String, dynamic> item) {
+  Widget _productCard(
+    Map<String, dynamic> item,
+  ) {
     final name = item['name']?.toString() ??
         'Sản phẩm LUMI';
 
@@ -401,17 +441,45 @@ class _LumiOrderDetailScreenState
 
     final orderId = widget.order['id'] ?? '';
 
-    LumiOrderStore.cancelOrder(orderId);
+    try {
+      await FirebaseFirestore.instance
+          .collection('orders')
+          .doc(orderId)
+          .update({
+        'status': 'cancelled',
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
 
-    setState(() {
-      currentStatus = 'Đã hủy';
-    });
+      LumiOrderStore.cancelOrder(orderId);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Đơn hàng đã được hủy'),
-      ),
-    );
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        currentStatus = 'Đã hủy';
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Đơn hàng đã được hủy'),
+        ),
+      );
+    } catch (error) {
+      debugPrint('Cancel order error: $error');
+
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Không thể hủy đơn hàng. Vui lòng thử lại.',
+          ),
+        ),
+      );
+    }
   }
 
   Widget _cancelButton() {
@@ -496,10 +564,7 @@ class _LumiOrderDetailScreenState
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    currentStatus == 'Đã hủy'
-                        ? 'Đơn hàng này đã được hủy.'
-                        : 'LUMI sẽ liên hệ với bạn để xác nhận '
-                          'đơn hàng trong thời gian sớm nhất.',
+                    _statusMessage(),
                     style: GoogleFonts.dmSans(
                       color: ink,
                       fontSize: 13,

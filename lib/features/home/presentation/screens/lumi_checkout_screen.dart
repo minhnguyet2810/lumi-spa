@@ -7,6 +7,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../core/data/lumi_order_store.dart';
 import '../../../../core/network/lumi_api_client.dart';
+import '../../../../core/data/lumi_account_repository.dart';
+import '../../../profile/presentation/screens/addresses_screen.dart';
 import 'lumi_order_success_screen.dart';
 import 'lumi_shop_catalog.dart';
 
@@ -46,6 +48,27 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
 
   bool _isSubmitting = false;
   String _paymentMethod = 'cod';
+  LumiAddressItem? _selectedAddress;
+  bool _saveToAddressBook = true;
+
+  Future<void> _chooseAddress() async {
+    final picked = await Navigator.of(context).push<LumiAddressItem>(
+      MaterialPageRoute<LumiAddressItem>(
+        builder: (_) => AddressesScreen(
+          isSelecting: true,
+          selectedAddressId: _selectedAddress?.id,
+        ),
+      ),
+    );
+    if (picked != null && mounted) {
+      setState(() {
+        _selectedAddress = picked;
+        _nameController.text = picked.recipientName;
+        _phoneController.text = picked.phone;
+        _addressController.text = picked.displayAddress;
+      });
+    }
+  }
 
   @override
   void initState() {
@@ -703,6 +726,128 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
                     Icons.location_on_outlined,
                   ),
                   const SizedBox(height: 14),
+                  if (_selectedAddress != null)
+                    InkWell(
+                      onTap: _chooseAddress,
+                      borderRadius: BorderRadius.circular(16),
+                      child: Container(
+                        margin: const EdgeInsets.only(bottom: 14),
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: LumiAdaptive.color(Colors.white, surface: true),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: LumiAdaptive.color(rose), width: 1.2),
+                          boxShadow: [
+                            BoxShadow(
+                              color: rose.withValues(alpha: .06),
+                              blurRadius: 8,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Icon(Icons.location_on, color: LumiAdaptive.color(rose), size: 24),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Text(
+                                        LumiAdaptive.text('Địa chỉ nhận hàng (Shopee)'),
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w600,
+                                          color: LumiAdaptive.color(muted),
+                                        ),
+                                      ),
+                                      const Spacer(),
+                                      Text(
+                                        LumiAdaptive.text('Thay đổi'),
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.bold,
+                                          color: LumiAdaptive.color(rose),
+                                        ),
+                                      ),
+                                      Icon(Icons.chevron_right, size: 16, color: LumiAdaptive.color(rose)),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Row(
+                                    children: [
+                                      Text(
+                                        _selectedAddress!.recipientName,
+                                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        _selectedAddress!.phone,
+                                        style: TextStyle(fontSize: 14, color: LumiAdaptive.color(ink.withValues(alpha: .8))),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    _selectedAddress!.displayAddress,
+                                    style: TextStyle(fontSize: 13, color: LumiAdaptive.color(ink.withValues(alpha: .85))),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Row(
+                                    children: [
+                                      if (_selectedAddress!.isDefault) ...[
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFFFBE7DC),
+                                            borderRadius: BorderRadius.circular(4),
+                                            border: Border.all(color: LumiAdaptive.color(rose)),
+                                          ),
+                                          child: Text(
+                                            LumiAdaptive.text('Mặc định'),
+                                            style: TextStyle(color: LumiAdaptive.color(rose), fontSize: 10, fontWeight: FontWeight.bold),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 6),
+                                      ],
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFE6F1F5),
+                                          borderRadius: BorderRadius.circular(4),
+                                        ),
+                                        child: Text(
+                                          LumiAdaptive.text(_selectedAddress!.label),
+                                          style: const TextStyle(color: Color(0xFF406779), fontSize: 10, fontWeight: FontWeight.w600),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  else if (FirebaseAuth.instance.currentUser != null)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 14),
+                      child: OutlinedButton.icon(
+                        onPressed: _chooseAddress,
+                        icon: const Icon(Icons.location_on_outlined, size: 18),
+                        label: Text(LumiAdaptive.text('Chọn từ sổ địa chỉ nhận hàng')),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: LumiAdaptive.color(rose),
+                          side: BorderSide(color: LumiAdaptive.color(rose.withValues(alpha: .5))),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                      ),
+                    ),
                   TextFormField(
                     controller: _nameController,
                     textCapitalization: TextCapitalization.words,
@@ -755,6 +900,19 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
                       return null;
                     },
                   ),
+                  if (FirebaseAuth.instance.currentUser != null && _selectedAddress == null)
+                    CheckboxListTile(
+                      value: _saveToAddressBook,
+                      onChanged: (val) => setState(() => _saveToAddressBook = val ?? true),
+                      title: Text(
+                        LumiAdaptive.text('Lưu địa chỉ này vào sổ địa chỉ nhận hàng của tôi'),
+                        style: TextStyle(fontSize: 13, color: LumiAdaptive.color(ink)),
+                      ),
+                      dense: true,
+                      contentPadding: EdgeInsets.zero,
+                      controlAffinity: ListTileControlAffinity.leading,
+                      activeColor: LumiAdaptive.color(rose),
+                    ),
                   const SizedBox(height: 12),
                   TextFormField(
                     controller: _noteController,

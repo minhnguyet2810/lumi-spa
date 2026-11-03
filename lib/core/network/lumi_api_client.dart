@@ -1,10 +1,9 @@
 import 'dart:convert';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:http/http.dart' as http;
 
 import 'api_config.dart';
-
-import 'package:http/http.dart' as http;
 
 class LumiApiException implements Exception {
   const LumiApiException(this.message, {this.statusCode});
@@ -27,6 +26,16 @@ class LumiApiClient {
     String path, {
     Map<String, dynamic>? body,
   }) => _request('POST', path, body: body);
+
+  Future<Map<String, dynamic>> put(
+    String path, {
+    Map<String, dynamic>? body,
+  }) => _request('PUT', path, body: body);
+
+  Future<Map<String, dynamic>> delete(
+    String path, {
+    Map<String, dynamic>? body,
+  }) => _request('DELETE', path, body: body);
 
   Future<Map<String, dynamic>> patch(
     String path, {
@@ -68,6 +77,18 @@ class LumiApiClient {
       } else if (method == 'POST') {
         response = await http
             .post(uri, headers: headers, body: jsonEncode(body))
+            .timeout(_timeout);
+      } else if (method == 'PUT') {
+        response = await http
+            .put(uri, headers: headers, body: jsonEncode(body))
+            .timeout(_timeout);
+      } else if (method == 'DELETE') {
+        response = await http
+            .delete(
+              uri,
+              headers: headers,
+              body: body != null ? jsonEncode(body) : null,
+            )
             .timeout(_timeout);
       } else {
         response = await http

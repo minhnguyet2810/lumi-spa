@@ -15,6 +15,7 @@ function harness() {
         ref.get = async () => snap(ref);
         ref.update = async data => records.set(ref.path, { ...records.get(ref.path), ...data });
         ref.set = async (data, options) => records.set(ref.path, { ...(options?.merge ? records.get(ref.path) : {}), ...data });
+        ref.delete = async () => records.delete(ref.path);
         return ref;
       },
       where(field, op, value) { return collection(name, [...filters, d => d[field] === value]); },
@@ -26,7 +27,7 @@ function harness() {
       async add(data) { const ref = this.doc(); records.set(ref.path, data); return ref; },
     };
   }
-  const db = { hasCredentials: true, collection, async runTransaction(fn) {
+  const db = { hasCredentials: true, collection, batch() { const ops = []; return { update: (ref, data) => ops.push(() => records.set(ref.path, { ...records.get(ref.path), ...data })), delete: ref => ops.push(() => records.delete(ref.path)), commit: async () => ops.forEach(f => f()) }; }, async runTransaction(fn) {
     const writes = [];
     const result = await fn({ get: async ref => snap(ref), getAll: async (...refs) => refs.map(snap),
       create: (ref, data) => writes.push(() => records.set(ref.path, data)),
@@ -104,9 +105,74 @@ test('other owner booking cancellation and notification read are denied',async (
   assert.equal((await request(h.app).patch('/api/notifications/private/read').set('Authorization','Bearer customer')).status,404);
   assert.equal(h.records.get('bookings/private').status,'pending');assert.equal(h.records.get('notifications/private').isRead,false);
 });
+test('customer can delete own notification and clear all notifications', async () => {
+  const h = harness();
+  h.records.set('notifications/n1', { userId: 'alice', message: 'hello' });
+  h.records.set('notifications/n2', { userId: 'alice', message: 'world' });
+  h.records.set('notifications/n3', { userId: 'bob', message: 'other' });
+  assert.equal((await request(h.app).delete('/api/notifications/n1').set('Authorization', 'Bearer customer')).status, 200);
+  assert.equal(h.records.has('notifications/n1'), false);
+  assert.equal((await request(h.app).delete('/api/notifications').set('Authorization', 'Bearer customer')).status, 200);
+  assert.equal(h.records.has('notifications/n2'), false);
+  assert.equal(h.records.has('notifications/n3'), true);
+  assert.equal((await request(h.app).delete('/api/notifications/n3').set('Authorization', 'Bearer customer')).status, 404);
+});
 test('profile cannot self-assign role/admin/points',async () => {
   const h=harness();h.records.set('users/alice',{displayName:'Old'});const res=await request(h.app).patch('/api/me').set('Authorization','Bearer customer').send({displayName:'Alice',role:'admin',admin:true,points:99999});
   assert.equal(res.status,200);const profile=h.records.get('users/alice');assert.equal(profile.displayName,'Alice');for(const key of ['role','admin','points'])assert.equal(profile[key],undefined);
+});
+test('customer can manage shipping addresses (list, add, default, edit, delete) safely', async () => {
+  const h = harness();
+  let listRes = await request(h.app).get('/api/me/addresses').set('Authorization', 'Bearer customer');
+  assert.equal(listRes.status, 200);
+  assert.equal(listRes.body.count, 0);
+
+  const addRes1 = await request(h.app).post('/api/me/addresses').set('Authorization', 'Bearer customer').send({
+    recipientName: 'Alice Nguyen',
+    phone: '0901234567',
+    province: 'TP. Hồ Chí Minh',
+    district: 'Quận 1',
+    ward: 'Phường Bến Nghé',
+    street: '123 Lê Lợi',
+    label: 'Nhà riêng',
+  });
+  assert.equal(addRes1.status, 201);
+  const a1Id = addRes1.body.data.id;
+  assert.ok(a1Id);
+  assert.equal(h.records.get('addresses/' + a1Id).isDefault, true);
+
+  const addRes2 = await request(h.app).post('/api/me/addresses').set('Authorization', 'Bearer customer').send({
+    recipientName: 'Alice Office',
+    phone: '0909888999',
+    street: '456 Hai Bà Trưng',
+    label: 'Văn phòng',
+    isDefault: true,
+  });
+  assert.equal(addRes2.status, 201);
+  const a2Id = addRes2.body.data.id;
+  assert.equal(h.records.get('addresses/' + a2Id).isDefault, true);
+  assert.equal(h.records.get('addresses/' + a1Id).isDefault, false);
+
+  const updateRes = await request(h.app).put('/api/me/addresses/' + a1Id).set('Authorization', 'Bearer customer').send({
+    street: '123 Lê Lợi, Tầng 5',
+  });
+  assert.equal(updateRes.status, 200);
+  assert.equal(h.records.get('addresses/' + a1Id).street, '123 Lê Lợi, Tầng 5');
+
+  const defRes = await request(h.app).patch('/api/me/addresses/' + a1Id + '/default').set('Authorization', 'Bearer customer');
+  assert.equal(defRes.status, 200);
+  assert.equal(h.records.get('addresses/' + a1Id).isDefault, true);
+  assert.equal(h.records.get('addresses/' + a2Id).isDefault, false);
+
+  h.records.set('addresses/other_addr', { userId: 'bob', recipientName: 'Bob' });
+  const delOther = await request(h.app).delete('/api/me/addresses/other_addr').set('Authorization', 'Bearer customer');
+  assert.equal(delOther.status, 404);
+  assert.equal(h.records.has('addresses/other_addr'), true);
+
+  const delA1 = await request(h.app).delete('/api/me/addresses/' + a1Id).set('Authorization', 'Bearer customer');
+  assert.equal(delA1.status, 200);
+  assert.equal(h.records.has('addresses/' + a1Id), false);
+  assert.equal(h.records.get('addresses/' + a2Id).isDefault, true);
 });
 test('terminal orders cannot be resurrected by admin and reset is off by default',async () => {
   const h=harness();h.records.set('orders/done',{userId:'alice',status:'completed',items:[]});

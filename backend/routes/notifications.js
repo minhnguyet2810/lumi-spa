@@ -124,4 +124,82 @@ router.patch('/:id/read', async (req, res) => {
   }
 });
 
+// DELETE /api/notifications (Xóa tất cả thông báo của người dùng hiện tại)
+router.delete('/', async (req, res) => {
+  try {
+    let deleted = 0;
+    while (true) {
+      const snapshot = await db.collection('notifications')
+        .where('userId', '==', req.user.uid)
+        .limit(400)
+        .get();
+
+      if (snapshot.empty) break;
+
+      if (typeof db.batch === 'function') {
+        const batch = db.batch();
+        snapshot.docs.forEach(doc => {
+          batch.delete(doc.ref);
+        });
+        await batch.commit();
+      } else {
+        await Promise.all(snapshot.docs.map(doc => {
+          if (doc.ref && typeof doc.ref.delete === 'function') {
+            return doc.ref.delete();
+          }
+          return db.collection('notifications').doc(doc.id).delete();
+        }));
+      }
+      deleted += snapshot.size;
+    }
+
+    return res.json({
+      success: true,
+      message: 'Đã xóa tất cả thông báo.',
+      deleted,
+    });
+  } catch (error) {
+    console.error('Notifications delete-all error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Không thể xóa tất cả thông báo.',
+    });
+  }
+});
+
+// DELETE /api/notifications/:id (Xóa 1 thông báo cụ thể)
+router.delete('/:id', async (req, res) => {
+  try {
+    const ref = db.collection('notifications').doc(req.params.id);
+
+    await db.runTransaction(async tx => {
+      const doc = await tx.get(ref);
+
+      if (!doc.exists || doc.data().userId !== req.user.uid) {
+        throw new Error('NOT_FOUND');
+      }
+
+      tx.delete(ref);
+    });
+
+    return res.json({
+      success: true,
+      message: 'Đã xóa thông báo.',
+    });
+  } catch (error) {
+    if (error.message === 'NOT_FOUND') {
+      return res.status(404).json({
+        success: false,
+        message: 'Không tìm thấy thông báo.',
+      });
+    }
+
+    console.error('Notification delete error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Không thể xóa thông báo.',
+    });
+  }
+});
+
 module.exports = router;

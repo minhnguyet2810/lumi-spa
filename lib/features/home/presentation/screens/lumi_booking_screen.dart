@@ -420,12 +420,10 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
                         ),
                         const SizedBox(height: 24),
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Expanded(
-                              child: _heading('02', 'Chọn khung giờ'),
-                            ),
-                            if (_loadingSlots)
+                            _heading('02', 'Chọn khung giờ'),
+                            if (_loadingSlots) ...[
+                              const SizedBox(width: 10),
                               SizedBox(
                                 width: 16,
                                 height: 16,
@@ -434,6 +432,7 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
                                   color: LumiAdaptive.color(rose),
                                 ),
                               ),
+                            ],
                           ],
                         ),
                         const SizedBox(height: 6),
@@ -692,93 +691,109 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
             ),
           ),
         ],
-        Wrap(
-          spacing: 8,
-          runSpacing: 10,
-          children: slotsList.map((slot) {
-            final isSelected = _hour == slot.hour;
-            final isAvail = slot.isAvailable;
+        LayoutBuilder(
+          builder: (context, constraints) {
+            const crossAxisCount = 3;
+            const spacing = 10.0;
+            final itemWidth =
+                (constraints.maxWidth - spacing * (crossAxisCount - 1)) /
+                crossAxisCount;
 
-            Color bgColor;
-            Color borderColor;
-            Color textColor;
+            return Wrap(
+              spacing: spacing,
+              runSpacing: 10,
+              children: slotsList.map((slot) {
+                final isSelected = _hour == slot.hour;
+                final isAvail = slot.isAvailable;
 
-            if (isSelected) {
-              bgColor = blush;
-              borderColor = rose;
-              textColor = plum;
-            } else if (isAvail) {
-              bgColor = Colors.white;
-              borderColor = const Color(0xFFE5DCDA);
-              textColor = plum;
-            } else if (slot.status == SlotStatus.userConflict) {
-              bgColor = const Color(0xFFFFF3CD);
-              borderColor = const Color(0xFFFFEEBA);
-              textColor = const Color(0xFF856404);
-            } else {
-              bgColor = Colors.black.withValues(alpha: 0.03);
-              borderColor = Colors.black.withValues(alpha: 0.05);
-              textColor = Colors.grey.shade500;
-            }
+                Color bgColor;
+                Color borderColor;
+                Color textColor;
 
-            return InkWell(
-              onTap: () => _onSlotTapped(slot),
-              borderRadius: BorderRadius.circular(12),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 180),
-                width: 100,
-                padding: const EdgeInsets.symmetric(
-                  vertical: 10,
-                  horizontal: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: LumiAdaptive.color(bgColor, surface: true),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: LumiAdaptive.color(isSelected ? rose : borderColor),
-                    width: isSelected ? 1.8 : 1,
-                  ),
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      LumiAdaptive.text(slot.timeText),
-                      style: LumiAdaptive.style(
-                        GoogleFonts.dmSans(
-                          fontSize: 14,
-                          fontWeight: isSelected
-                              ? FontWeight.w700
-                              : FontWeight.w600,
-                          color: LumiAdaptive.color(textColor),
-                        ),
+                if (isSelected) {
+                  bgColor = blush;
+                  borderColor = rose;
+                  textColor = plum;
+                } else if (isAvail) {
+                  bgColor = Colors.white;
+                  borderColor = const Color(0xFFE5DCDA);
+                  textColor = plum;
+                } else if (slot.status == SlotStatus.userConflict) {
+                  bgColor = const Color(0xFFFFF3CD);
+                  borderColor = const Color(0xFFFFEEBA);
+                  textColor = const Color(0xFF856404);
+                } else {
+                  bgColor = Colors.black.withValues(alpha: 0.03);
+                  borderColor = Colors.black.withValues(alpha: 0.05);
+                  textColor = Colors.grey.shade500;
+                }
+
+                return SizedBox(
+                  width: itemWidth,
+                  child: InkWell(
+                    onTap: () => _onSlotTapped(slot),
+                    borderRadius: BorderRadius.circular(12),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 180),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 12,
+                        horizontal: 4,
                       ),
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      LumiAdaptive.text(slot.statusBadge),
-                      textAlign: TextAlign.center,
-                      style: LumiAdaptive.style(
-                        GoogleFonts.dmSans(
-                          fontSize: 10,
-                          fontWeight: isAvail
-                              ? FontWeight.w600
-                              : FontWeight.normal,
+                      decoration: BoxDecoration(
+                        color: LumiAdaptive.color(bgColor, surface: true),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
                           color: LumiAdaptive.color(
-                            isAvail
-                                ? const Color(0xFF2E7D32)
-                                : (slot.status == SlotStatus.userConflict
-                                      ? const Color(0xFF856404)
-                                      : Colors.grey.shade500),
+                            isSelected ? rose : borderColor,
                           ),
+                          width: isSelected ? 1.8 : 1,
                         ),
                       ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            LumiAdaptive.text(slot.timeText),
+                            style: LumiAdaptive.style(
+                              GoogleFonts.dmSans(
+                                fontSize: 14,
+                                fontWeight: isSelected
+                                    ? FontWeight.w700
+                                    : FontWeight.w600,
+                                color: LumiAdaptive.color(textColor),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            LumiAdaptive.text(slot.statusBadge),
+                            textAlign: TextAlign.center,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: LumiAdaptive.style(
+                              GoogleFonts.dmSans(
+                                fontSize: 10,
+                                fontWeight: isAvail
+                                    ? FontWeight.w600
+                                    : FontWeight.normal,
+                                color: LumiAdaptive.color(
+                                  isAvail
+                                      ? const Color(0xFF2E7D32)
+                                      : (slot.status == SlotStatus.userConflict
+                                            ? const Color(0xFF856404)
+                                            : Colors.grey.shade500),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ],
-                ),
-              ),
+                  ),
+                );
+              }).toList(),
             );
-          }).toList(),
+          },
         ),
         const SizedBox(height: 10),
         Wrap(
@@ -931,6 +946,7 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
     final colors = Theme.of(context).colorScheme;
     return Row(
       mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         CircleAvatar(
           radius: 18,
@@ -945,16 +961,13 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
           ),
         ),
         const SizedBox(width: 12),
-        Flexible(
-          fit: FlexFit.loose,
-          child: Text(
-            LumiAdaptive.text(title),
-            style: GoogleFonts.dmSans(
-              fontSize: 21,
-              height: 1.3,
-              color: colors.onSurface,
-              fontWeight: FontWeight.w700,
-            ),
+        Text(
+          LumiAdaptive.text(title),
+          style: GoogleFonts.dmSans(
+            fontSize: 21,
+            height: 1.3,
+            color: colors.onSurface,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ],

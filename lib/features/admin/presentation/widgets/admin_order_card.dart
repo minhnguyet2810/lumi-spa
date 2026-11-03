@@ -301,16 +301,37 @@ class AdminOrderCard extends StatelessWidget {
                   ),
                 ],
 
-                // Khi status == shipping: Hoàn tất
+                // Khi status == shipping: Đang giao hàng (Chỉ khách hàng mới có thể nhấn hoàn thành)
                 if (order.status == 'shipping' ||
                     order.status == 'delivering') ...[
-                  FilledButton.icon(
-                    onPressed: () => onUpdateStatus('completed'),
-                    icon: const Icon(Icons.done_all, size: 15),
-                    label: const Text('Đã giao'),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: const Color(0xFF16A34A),
-                      visualDensity: VisualDensity.compact,
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEFF6FF),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: const Color(0xFFBFDBFE)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.local_shipping,
+                          size: 14,
+                          color: Color(0xFF2563EB),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Đang giao hàng (Chờ khách nhận)',
+                          style: GoogleFonts.dmSans(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF1D4ED8),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],

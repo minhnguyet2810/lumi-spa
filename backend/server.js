@@ -489,7 +489,14 @@ async function handleAdminOrderStatus(req, res) {
     const { status, reason = '' } = req.body || {};
     if (typeof reason !== 'string' || reason.length > 1000) return res.status(400).json({ success: false, message: 'Lý do không hợp lệ.' });
 
-    if (!['confirmed', 'shipping', 'completed', 'cancelled'].includes(status)) {
+    if (status === 'completed') {
+      return res.status(403).json({
+        success: false,
+        message: 'Chỉ khách hàng mới có thể nhấn hoàn thành đơn hàng.',
+      });
+    }
+
+    if (!['confirmed', 'shipping', 'cancelled'].includes(status)) {
       return res.status(400).json({ success: false, message: 'Thiếu trạng thái status.' });
     }
 
@@ -502,7 +509,7 @@ async function handleAdminOrderStatus(req, res) {
       const transitions = {
         pending: ['confirmed', 'cancelled'], approved: ['shipping', 'cancelled'],
         confirmed: ['shipping', 'cancelled'], processing: ['shipping', 'cancelled'],
-        shipping: ['completed'], delivering: ['completed'], completed: [], cancelled: [], rejected: [],
+        shipping: ['cancelled'], delivering: ['cancelled'], completed: [], cancelled: [], rejected: [],
       };
       if (!(transitions[orderDocData.status] || []).includes(status)) {
         throw Object.assign(new Error('Trạng thái đơn hàng đã thay đổi. Vui lòng tải lại.'), { statusCode: 409 });

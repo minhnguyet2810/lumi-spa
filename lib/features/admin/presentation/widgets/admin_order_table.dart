@@ -269,21 +269,27 @@ class AdminOrderTable extends StatelessWidget {
                           ),
                         ],
 
-                        // Nút Hoàn tất nếu Shipping
+                        // Đang Shipping: Chờ khách nhận
                         if (order.status == 'shipping' ||
                             order.status == 'delivering') ...[
                           const SizedBox(width: 4),
-                          FilledButton.icon(
-                            onPressed: () => onUpdateStatus(order, 'completed'),
-                            icon: const Icon(Icons.done_all, size: 14),
-                            label: const Text('Đã giao'),
-                            style: FilledButton.styleFrom(
-                              backgroundColor: const Color(0xFF16A34A),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 6,
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFEFF6FF),
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(color: const Color(0xFFBFDBFE)),
+                            ),
+                            child: Text(
+                              'Chờ khách nhận',
+                              style: GoogleFonts.dmSans(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF1D4ED8),
                               ),
-                              visualDensity: VisualDensity.compact,
                             ),
                           ),
                         ],

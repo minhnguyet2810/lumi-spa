@@ -10,6 +10,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'lumi_order_detail_screen.dart';
 import '../../../../core/data/lumi_order_store.dart';
+import '../../../../core/network/lumi_api_client.dart';
 
 class LumiMyOrdersScreen extends StatefulWidget {
   const LumiMyOrdersScreen({super.key});
@@ -180,6 +181,77 @@ class _LumiMyOrdersScreenState extends State<LumiMyOrdersScreen> {
     );
   }
 
+  Future<void> _confirmReceipt(Map<String, String> order) async {
+    final shouldComplete = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: Text(LumiAdaptive.text('Xác nhận đã nhận hàng')),
+          content: Text(
+            LumiAdaptive.text(
+              'Bạn xác nhận đã nhận được kiện hàng và kiểm tra sản phẩm đầy đủ, nguyên vẹn?\n\n'
+              'Sau khi xác nhận, đơn hàng sẽ chuyển sang trạng thái Hoàn thành.',
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: Text(LumiAdaptive.text('Để sau')),
+            ),
+            FilledButton(
+              style: FilledButton.styleFrom(
+                backgroundColor: const Color(0xFF16A34A),
+              ),
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: Text(LumiAdaptive.text('Đã nhận hàng')),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldComplete != true || !mounted) {
+      return;
+    }
+
+    final orderId = order['id'] ?? '';
+
+    try {
+      await LumiApiClient.instance.patch(
+        '/api/orders/${Uri.encodeComponent(orderId)}/complete',
+      );
+
+      LumiOrderStore.completeOrder(orderId);
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {});
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(LumiAdaptive.text('Cảm ơn bạn! Đơn hàng đã hoàn thành 🎉')),
+          backgroundColor: const Color(0xFF16A34A),
+        ),
+      );
+    } catch (error) {
+      debugPrint('Complete order error: $error');
+
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            LumiAdaptive.text('Không thể hoàn thành đơn hàng. Vui lòng thử lại.'),
+          ),
+        ),
+      );
+    }
+  }
+
   Widget _orderCard(BuildContext context, Map<String, String> order) {
     final colors = Theme.of(context).colorScheme;
     final status = order['status'] ?? 'Chờ xác nhận';
@@ -226,23 +298,54 @@ class _LumiMyOrdersScreenState extends State<LumiMyOrdersScreen> {
             const SizedBox(height: 10),
             _infoRow('Ngày đặt', order['date'] ?? ''),
             const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton.icon(
-                onPressed: () async {
-                  await Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (_) => LumiOrderDetailScreen(order: order),
+            if (order['status'] == 'Đang giao') ...[
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () async {
+                        await Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => LumiOrderDetailScreen(order: order),
+                          ),
+                        );
+                        if (mounted) setState(() {});
+                      },
+                      child: Text(LumiAdaptive.text('Chi tiết')),
                     ),
-                  );
-                  if (mounted) {
-                    setState(() {});
-                  }
-                },
-                icon: const Icon(Icons.arrow_forward_rounded, size: 20),
-                label: Text(LumiAdaptive.text('Xem chi tiết')),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: FilledButton.icon(
+                      onPressed: () => _confirmReceipt(order),
+                      icon: const Icon(Icons.check_circle_outline, size: 18),
+                      label: Text(LumiAdaptive.text('Đã nhận hàng')),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: const Color(0xFF16A34A),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ),
+            ] else ...[
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: () async {
+                    await Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => LumiOrderDetailScreen(order: order),
+                      ),
+                    );
+                    if (mounted) {
+                      setState(() {});
+                    }
+                  },
+                  icon: const Icon(Icons.arrow_forward_rounded, size: 20),
+                  label: Text(LumiAdaptive.text('Xem chi tiết')),
+                ),
+              ),
+            ],
           ],
         ),
       ),

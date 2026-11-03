@@ -101,4 +101,12 @@ class LumiOrderStore {
       orders[index]['status'] = 'Đã hủy';
     }
   }
+
+  static void completeOrder(String orderId) {
+    final index = orders.indexWhere((order) => order['id'] == orderId);
+
+    if (index != -1) {
+      orders[index]['status'] = 'Đã giao';
+    }
+  }
 }

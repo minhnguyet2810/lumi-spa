@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/data/lumi_account_repository.dart';
 import '../../../../core/theme/lumi_style.dart';
+import 'addresses_screen.dart';
 import 'edit_profile_screen.dart';
 import 'membership_screen.dart';
 
@@ -366,6 +367,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
           color: LumiAdaptive.color(LumiStyle.line, surface: true),
         ),
         _setting(
+          Icons.location_on_outlined,
+          'Địa chỉ nhận hàng',
+          'Sổ địa chỉ giao nhận (chuẩn Shopee)',
+          widget.isLoggedIn
+              ? () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const AddressesScreen(),
+                  ),
+                )
+              : widget.onLogin,
+        ),
+        Divider(
+          height: 20,
+          color: LumiAdaptive.color(LumiStyle.line, surface: true),
+        ),
+
+        _setting(
           Icons.event_note_outlined,
           'Lịch sử liệu trình',
           'Xem các lịch hẹn của bạn',
@@ -413,11 +431,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
   ) {
     final background = icon == Icons.settings_outlined
         ? const Color(0xFFE6F1F5)
+        : icon == Icons.location_on_outlined
+        ? const Color(0xFFFBE7DC)
         : icon == Icons.event_note_outlined
         ? const Color(0xFFFBE7DC)
         : const Color(0xFFEDF1E5);
     final foreground = icon == Icons.settings_outlined
         ? const Color(0xFF406779)
+        : icon == Icons.location_on_outlined
+        ? LumiStyle.rose
         : icon == Icons.event_note_outlined
         ? LumiStyle.rose
         : const Color(0xFF526442);

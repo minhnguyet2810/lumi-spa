@@ -121,6 +121,59 @@ test('profile cannot self-assign role/admin/points',async () => {
   const h=harness();h.records.set('users/alice',{displayName:'Old'});const res=await request(h.app).patch('/api/me').set('Authorization','Bearer customer').send({displayName:'Alice',role:'admin',admin:true,points:99999});
   assert.equal(res.status,200);const profile=h.records.get('users/alice');assert.equal(profile.displayName,'Alice');for(const key of ['role','admin','points'])assert.equal(profile[key],undefined);
 });
+test('customer can manage shipping addresses (list, add, default, edit, delete) safely', async () => {
+  const h = harness();
+  let listRes = await request(h.app).get('/api/me/addresses').set('Authorization', 'Bearer customer');
+  assert.equal(listRes.status, 200);
+  assert.equal(listRes.body.count, 0);
+
+  const addRes1 = await request(h.app).post('/api/me/addresses').set('Authorization', 'Bearer customer').send({
+    recipientName: 'Alice Nguyen',
+    phone: '0901234567',
+    province: 'TP. Hồ Chí Minh',
+    district: 'Quận 1',
+    ward: 'Phường Bến Nghé',
+    street: '123 Lê Lợi',
+    label: 'Nhà riêng',
+  });
+  assert.equal(addRes1.status, 201);
+  const a1Id = addRes1.body.data.id;
+  assert.ok(a1Id);
+  assert.equal(h.records.get('addresses/' + a1Id).isDefault, true);
+
+  const addRes2 = await request(h.app).post('/api/me/addresses').set('Authorization', 'Bearer customer').send({
+    recipientName: 'Alice Office',
+    phone: '0909888999',
+    street: '456 Hai Bà Trưng',
+    label: 'Văn phòng',
+    isDefault: true,
+  });
+  assert.equal(addRes2.status, 201);
+  const a2Id = addRes2.body.data.id;
+  assert.equal(h.records.get('addresses/' + a2Id).isDefault, true);
+  assert.equal(h.records.get('addresses/' + a1Id).isDefault, false);
+
+  const updateRes = await request(h.app).put('/api/me/addresses/' + a1Id).set('Authorization', 'Bearer customer').send({
+    street: '123 Lê Lợi, Tầng 5',
+  });
+  assert.equal(updateRes.status, 200);
+  assert.equal(h.records.get('addresses/' + a1Id).street, '123 Lê Lợi, Tầng 5');
+
+  const defRes = await request(h.app).patch('/api/me/addresses/' + a1Id + '/default').set('Authorization', 'Bearer customer');
+  assert.equal(defRes.status, 200);
+  assert.equal(h.records.get('addresses/' + a1Id).isDefault, true);
+  assert.equal(h.records.get('addresses/' + a2Id).isDefault, false);
+
+  h.records.set('addresses/other_addr', { userId: 'bob', recipientName: 'Bob' });
+  const delOther = await request(h.app).delete('/api/me/addresses/other_addr').set('Authorization', 'Bearer customer');
+  assert.equal(delOther.status, 404);
+  assert.equal(h.records.has('addresses/other_addr'), true);
+
+  const delA1 = await request(h.app).delete('/api/me/addresses/' + a1Id).set('Authorization', 'Bearer customer');
+  assert.equal(delA1.status, 200);
+  assert.equal(h.records.has('addresses/' + a1Id), false);
+  assert.equal(h.records.get('addresses/' + a2Id).isDefault, true);
+});
 test('terminal orders cannot be resurrected by admin and reset is off by default',async () => {
   const h=harness();h.records.set('orders/done',{userId:'alice',status:'completed',items:[]});
   assert.equal((await request(h.app).post('/api/admin-orders/done/status').set('Authorization','Bearer admin').send({status:'pending'})).status,400);

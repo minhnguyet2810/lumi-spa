@@ -588,7 +588,10 @@ class _LumiSpaCatalogState extends State<LumiSpaCatalog> {
           service: service,
           category: categoryOf(service),
           formattedPrice: price(service['price']),
-          onBook: () => widget.onBook(service),
+          onBook: () {
+            Navigator.of(context).pop();
+            widget.onBook(service);
+          },
         ),
       ),
     );

@@ -60,8 +60,20 @@ class BookingRepository {
       day,
       serviceId,
     );
+    // Fallback to personal calculation if API is unavailable
     if (slots.isEmpty) {
-      throw BookingApiException('Chưa tải được khung giờ. Vui lòng thử lại.');
+      // Return locally calculated slots instead of throwing error
+      final fallbackOwn = currentUserId == null
+          ? <BookingItem>[]
+          : await getUserBookings(currentUserId);
+      return BookingSlotCalculator.calculateSlots(
+        date: date,
+        durationMinutes: durationMinutes,
+        categoryId: categoryId,
+        existingBookings: fallbackOwn,
+        currentUserId: currentUserId,
+        now: now,
+      );
     }
     final own = currentUserId == null
         ? <BookingItem>[]

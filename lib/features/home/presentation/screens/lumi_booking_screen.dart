@@ -9,6 +9,7 @@ import 'package:lumi_spa/core/theme/lumi_style.dart';
 import 'package:lumi_spa/features/booking/data/booking_repository.dart';
 import 'package:lumi_spa/features/booking/data/models/booking_item.dart';
 import 'package:lumi_spa/features/booking/data/models/slot_availability.dart';
+import 'package:lumi_spa/features/booking/data/booking_slot_calculator.dart';
 
 class LumiBookingScreen extends StatefulWidget {
   const LumiBookingScreen({super.key, required this.service});
@@ -24,7 +25,15 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
   static const plum = LumiStyle.plum;
   static const blush = LumiStyle.softPink;
 
-  DateTime _date = DateUtils.dateOnly(DateTime.now());
+  static DateTime _computeInitialDate() {
+    final now = DateTime.now();
+    if (now.hour >= 17) {
+      return DateUtils.dateOnly(now.add(const Duration(days: 1)));
+    }
+    return DateUtils.dateOnly(now);
+  }
+
+  late DateTime _date = _computeInitialDate();
   int? _hour;
   bool _busy = false;
   bool _loadingSlots = false;
@@ -34,6 +43,17 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
 
   final _contactNameController = TextEditingController();
   final _contactPhoneController = TextEditingController();
+
+  List<SlotAvailability> get _effectiveSlots {
+    if (_slots.isNotEmpty) return _slots;
+    return BookingSlotCalculator.calculateSlots(
+      date: _date,
+      durationMinutes: _durationMinutes,
+      categoryId: _categoryId,
+      existingBookings: const [],
+      currentUserId: FirebaseAuth.instance.currentUser?.uid,
+    );
+  }
 
   String get _name => (widget.service['name'] ?? 'Dịch vụ LUMI').toString();
   String get _serviceId => (widget.service['id'] ?? '').toString();
@@ -54,8 +74,21 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
     return '${n.toInt().toString().replaceAllMapped(RegExp(r'\B(?=(\d{3})+(?!\d))'), (m) => '.')} đ';
   }
 
-  String _dateText(DateTime d) =>
-      '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
+  String _dateText(DateTime d) {
+    final now = DateUtils.dateOnly(DateTime.now());
+    final tomorrow = now.add(const Duration(days: 1));
+    final dateOnlyD = DateUtils.dateOnly(d);
+    final formatted =
+        '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
+    if (dateOnlyD == now) {
+      return '$formatted (Hôm nay)';
+    } else if (dateOnlyD == tomorrow) {
+      return '$formatted (Ngày mai)';
+    }
+    return formatted;
+  }
+
+
   String _hourText(int hour) => '${hour.toString().padLeft(2, '0')}:00';
 
   @override
@@ -269,7 +302,7 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
       return;
     }
 
-    final selectedSlot = _slots.firstWhere(
+    final selectedSlot = _effectiveSlots.firstWhere(
       (s) => s.hour == _hour,
       orElse: () => const SlotAvailability(hour: -1, status: SlotStatus.past),
     );
@@ -586,24 +619,77 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
     }
 
     // Nếu chưa load xong từ Firestore thì fallback standard
-    final slotsList = _slots.isNotEmpty
-        ? _slots
-        : [9, 10, 11, 12, 13, 14, 15, 16, 17].map((h) {
-            final slotTime = DateTime(_date.year, _date.month, _date.day, h);
-            final isPast = slotTime.isBefore(DateTime.now());
-            final isClosed = h * 60 + _durationMinutes > 18 * 60;
-            return SlotAvailability(
-              hour: h,
-              status: isClosed
-                  ? SlotStatus.closedExceeded
-                  : (isPast ? SlotStatus.past : SlotStatus.available),
-              remainingCapacity: isClosed || isPast ? 0 : 2,
-            );
-          }).toList();
+    final slotsList = _effectiveSlots;
+    final allUnavailable = slotsList.every((s) => !s.isAvailable);
+    final isToday =
+        DateUtils.dateOnly(_date) == DateUtils.dateOnly(DateTime.now());
+
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        if (allUnavailable) ...[
+          Container(
+            padding: const EdgeInsets.all(14),
+            margin: const EdgeInsets.only(bottom: 14),
+            decoration: BoxDecoration(
+              color: LumiAdaptive.color(
+                const Color(0xFFFFF7ED),
+                surface: true,
+              ),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: LumiAdaptive.color(const Color(0xFFFFEDD5)),
+              ),
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.info_outline_rounded,
+                  color: Color(0xFFEA580C),
+                  size: 22,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    isToday
+                        ? LumiAdaptive.text(
+                            'Hôm nay spa đã hết khung giờ khả dụng. Quý khách vui lòng chọn ngày mai hoặc ngày tiếp theo.',
+                          )
+                        : LumiAdaptive.text(
+                            'Ngày đã chọn hiện đã kín lịch. Quý khách vui lòng chọn ngày khác.',
+                          ),
+                    style: GoogleFonts.dmSans(
+                      fontSize: 13,
+                      color: const Color(0xFF9A3412),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+                if (isToday) ...[
+                  const SizedBox(width: 8),
+                  FilledButton.tonal(
+                    onPressed: () {
+                      setState(() {
+                        _date = DateUtils.dateOnly(
+                          DateTime.now().add(const Duration(days: 1)),
+                        );
+                        _hour = null;
+                        _error = null;
+                      });
+                      _loadSlots();
+                    },
+                    style: FilledButton.styleFrom(
+                      visualDensity: VisualDensity.compact,
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                    ),
+                    child: Text(LumiAdaptive.text('Chọn ngày mai')),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
         Wrap(
           spacing: 8,
           runSpacing: 10,

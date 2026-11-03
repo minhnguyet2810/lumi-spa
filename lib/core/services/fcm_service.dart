@@ -136,7 +136,14 @@ class FcmService {
   /// Lưu FCM Device Token vào document của user trên Firestore (users/{userId})
   Future<void> syncTokenToFirestore([String? token]) async {
     final user = _auth.currentUser;
-    final tokenToSave = token ?? _cachedToken;
+    var tokenToSave = token ?? _cachedToken;
+    if (tokenToSave == null || tokenToSave.isEmpty) {
+      try {
+        // ignore: deprecated_member_use
+        _cachedToken = await _fcm.getToken();
+        tokenToSave = _cachedToken;
+      } catch (_) {}
+    }
 
     if (user == null || tokenToSave == null || tokenToSave.isEmpty) {
       return;

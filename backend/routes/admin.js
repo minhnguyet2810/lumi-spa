@@ -304,6 +304,17 @@ router.patch('/bookings/:id/reject', async (req, res) => {
         message: 'LUMI chưa thể tiếp nhận lịch hẹn của bạn.' + (reason.trim() ? ' Lý do: ' + reason.trim() : ''),
         type: 'appointment', isRead: false, createdAt: FieldValue.serverTimestamp(),
       }).catch(error => console.error('Booking rejection notification:', error.message));
+
+      pushService.sendPushToUser({
+        userId: rejectedBooking.userId,
+        title: 'Lịch hẹn chưa thể tiếp nhận',
+        body: 'LUMI chưa thể tiếp nhận lịch hẹn của bạn.' + (reason.trim() ? ' Lý do: ' + reason.trim() : ''),
+        data: {
+          type: 'appointment',
+          bookingId: req.params.id || '',
+          status: 'rejected',
+        },
+      }).catch(error => console.error('Booking rejection push:', error.message));
     }
 
     return res.json({

@@ -1,3 +1,4 @@
+import '../../../../core/services/fcm_service.dart';
 import '../../../../core/theme/lumi_adaptive.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -153,6 +154,7 @@ class _LoginScreenState extends State<LoginScreen>
         if (credential.user != null) {
           try {
             await _syncUserProfile(credential.user!);
+          await FcmService.instance.syncTokenToFirestore();
           } on FirebaseException {
             // Không chặn đăng nhập nếu Firestore tạm thời không khả dụng.
             // Hồ sơ sẽ được thử tạo lại ở lần đăng nhập tiếp theo.

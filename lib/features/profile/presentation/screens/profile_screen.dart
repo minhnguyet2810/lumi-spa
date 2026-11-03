@@ -100,12 +100,57 @@ class _ProfileScreenState extends State<ProfileScreen> {
           child: Padding(
             padding: const EdgeInsets.only(top: 12, bottom: 24),
             child: Text(
+<<<<<<< HEAD
+              'Hồ sơ cá nhân',
+              textAlign: TextAlign.center,
+              style: LumiStyle.heading(size: 28, color: LumiStyle.plum),
+            ),
+          ),
+          Expanded(
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: widget.isLoggedIn
+                  ? TextButton(
+                      onPressed: widget.isLoggingOut ? null : widget.onLogout,
+                      child: const Text('Đăng xuất'),
+                    )
+                  : TextButton(
+                      onPressed: widget.onLogin,
+                      child: const Text('Đăng nhập'),
+                    ),
+            ),
+          ),
+        ],
+      ),
+      const SizedBox(height: 12),
+      _profileCard(),
+      const SizedBox(height: 14),
+      _membershipCard(),
+      const SizedBox(height: 14),
+      _settingsCard(),
+      const SizedBox(height: 18),
+      if (widget.isLoggedIn)
+        SizedBox(
+          height: 52,
+          child: OutlinedButton.icon(
+            onPressed: widget.isLoggingOut ? null : widget.onLogout,
+            icon: const Icon(Icons.logout_rounded),
+            label: Text(
+              widget.isLoggingOut ? 'ĐANG ĐĂNG XUẤT...' : 'ĐĂNG XUẤT',
+            ),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: LumiStyle.plum,
+              side: const BorderSide(color: LumiStyle.line),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+=======
               LumiAdaptive.text('Tài khoản'),
               style: LumiAdaptive.style(
                 LumiStyle.body(
                   size: 28,
                   color: LumiAdaptive.color(LumiStyle.ink, surface: true),
                 ).copyWith(fontWeight: FontWeight.w700, height: 1.2),
+>>>>>>> f69fef543243a3b629319035f2b9c062ba0b8aab
               ),
             ),
           ),
@@ -318,6 +363,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
+<<<<<<< HEAD
+                    'Thẻ thành viên LUMI',
+                    style: LumiStyle.body(
+                      size: 16,
+                      color: LumiStyle.rose,
+                    ).copyWith(fontWeight: FontWeight.w800),
+=======
                     LumiAdaptive.text('Thẻ thành viên LUMI'),
                     style: LumiAdaptive.style(
                       LumiStyle.body(
@@ -328,6 +380,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                       ).copyWith(fontWeight: FontWeight.w700),
                     ),
+>>>>>>> f69fef543243a3b629319035f2b9c062ba0b8aab
                   ),
                   const SizedBox(height: 3),
                   Text(
@@ -362,6 +415,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           'Tùy chọn tài khoản',
           () => context.push('/settings'),
         ),
+<<<<<<< HEAD
+        const SizedBox(height: 4),
+=======
         Divider(
           height: 20,
           color: LumiAdaptive.color(LumiStyle.line, surface: true),
@@ -383,6 +439,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           color: LumiAdaptive.color(LumiStyle.line, surface: true),
         ),
 
+>>>>>>> f69fef543243a3b629319035f2b9c062ba0b8aab
         _setting(
           Icons.event_note_outlined,
           'Lịch sử liệu trình',
@@ -428,6 +485,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
     String title,
     String subtitle,
     VoidCallback onTap,
+<<<<<<< HEAD
+  ) => Material(
+    color: Colors.transparent,
+    child: InkWell(
+      borderRadius: BorderRadius.circular(12),
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 42,
+              height: 42,
+              child: Icon(icon, color: LumiStyle.rose, size: 22),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: LumiStyle.body(size: 15, color: LumiStyle.plum),
+=======
   ) {
     final background = icon == Icons.settings_outlined
         ? const Color(0xFFE6F1F5)
@@ -461,6 +542,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   decoration: BoxDecoration(
                     color: LumiAdaptive.color(background, surface: true),
                     borderRadius: BorderRadius.circular(15),
+>>>>>>> f69fef543243a3b629319035f2b9c062ba0b8aab
                   ),
                   child: Icon(
                     icon,
@@ -509,6 +591,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
     ],
   );
 
+<<<<<<< HEAD
+  Widget _tierPill(String? tier) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+    decoration: BoxDecoration(
+      color: LumiStyle.blushSurface,
+      borderRadius: BorderRadius.circular(20),
+    ),
+    child: Text(
+      tier ?? '—',
+      style: LumiStyle.body(
+        size: 10,
+        color: LumiStyle.rose,
+      ).copyWith(fontWeight: FontWeight.w700),
+    ),
+  );
+=======
   Widget _tierPill(String? tier) => tier == null || tier.trim().isEmpty
       ? const SizedBox.shrink()
       : Container(
@@ -527,6 +625,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
         );
+>>>>>>> f69fef543243a3b629319035f2b9c062ba0b8aab
 
   Widget _card({
     required Widget child,

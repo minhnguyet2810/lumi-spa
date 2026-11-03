@@ -1,11 +1,26 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:lumi_spa/firebase_options.dart';
+
+/// Kênh thông báo Android chuẩn High Importance cho LUMI SPA
+const AndroidNotificationChannel _lumiChannel = AndroidNotificationChannel(
+  'lumi_notifications_channel', // Id trùng khớp AndroidManifest và Backend push service
+  'LUMI Thông báo',
+  description: 'Kênh thông báo lịch hẹn, đơn hàng và ưu đãi LUMI SPA',
+  importance: Importance.max,
+  playSound: true,
+  enableVibration: true,
+);
+
+final FlutterLocalNotificationsPlugin _localNotifications =
+    FlutterLocalNotificationsPlugin();
 
 /// Top-level background message handler bắt buộc cho FCM khi app đang tắt (terminated) hoặc chạy ngầm (background)
 @pragma('vm:entry-point')
@@ -40,7 +55,7 @@ class FcmService {
   /// Callback khi người dùng bấm vào thông báo trên thanh Status Bar
   void Function(RemoteMessage message)? onNotificationTap;
 
-  /// Khởi tạo Firebase Cloud Messaging (FCM)
+  /// Khởi tạo Firebase Cloud Messaging (FCM) & Local Notifications
   Future<void> initialize() async {
     try {
       // 1. Đăng ký background message handler
@@ -61,7 +76,43 @@ class FcmService {
         '🔔 [FCM Permission] Trạng thái: ${settings.authorizationStatus}',
       );
 
-      // 3. Cấu hình hiển thị thông báo khi app đang chạy ở foreground
+      // 3. Khởi tạo FlutterLocalNotifications để hiển thị thông báo ngoài màn hình (Status bar) khi app đang mở
+      const androidInitSettings =
+          AndroidInitializationSettings('@mipmap/ic_launcher');
+      const darwinInitSettings = DarwinInitializationSettings(
+        requestAlertPermission: true,
+        requestBadgePermission: true,
+        requestSoundPermission: true,
+      );
+      const initSettings = InitializationSettings(
+        android: androidInitSettings,
+        iOS: darwinInitSettings,
+        macOS: darwinInitSettings,
+      );
+
+      await _localNotifications.initialize(
+        settings: initSettings,
+        onDidReceiveNotificationResponse: (NotificationResponse response) {
+          debugPrint('👉 [Local Notification Tap]: ${response.payload}');
+          if (response.payload != null && response.payload!.isNotEmpty) {
+            try {
+              final Map<String, dynamic> data =
+                  jsonDecode(response.payload!) as Map<String, dynamic>;
+              onNotificationTap?.call(RemoteMessage(data: data));
+            } catch (_) {}
+          }
+        },
+      );
+
+      // Tạo Notification Channel trên Android với Importance cao nhất (Heads-up notification)
+      final androidPlugin = _localNotifications
+          .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>();
+      if (androidPlugin != null) {
+        await androidPlugin.createNotificationChannel(_lumiChannel);
+      }
+
+      // Cấu hình hiển thị thông báo khi app đang chạy ở foreground cho iOS
       await _fcm.setForegroundNotificationPresentationOptions(
         alert: true,
         badge: true,
@@ -97,15 +148,45 @@ class FcmService {
         await _fcm.register();
       } catch (_) {}
 
-      // 6. Lắng nghe thông báo khi app đang ở foreground
+      // 6. Lắng nghe thông báo khi app đang ở foreground (App mở)
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
         debugPrint(
           '🔔 [FCM Foreground] Nhận tin: ${message.notification?.title}',
         );
+
+        // a) HIỂN THỊ NOTIFICATION NGOÀI MÀN HÌNH (Status bar / Notification Shade / Heads-up)
+        final notification = message.notification;
+        if (notification != null) {
+          _localNotifications.show(
+            id: message.hashCode,
+            title: notification.title,
+            body: notification.body,
+            notificationDetails: NotificationDetails(
+              android: AndroidNotificationDetails(
+                _lumiChannel.id,
+                _lumiChannel.name,
+                channelDescription: _lumiChannel.description,
+                icon: '@mipmap/ic_launcher',
+                importance: Importance.max,
+                priority: Priority.high,
+                playSound: true,
+                enableVibration: true,
+              ),
+              iOS: const DarwinNotificationDetails(
+                presentAlert: true,
+                presentBadge: true,
+                presentSound: true,
+              ),
+            ),
+            payload: jsonEncode(message.data),
+          );
+        }
+
+        // b) HIỂN THỊ NOTIFICATION TRONG APP (Banner / Snackbar thông báo trong giao diện app)
         onForegroundMessage?.call(message);
       });
 
-      // 7. Lắng nghe sự kiện người dùng bấm vào notification từ thanh Status bar để mở app
+      // 7. Lắng nghe sự kiện người dùng bấm vào notification từ thanh Status bar để mở app (khi app chạy ngầm)
       FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
         debugPrint(
           '👉 [FCM OpenApp] Người dùng bấm vào thông báo: ${message.data}',
@@ -130,6 +211,41 @@ class FcmService {
       });
     } catch (e) {
       debugPrint('⚠️ [FCM Initialize Error]: $e');
+    }
+  }
+
+  /// Hiển thị thủ công một thông báo ngoài màn hình và trong app (Local notification)
+  Future<void> showLocalNotification({
+    required String title,
+    required String body,
+    Map<String, dynamic>? data,
+  }) async {
+    try {
+      await _localNotifications.show(
+        id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+        title: title,
+        body: body,
+        notificationDetails: NotificationDetails(
+          android: AndroidNotificationDetails(
+            _lumiChannel.id,
+            _lumiChannel.name,
+            channelDescription: _lumiChannel.description,
+            icon: '@mipmap/ic_launcher',
+            importance: Importance.max,
+            priority: Priority.high,
+            playSound: true,
+            enableVibration: true,
+          ),
+          iOS: const DarwinNotificationDetails(
+            presentAlert: true,
+            presentBadge: true,
+            presentSound: true,
+          ),
+        ),
+        payload: data != null ? jsonEncode(data) : null,
+      );
+    } catch (e) {
+      debugPrint('⚠️ Lỗi hiển thị local notification: $e');
     }
   }
 

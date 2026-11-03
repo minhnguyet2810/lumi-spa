@@ -121,6 +121,32 @@ test('profile cannot self-assign role/admin/points',async () => {
   const h=harness();h.records.set('users/alice',{displayName:'Old'});const res=await request(h.app).patch('/api/me').set('Authorization','Bearer customer').send({displayName:'Alice',role:'admin',admin:true,points:99999});
   assert.equal(res.status,200);const profile=h.records.get('users/alice');assert.equal(profile.displayName,'Alice');for(const key of ['role','admin','points'])assert.equal(profile[key],undefined);
 });
+test('only customer can complete order; admin cannot complete and other customer is denied', async () => {
+  const h = harness();
+  h.records.set('orders/ord1', { userId: 'alice', status: 'shipping', items: [] });
+
+  // Admin tries to complete -> rejected with 403
+  const adminRes = await request(h.app).post('/api/admin-orders/ord1/status')
+    .set('Authorization', 'Bearer admin')
+    .send({ status: 'completed' });
+  assert.equal(adminRes.status, 403);
+  assert.equal(adminRes.body.message, 'Chỉ khách hàng mới có thể nhấn hoàn thành đơn hàng.');
+  assert.equal(h.records.get('orders/ord1').status, 'shipping');
+
+  // Other customer tries to complete alice's order -> 404
+  h.records.set('orders/bob_ord', { userId: 'bob', status: 'shipping', items: [] });
+  const otherRes = await request(h.app).patch('/api/orders/bob_ord/complete')
+    .set('Authorization', 'Bearer customer');
+  assert.equal(otherRes.status, 404);
+  assert.equal(h.records.get('orders/bob_ord').status, 'shipping');
+
+  // Alice completes her own shipping order -> success 200
+  const aliceRes = await request(h.app).patch('/api/orders/ord1/complete')
+    .set('Authorization', 'Bearer customer');
+  assert.equal(aliceRes.status, 200);
+  assert.equal(h.records.get('orders/ord1').status, 'completed');
+});
+
 test('customer can manage shipping addresses (list, add, default, edit, delete) safely', async () => {
   const h = harness();
   let listRes = await request(h.app).get('/api/me/addresses').set('Authorization', 'Bearer customer');

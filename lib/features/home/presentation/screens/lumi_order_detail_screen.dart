@@ -355,6 +355,119 @@ class _LumiOrderDetailScreenState extends State<LumiOrderDetailScreen> {
     }
   }
 
+  Future<void> _completeOrder() async {
+    final shouldComplete = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: Text(LumiAdaptive.text('Xác nhận đã nhận hàng')),
+          content: Text(
+            LumiAdaptive.text(
+              'Bạn xác nhận đã nhận được kiện hàng và kiểm tra sản phẩm đầy đủ, nguyên vẹn?\n\n'
+              'Sau khi xác nhận, đơn hàng sẽ chuyển sang trạng thái Hoàn thành.',
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: Text(LumiAdaptive.text('Để sau')),
+            ),
+            FilledButton(
+              style: FilledButton.styleFrom(
+                backgroundColor: const Color(0xFF16A34A),
+              ),
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: Text(LumiAdaptive.text('Đã nhận hàng')),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldComplete != true || !mounted) {
+      return;
+    }
+
+    final orderId = widget.order['id'] ?? '';
+
+    try {
+      await LumiApiClient.instance.patch(
+        '/api/orders/${Uri.encodeComponent(orderId)}/complete',
+      );
+
+      LumiOrderStore.completeOrder(orderId);
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        currentStatus = 'Đã giao';
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(LumiAdaptive.text('Cảm ơn bạn! Đơn hàng đã hoàn thành 🎉')),
+          backgroundColor: const Color(0xFF16A34A),
+        ),
+      );
+    } catch (error) {
+      debugPrint('Complete order error: $error');
+
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            LumiAdaptive.text('Không thể hoàn thành đơn hàng. Vui lòng thử lại.'),
+          ),
+        ),
+      );
+    }
+  }
+
+  Widget _completeButton() {
+    final canComplete = currentStatus == 'Đang giao';
+
+    if (!canComplete) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      children: [
+        SizedBox(
+          width: double.infinity,
+          height: 52,
+          child: FilledButton.icon(
+            onPressed: _completeOrder,
+            icon: const Icon(Icons.check_circle_outline, size: 22),
+            label: Text(
+              LumiAdaptive.text('ĐÃ NHẬN ĐƯỢC HÀNG'),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+            ),
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFF16A34A),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 10),
+        Text(
+          LumiAdaptive.text('Nhấn xác nhận khi bạn đã nhận và kiểm tra gói hàng.'),
+          textAlign: TextAlign.center,
+          style: GoogleFonts.dmSans(
+            fontSize: 12,
+            color: LumiAdaptive.color(muted),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _cancelButton() {
     final canCancel = currentStatus == 'Chờ xác nhận';
 
@@ -439,6 +552,7 @@ class _LumiOrderDetailScreenState extends State<LumiOrderDetailScreen> {
             ),
           ),
           const SizedBox(height: 22),
+          _completeButton(),
           _cancelButton(),
         ],
       ),

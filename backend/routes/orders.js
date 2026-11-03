@@ -361,4 +361,77 @@ router.patch('/:id/cancel', async (req, res) => {
   }
 });
 
+// PATCH /api/orders/:id/complete (Chỉ khách hàng sở hữu đơn mới có thể nhấn hoàn thành đơn hàng)
+router.patch('/:id/complete', async (req, res) => {
+  try {
+    const ref = db.collection('orders').doc(req.params.id);
+
+    let updatedOrder;
+    await db.runTransaction(async tx => {
+      const order = await tx.get(ref);
+
+      if (!order.exists || order.data().userId !== req.user.uid) {
+        throw new Error('NOT_FOUND');
+      }
+
+      const currentStatus = (order.data().status || '').toLowerCase();
+      // Cho phép hoàn thành khi đơn hàng đang giao hoặc đã xác nhận
+      if (!['shipping', 'delivering', 'confirmed', 'processing'].includes(currentStatus)) {
+        throw new Error('CANNOT_COMPLETE');
+      }
+
+      tx.update(ref, {
+        status: 'completed',
+        completedAt: FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp(),
+        completedBy: req.user.uid,
+      });
+
+      updatedOrder = { id: order.id, ...order.data(), status: 'completed' };
+    });
+
+    try {
+      if (req.user.uid && db.hasCredentials) {
+        await db.collection('notifications').add({
+          userId: req.user.uid,
+          title: 'Đơn hàng hoàn tất 🎉',
+          message: 'Bạn đã xác nhận nhận hàng thành công cho đơn #' + req.params.id + '. Cảm ơn bạn đã đồng hành cùng LUMI SPA!',
+          type: 'order',
+          isRead: false,
+          createdAt: FieldValue.serverTimestamp(),
+        });
+
+        await pushService.sendPushToUser({
+          userId: req.user.uid,
+          title: 'Đơn hàng hoàn tất 🎉',
+          body: 'Cảm ơn bạn đã xác nhận nhận hàng cho đơn #' + req.params.id + '!',
+          data: {
+            type: 'order',
+            orderId: req.params.id,
+            status: 'completed',
+          },
+        });
+      }
+    } catch (e) {
+      console.error('Notify complete order error:', e.message);
+    }
+
+    return res.json({
+      success: true,
+      message: 'Đã hoàn thành đơn hàng.',
+      data: updatedOrder,
+    });
+  } catch (error) {
+    if (error.message === 'NOT_FOUND') {
+      return fail(res, 404, 'Không tìm thấy đơn hàng.');
+    }
+    if (error.message === 'CANNOT_COMPLETE') {
+      return fail(res, 409, 'Đơn hàng chưa ở trạng thái có thể hoàn thành.');
+    }
+
+    console.error('Order complete error:', error);
+    return fail(res, 500, 'Không thể hoàn thành đơn hàng.');
+  }
+});
+
 module.exports = router;

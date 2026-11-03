@@ -435,14 +435,37 @@ class AdminOrderDetailDialog extends StatelessWidget {
                     ),
                   ],
 
-                  // Nút Hoàn Tất nếu đang Shipping
-                  if (order.status == 'shipping') ...[
-                    FilledButton.icon(
-                      onPressed: () => onUpdateStatus('completed'),
-                      icon: const Icon(Icons.done_all, size: 16),
-                      label: const Text('XÁC NHẬN ĐÃ GIAO HÀNG'),
-                      style: FilledButton.styleFrom(
-                        backgroundColor: const Color(0xFF16A34A),
+                  // Đang Shipping: Chỉ khách hàng mới có quyền bấm Hoàn thành
+                  if (order.status == 'shipping' ||
+                      order.status == 'delivering') ...[
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEFF6FF),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: const Color(0xFFBFDBFE)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.info_outline,
+                            size: 16,
+                            color: Color(0xFF2563EB),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Đơn đang giao · Chờ khách hàng bấm xác nhận hoàn thành',
+                            style: GoogleFonts.dmSans(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF1D4ED8),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],

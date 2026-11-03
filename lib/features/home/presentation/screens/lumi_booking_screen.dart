@@ -422,7 +422,9 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            _heading('02', 'Chọn khung giờ'),
+                            Expanded(
+                              child: _heading('02', 'Chọn khung giờ'),
+                            ),
                             if (_loadingSlots)
                               SizedBox(
                                 width: 16,
@@ -779,12 +781,12 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
           }).toList(),
         ),
         const SizedBox(height: 10),
-        Row(
+        Wrap(
+          spacing: 14,
+          runSpacing: 6,
           children: [
             _legendItem(const Color(0xFF2E7D32), 'Còn trống'),
-            const SizedBox(width: 14),
             _legendItem(const Color(0xFF856404), 'Trùng lịch'),
-            const SizedBox(width: 14),
             _legendItem(Colors.grey.shade500, 'Hết chỗ / Đã qua'),
           ],
         ),
@@ -928,6 +930,7 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
   Widget _heading(String number, String title) {
     final colors = Theme.of(context).colorScheme;
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         CircleAvatar(
           radius: 18,
@@ -942,7 +945,8 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
           ),
         ),
         const SizedBox(width: 12),
-        Expanded(
+        Flexible(
+          fit: FlexFit.loose,
           child: Text(
             LumiAdaptive.text(title),
             style: GoogleFonts.dmSans(

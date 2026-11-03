@@ -87,7 +87,7 @@ class BookingRepository {
       now: now,
     );
     return slots.map((slot) {
-      final hour = slot['hour'] as int;
+      final hour = (slot['hour'] as num).toInt();
       final status = SlotStatus.values.firstWhere(
         (s) => s.name == slot['status'],
         orElse: () => SlotStatus.fullyBooked,

@@ -158,7 +158,7 @@ class _LumiJournalScreenState extends State<LumiJournalScreen> {
           foregroundColor: LumiAdaptive.color(ink),
           title: Text(
             LumiAdaptive.text('Góc chăm sóc da'),
-            style: LumiAdaptive.style(GoogleFonts.dmSans(fontSize: 27)),
+            style: LumiAdaptive.style(GoogleFonts.beVietnamPro(fontSize: 28)),
           ),
         ),
         body: ListView(
@@ -169,7 +169,7 @@ class _LumiJournalScreenState extends State<LumiJournalScreen> {
             Text(
               LumiAdaptive.text(story.category.toUpperCase()),
               style: LumiAdaptive.style(
-                GoogleFonts.dmSans(
+                GoogleFonts.beVietnamPro(
                   color: LumiAdaptive.color(rose),
                   letterSpacing: 1.8,
                   fontWeight: FontWeight.w700,
@@ -181,7 +181,7 @@ class _LumiJournalScreenState extends State<LumiJournalScreen> {
             Text(
               LumiAdaptive.text(story.title),
               style: LumiAdaptive.style(
-                GoogleFonts.dmSans(
+                GoogleFonts.beVietnamPro(
                   color: LumiAdaptive.color(ink),
                   fontSize: 39,
                   height: 1.04,
@@ -193,7 +193,7 @@ class _LumiJournalScreenState extends State<LumiJournalScreen> {
             Text(
               LumiAdaptive.text('LUMI EDITORIAL  ·  ${story.minutes} PHÚT ĐỌC'),
               style: LumiAdaptive.style(
-                GoogleFonts.dmSans(
+                GoogleFonts.beVietnamPro(
                   color: LumiAdaptive.color(rose),
                   fontSize: 14,
                   letterSpacing: .7,
@@ -204,9 +204,9 @@ class _LumiJournalScreenState extends State<LumiJournalScreen> {
             Text(
               LumiAdaptive.text(story.summary),
               style: LumiAdaptive.style(
-                GoogleFonts.dmSans(
+                GoogleFonts.beVietnamPro(
                   color: LumiAdaptive.color(ink),
-                  fontSize: 17,
+                  fontSize: 16,
                   height: 1.55,
                   fontWeight: FontWeight.w600,
                 ),
@@ -219,7 +219,7 @@ class _LumiJournalScreenState extends State<LumiJournalScreen> {
                 child: Text(
                   LumiAdaptive.text(paragraph),
                   style: LumiAdaptive.style(
-                    GoogleFonts.dmSans(
+                    GoogleFonts.beVietnamPro(
                       color: LumiAdaptive.color(ink),
                       fontSize: 15,
                       height: 1.75,
@@ -233,7 +233,7 @@ class _LumiJournalScreenState extends State<LumiJournalScreen> {
                 'Bài viết mẫu cho dự án LUMI SPA · Nội dung mang tính tham khảo.',
               ),
               style: LumiAdaptive.style(
-                GoogleFonts.dmSans(
+                GoogleFonts.beVietnamPro(
                   color: LumiAdaptive.color(rose),
                   fontSize: 14,
                   height: 1.5,
@@ -270,7 +270,7 @@ class _LumiJournalScreenState extends State<LumiJournalScreen> {
                 LumiAdaptive.text('Chưa tải được bài viết'),
                 textAlign: TextAlign.center,
                 style: LumiAdaptive.style(
-                  GoogleFonts.dmSans(
+                  GoogleFonts.beVietnamPro(
                     fontSize: 22,
                     fontWeight: FontWeight.w700,
                     color: LumiAdaptive.color(ink),
@@ -286,7 +286,7 @@ class _LumiJournalScreenState extends State<LumiJournalScreen> {
                 ),
                 textAlign: TextAlign.center,
                 style: LumiAdaptive.style(
-                  GoogleFonts.dmSans(
+                  GoogleFonts.beVietnamPro(
                     fontSize: 16,
                     height: 1.5,
                     color: LumiAdaptive.color(ink),
@@ -338,7 +338,7 @@ class _LumiJournalScreenState extends State<LumiJournalScreen> {
             controller: _search,
             onChanged: (_) => setState(() {}),
             style: LumiAdaptive.style(
-              GoogleFonts.dmSans(fontSize: 16, color: LumiAdaptive.color(ink)),
+              GoogleFonts.beVietnamPro(fontSize: 16, color: LumiAdaptive.color(ink)),
             ),
             decoration: InputDecoration(
               hintText: LumiAdaptive.optionalText('Tìm bài viết'),
@@ -385,7 +385,7 @@ class _LumiJournalScreenState extends State<LumiJournalScreen> {
                         vertical: 10,
                       ),
                       labelStyle: LumiAdaptive.style(
-                        GoogleFonts.dmSans(
+                        GoogleFonts.beVietnamPro(
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
                           color: LumiAdaptive.color(ink),
@@ -409,8 +409,8 @@ class _LumiJournalScreenState extends State<LumiJournalScreen> {
                 ),
                 textAlign: TextAlign.center,
                 style: LumiAdaptive.style(
-                  GoogleFonts.dmSans(
-                    fontSize: 17,
+                  GoogleFonts.beVietnamPro(
+                    fontSize: 16,
                     color: LumiAdaptive.color(ink),
                   ),
                 ),
@@ -437,7 +437,7 @@ class _LumiJournalScreenState extends State<LumiJournalScreen> {
                             '${story.category} · ${story.minutes} phút đọc',
                           ),
                           style: LumiAdaptive.style(
-                            GoogleFonts.dmSans(
+                            GoogleFonts.beVietnamPro(
                               fontSize: 14,
                               color: LumiAdaptive.color(
                                 const Color(0xFF756863),
@@ -449,7 +449,7 @@ class _LumiJournalScreenState extends State<LumiJournalScreen> {
                         Text(
                           LumiAdaptive.text(story.title),
                           style: LumiAdaptive.style(
-                            GoogleFonts.dmSans(
+                            GoogleFonts.beVietnamPro(
                               fontSize: 22,
                               height: 1.3,
                               fontWeight: FontWeight.w700,
@@ -463,7 +463,7 @@ class _LumiJournalScreenState extends State<LumiJournalScreen> {
                             Text(
                               LumiAdaptive.text('Đọc bài viết'),
                               style: LumiAdaptive.style(
-                                GoogleFonts.dmSans(
+                                GoogleFonts.beVietnamPro(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
                                   color: LumiAdaptive.color(ink),
@@ -505,7 +505,7 @@ class _LumiJournalScreenState extends State<LumiJournalScreen> {
         title: Text(
           LumiAdaptive.text('Góc chăm sóc da'),
           style: LumiAdaptive.style(
-            GoogleFonts.dmSans(fontSize: 29, fontWeight: FontWeight.w700),
+            GoogleFonts.beVietnamPro(fontSize: 28, fontWeight: FontWeight.w700),
           ),
         ),
       ),
@@ -540,7 +540,7 @@ class _LumiJournalScreenState extends State<LumiJournalScreen> {
                             LumiAdaptive.text(label),
                             textAlign: TextAlign.center,
                             style: LumiAdaptive.style(
-                              GoogleFonts.dmSans(
+                              GoogleFonts.beVietnamPro(
                                 color: LumiAdaptive.color(ink),
                                 fontSize: 14,
                                 fontWeight: _section == index

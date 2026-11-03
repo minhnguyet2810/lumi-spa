@@ -111,8 +111,8 @@ class _LumiOrderDetailScreenState extends State<LumiOrderDetailScreen> {
           const SizedBox(height: 16),
           Text(
             widget.order['id'] ?? '',
-            style: GoogleFonts.dmSans(
-              fontSize: 23,
+            style: GoogleFonts.beVietnamPro(
+              fontSize: 22,
               fontWeight: FontWeight.w700,
               color: colors.onSurface,
             ),
@@ -120,7 +120,7 @@ class _LumiOrderDetailScreenState extends State<LumiOrderDetailScreen> {
           const SizedBox(height: 8),
           Text(
             widget.order['total'] ?? '',
-            style: GoogleFonts.dmSans(
+            style: GoogleFonts.beVietnamPro(
               fontSize: 32,
               fontWeight: FontWeight.w700,
               color: colors.primary,
@@ -200,7 +200,7 @@ class _LumiOrderDetailScreenState extends State<LumiOrderDetailScreen> {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: LumiAdaptive.style(
-                    GoogleFonts.dmSans(
+                    GoogleFonts.beVietnamPro(
                       color: LumiAdaptive.color(ink),
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
@@ -211,7 +211,7 @@ class _LumiOrderDetailScreenState extends State<LumiOrderDetailScreen> {
                 Text(
                   LumiAdaptive.text('Số lượng: $quantity'),
                   style: LumiAdaptive.style(
-                    GoogleFonts.dmSans(
+                    GoogleFonts.beVietnamPro(
                       color: LumiAdaptive.color(muted),
                       fontSize: 15,
                     ),
@@ -221,7 +221,7 @@ class _LumiOrderDetailScreenState extends State<LumiOrderDetailScreen> {
                 Text(
                   LumiAdaptive.text('Đơn giá: ${_money(price)}'),
                   style: LumiAdaptive.style(
-                    GoogleFonts.dmSans(
+                    GoogleFonts.beVietnamPro(
                       color: LumiAdaptive.color(muted),
                       fontSize: 14,
                     ),
@@ -234,7 +234,7 @@ class _LumiOrderDetailScreenState extends State<LumiOrderDetailScreen> {
           Text(
             LumiAdaptive.text(_money(total)),
             style: LumiAdaptive.style(
-              GoogleFonts.dmSans(
+              GoogleFonts.beVietnamPro(
                 color: LumiAdaptive.color(rose),
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
@@ -266,7 +266,7 @@ class _LumiOrderDetailScreenState extends State<LumiOrderDetailScreen> {
             child: Text(
               LumiAdaptive.text('Thông tin sản phẩm chưa được cập nhật.'),
               style: LumiAdaptive.style(
-                GoogleFonts.dmSans(
+                GoogleFonts.beVietnamPro(
                   color: LumiAdaptive.color(muted),
                   fontSize: 14,
                 ),
@@ -459,7 +459,7 @@ class _LumiOrderDetailScreenState extends State<LumiOrderDetailScreen> {
         Text(
           LumiAdaptive.text('Nhấn xác nhận khi bạn đã nhận và kiểm tra gói hàng.'),
           textAlign: TextAlign.center,
-          style: GoogleFonts.dmSans(
+          style: GoogleFonts.beVietnamPro(
             fontSize: 12,
             color: LumiAdaptive.color(muted),
           ),
@@ -507,7 +507,7 @@ class _LumiOrderDetailScreenState extends State<LumiOrderDetailScreen> {
         title: Text(
           LumiAdaptive.text('Chi tiết đơn hàng'),
           style: LumiAdaptive.style(
-            GoogleFonts.dmSans(
+            GoogleFonts.beVietnamPro(
               color: LumiAdaptive.color(ink),
               fontWeight: FontWeight.w700,
             ),
@@ -540,7 +540,7 @@ class _LumiOrderDetailScreenState extends State<LumiOrderDetailScreen> {
                   child: Text(
                     LumiAdaptive.text(_statusMessage()),
                     style: LumiAdaptive.style(
-                      GoogleFonts.dmSans(
+                      GoogleFonts.beVietnamPro(
                         color: LumiAdaptive.color(ink),
                         fontSize: 15,
                         height: 1.5,

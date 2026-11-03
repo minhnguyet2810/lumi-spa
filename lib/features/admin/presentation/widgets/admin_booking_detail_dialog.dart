@@ -36,7 +36,7 @@ class AdminBookingDetailDialog extends StatelessWidget {
                   Expanded(
                     child: Text(
                       'Chi tiết đơn đặt lịch',
-                      style: GoogleFonts.cormorantGaramond(
+                      style: GoogleFonts.beVietnamPro(
                         fontSize: 24,
                         fontWeight: FontWeight.w700,
                         color: LumiStyle.plum,
@@ -75,7 +75,7 @@ class AdminBookingDetailDialog extends StatelessWidget {
                         icon: const Icon(Icons.close_rounded, size: 16),
                         label: Text(
                           'TỪ CHỐI',
-                          style: GoogleFonts.dmSans(
+                          style: GoogleFonts.beVietnamPro(
                             fontWeight: FontWeight.w700,
                           ),
                         ),
@@ -99,7 +99,7 @@ class AdminBookingDetailDialog extends StatelessWidget {
                         icon: const Icon(Icons.check_rounded, size: 16),
                         label: Text(
                           'DUYỆT ĐƠN',
-                          style: GoogleFonts.dmSans(
+                          style: GoogleFonts.beVietnamPro(
                             fontWeight: FontWeight.w700,
                           ),
                         ),
@@ -132,7 +132,7 @@ class AdminBookingDetailDialog extends StatelessWidget {
             width: 110,
             child: Text(
               label,
-              style: GoogleFonts.dmSans(
+              style: GoogleFonts.beVietnamPro(
                 fontSize: 13,
                 color: LumiStyle.muted,
                 fontWeight: FontWeight.w500,
@@ -142,7 +142,7 @@ class AdminBookingDetailDialog extends StatelessWidget {
           Expanded(
             child: Text(
               value,
-              style: GoogleFonts.dmSans(
+              style: GoogleFonts.beVietnamPro(
                 fontSize: 13,
                 color: LumiStyle.plum,
                 fontWeight: FontWeight.w600,

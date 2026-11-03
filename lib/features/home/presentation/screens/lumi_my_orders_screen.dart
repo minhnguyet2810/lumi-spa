@@ -123,7 +123,7 @@ class _LumiMyOrdersScreenState extends State<LumiMyOrdersScreen> {
             LumiAdaptive.text(message),
             textAlign: TextAlign.center,
             style: LumiAdaptive.style(
-              GoogleFonts.dmSans(
+              GoogleFonts.beVietnamPro(
                 color: LumiAdaptive.color(ink),
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
@@ -135,7 +135,7 @@ class _LumiMyOrdersScreenState extends State<LumiMyOrdersScreen> {
             LumiAdaptive.text('Các đơn hàng của bạn sẽ xuất hiện ở đây.'),
             textAlign: TextAlign.center,
             style: LumiAdaptive.style(
-              GoogleFonts.dmSans(color: LumiAdaptive.color(muted)),
+              GoogleFonts.beVietnamPro(color: LumiAdaptive.color(muted)),
             ),
           ),
         ],
@@ -169,7 +169,7 @@ class _LumiMyOrdersScreenState extends State<LumiMyOrdersScreen> {
               color: LumiAdaptive.color(isSelected ? rose : blush),
             ),
             labelStyle: LumiAdaptive.style(
-              GoogleFonts.dmSans(
+              GoogleFonts.beVietnamPro(
                 color: LumiAdaptive.color(isSelected ? Colors.white : ink),
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
@@ -269,8 +269,8 @@ class _LumiMyOrdersScreenState extends State<LumiMyOrdersScreen> {
               children: [
                 Text(
                   order['id'] ?? '',
-                  style: GoogleFonts.dmSans(
-                    fontSize: 19,
+                  style: GoogleFonts.beVietnamPro(
+                    fontSize: 18,
                     fontWeight: FontWeight.w700,
                     color: colors.onSurface,
                   ),
@@ -281,7 +281,7 @@ class _LumiMyOrdersScreenState extends State<LumiMyOrdersScreen> {
             const SizedBox(height: 18),
             Text(
               LumiAdaptive.text('Tổng tiền'),
-              style: GoogleFonts.dmSans(
+              style: GoogleFonts.beVietnamPro(
                 fontSize: 15,
                 color: colors.onSurfaceVariant,
               ),
@@ -289,7 +289,7 @@ class _LumiMyOrdersScreenState extends State<LumiMyOrdersScreen> {
             const SizedBox(height: 5),
             Text(
               order['total'] ?? '',
-              style: GoogleFonts.dmSans(
+              style: GoogleFonts.beVietnamPro(
                 fontSize: 28,
                 fontWeight: FontWeight.w700,
                 color: colors.primary,
@@ -370,7 +370,7 @@ class _LumiMyOrdersScreenState extends State<LumiMyOrdersScreen> {
         title: Text(
           LumiAdaptive.text('Đơn hàng của tôi'),
           style: LumiAdaptive.style(
-            GoogleFonts.dmSans(
+            GoogleFonts.beVietnamPro(
               color: LumiAdaptive.color(ink),
               fontWeight: FontWeight.w700,
             ),
@@ -395,7 +395,7 @@ class _LumiMyOrdersScreenState extends State<LumiMyOrdersScreen> {
                       const SizedBox(height: 16),
                       Text(
                         LumiAdaptive.text('Đơn hàng của tôi'),
-                        style: GoogleFonts.dmSans(
+                        style: GoogleFonts.beVietnamPro(
                           fontSize: 28,
                           fontWeight: FontWeight.w700,
                           color: Theme.of(context).colorScheme.onSurface,
@@ -406,7 +406,7 @@ class _LumiMyOrdersScreenState extends State<LumiMyOrdersScreen> {
                         LumiAdaptive.text(
                           'Theo dõi lịch sử mua sắm và trạng thái các đơn hàng của bạn tại LUMI.',
                         ),
-                        style: GoogleFonts.dmSans(
+                        style: GoogleFonts.beVietnamPro(
                           fontSize: 16,
                           height: 1.5,
                           color: Theme.of(context).colorScheme.onSurface,

@@ -1,3 +1,4 @@
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/material.dart';
 
 import '../settings/app_preferences.dart';
@@ -45,22 +46,22 @@ abstract final class LumiAdaptive {
     int? replacement;
     if (surface) {
       replacement = switch (rgb) {
-        0xFFFFFF || 0xFFFDFA => 0x343D44,
-        0xFFF8EF || 0xFAF7F4 || 0xFBF4F5 || 0xFFF9F5 => 0x262D32,
-        0xEAF3F7 || 0xE8F2F6 || 0xE4EFF2 || 0xE1EFF5 => 0x344E5B,
-        0xFBE7DC || 0xF8D5C2 || 0xF5BEA5 || 0xFBE4D6 || 0xFFE0D6 => 0x624B40,
-        0xA9CEDD => 0x3B5A69,
-        0xEADFD5 || 0xEFE4E6 || 0xE5DCDA || 0xDDD3C8 => 0x62717B,
-        0x403735 || 0x302825 => 0x66584F,
+        0xFFFFFF || 0xFFFDFA => 0x1E293B,
+        0xFFF8EF || 0xFAF7F4 || 0xFBF4F5 || 0xFFF9F5 => 0x0F172A,
+        0xEAF3F7 || 0xE8F2F6 || 0xE4EFF2 || 0xE1EFF5 => 0x1F2937,
+        0xFBE7DC || 0xF8D5C2 || 0xF5BEA5 || 0xFBE4D6 || 0xFFE0D6 => 0x2E2522,
+        0xA9CEDD => 0x1E3A47,
+        0xEADFD5 || 0xEFE4E6 || 0xE5DCDA || 0xDDD3C8 => 0x334155,
+        0x403735 || 0x302825 => 0x1E293B,
         _ => null,
       };
       if (replacement == null && original.computeLuminance() > 0.72) {
-        replacement = 0x3D484D;
+        replacement = 0x1E293B;
       }
     } else {
       replacement = switch (rgb) {
-        0x403735 || 0x302825 || 0x000000 || 0x3B3030 => 0xF5EFE8,
-        0x756863 || 0x6F625D || 0x5F5550 || 0x8F8F8F || 0x666666 => 0xD1C9C0,
+        0x403735 || 0x302825 || 0x000000 || 0x3B3030 || 0x1E293B => 0xF8FAFC,
+        0x756863 || 0x6F625D || 0x5F5550 || 0x8F8F8F || 0x666666 || 0x64748B => 0x94A3B8,
         0xA5553E || 0x557C90 => 0xF5BEA5,
         0xEADFD5 || 0xEFE4E6 || 0xE5DCDA => 0x687782,
         _ => null,
@@ -68,17 +69,21 @@ abstract final class LumiAdaptive {
       if (replacement == null &&
           rgb != 0xFFFFFF &&
           original.computeLuminance() < 0.12) {
-        replacement = 0xE8DAD0;
+        replacement = 0xF8FAFC;
       }
     }
     return replacement == null ? original : Color((alpha << 24) | replacement);
   }
 
   static T style<T>(T original) {
-    if (original is! TextStyle || original.color == null) {
+    if (original is! TextStyle) {
       return original;
     }
-    return original.copyWith(color: color(original.color!)) as T;
+    final targetColor = original.color != null ? color(original.color!) : null;
+    return GoogleFonts.beVietnamPro(
+      textStyle: original,
+      color: targetColor,
+    ) as T;
   }
 
   static String? optionalText(String? original) =>

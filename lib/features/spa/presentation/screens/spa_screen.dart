@@ -101,7 +101,6 @@ class _SpaScreenState extends State<SpaScreen> {
                   style: LumiAdaptive.style(
                     TextStyle(
                       fontSize: 28,
-                      fontFamily: 'Cormorant Garamond',
                       color: LumiAdaptive.color(plum),
                     ),
                   ),

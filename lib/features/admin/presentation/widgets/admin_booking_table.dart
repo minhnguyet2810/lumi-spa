@@ -26,7 +26,7 @@ class AdminBookingTable extends StatelessWidget {
         alignment: Alignment.center,
         child: Text(
           'Không có đơn đặt lịch nào phù hợp.',
-          style: GoogleFonts.dmSans(color: LumiStyle.muted, fontSize: 14),
+          style: GoogleFonts.beVietnamPro(color: LumiStyle.muted, fontSize: 14),
         ),
       );
     }
@@ -51,12 +51,12 @@ class AdminBookingTable extends StatelessWidget {
           scrollDirection: Axis.horizontal,
           child: DataTable(
             headingRowColor: WidgetStateProperty.all(LumiStyle.blushSurface),
-            headingTextStyle: GoogleFonts.dmSans(
+            headingTextStyle: GoogleFonts.beVietnamPro(
               fontWeight: FontWeight.w700,
               fontSize: 13,
               color: LumiStyle.plum,
             ),
-            dataTextStyle: GoogleFonts.dmSans(
+            dataTextStyle: GoogleFonts.beVietnamPro(
               fontSize: 13,
               color: LumiStyle.plum,
             ),
@@ -111,7 +111,7 @@ class AdminBookingTable extends StatelessWidget {
                       onTap: () => onTapDetail(item),
                       child: Text(
                         '#$shortId',
-                        style: GoogleFonts.dmSans(
+                        style: GoogleFonts.beVietnamPro(
                           fontWeight: FontWeight.w700,
                           color: LumiStyle.rose,
                         ),
@@ -128,14 +128,14 @@ class AdminBookingTable extends StatelessWidget {
                           item.contactName.isNotEmpty
                               ? item.contactName
                               : 'Khách hàng',
-                          style: GoogleFonts.dmSans(
+                          style: GoogleFonts.beVietnamPro(
                             fontWeight: FontWeight.w600,
                           ),
                         ),
                         if (item.contactPhone.isNotEmpty)
                           Text(
                             item.contactPhone,
-                            style: GoogleFonts.dmSans(
+                            style: GoogleFonts.beVietnamPro(
                               fontSize: 11,
                               color: LumiStyle.muted,
                             ),
@@ -147,21 +147,21 @@ class AdminBookingTable extends StatelessWidget {
                   DataCell(
                     Text(
                       item.serviceName,
-                      style: GoogleFonts.dmSans(fontWeight: FontWeight.w500),
+                      style: GoogleFonts.beVietnamPro(fontWeight: FontWeight.w500),
                     ),
                   ),
                   // 4. Thời gian hẹn
                   DataCell(
                     Text(
                       item.formattedDateTime,
-                      style: GoogleFonts.dmSans(color: LumiStyle.plum),
+                      style: GoogleFonts.beVietnamPro(color: LumiStyle.plum),
                     ),
                   ),
                   // 5. Giá tiền
                   DataCell(
                     Text(
                       item.formattedPrice,
-                      style: GoogleFonts.dmSans(
+                      style: GoogleFonts.beVietnamPro(
                         fontWeight: FontWeight.w700,
                         color: LumiStyle.rose,
                       ),
@@ -183,7 +183,7 @@ class AdminBookingTable extends StatelessWidget {
                       ),
                       child: Text(
                         badgeTitle,
-                        style: GoogleFonts.dmSans(
+                        style: GoogleFonts.beVietnamPro(
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
                           color: badgeText,
@@ -207,7 +207,7 @@ class AdminBookingTable extends StatelessWidget {
                                 horizontal: 12,
                                 vertical: 6,
                               ),
-                              textStyle: GoogleFonts.dmSans(
+                              textStyle: GoogleFonts.beVietnamPro(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -228,7 +228,7 @@ class AdminBookingTable extends StatelessWidget {
                                 horizontal: 10,
                                 vertical: 6,
                               ),
-                              textStyle: GoogleFonts.dmSans(
+                              textStyle: GoogleFonts.beVietnamPro(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,
                               ),

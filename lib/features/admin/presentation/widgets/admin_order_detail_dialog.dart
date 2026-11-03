@@ -59,7 +59,7 @@ class AdminOrderDetailDialog extends StatelessWidget {
                           children: [
                             Text(
                               'Đơn Hàng #${order.id}',
-                              style: GoogleFonts.cormorantGaramond(
+                              style: GoogleFonts.beVietnamPro(
                                 fontSize: 24,
                                 fontWeight: FontWeight.w700,
                                 color: LumiStyle.plum,
@@ -84,8 +84,8 @@ class AdminOrderDetailDialog extends StatelessWidget {
                               ),
                               child: Text(
                                 order.statusLabel.toUpperCase(),
-                                style: GoogleFonts.dmSans(
-                                  fontSize: 10.5,
+                                style: GoogleFonts.beVietnamPro(
+                                  fontSize: 11,
                                   fontWeight: FontWeight.w700,
                                   color: order.statusColor,
                                 ),
@@ -96,7 +96,7 @@ class AdminOrderDetailDialog extends StatelessWidget {
                         const SizedBox(height: 4),
                         Text(
                           'Thời gian đặt: ${order.formattedCreatedAt}',
-                          style: GoogleFonts.dmSans(
+                          style: GoogleFonts.beVietnamPro(
                             fontSize: 12,
                             color: LumiStyle.muted,
                           ),
@@ -130,7 +130,7 @@ class AdminOrderDetailDialog extends StatelessWidget {
                         children: [
                           Text(
                             'THÔNG TIN NGƯỜI NHẬN',
-                            style: GoogleFonts.dmSans(
+                            style: GoogleFonts.beVietnamPro(
                               fontSize: 11,
                               letterSpacing: 1.2,
                               fontWeight: FontWeight.w700,
@@ -209,7 +209,7 @@ class AdminOrderDetailDialog extends StatelessWidget {
                                 children: [
                                   Text(
                                     'Lý do hủy đơn:',
-                                    style: GoogleFonts.dmSans(
+                                    style: GoogleFonts.beVietnamPro(
                                       fontWeight: FontWeight.w700,
                                       fontSize: 12,
                                       color: Colors.red.shade900,
@@ -218,8 +218,8 @@ class AdminOrderDetailDialog extends StatelessWidget {
                                   const SizedBox(height: 2),
                                   Text(
                                     order.cancelReason!,
-                                    style: GoogleFonts.dmSans(
-                                      fontSize: 12.5,
+                                    style: GoogleFonts.beVietnamPro(
+                                      fontSize: 12,
                                       color: Colors.red.shade900,
                                     ),
                                   ),
@@ -235,7 +235,7 @@ class AdminOrderDetailDialog extends StatelessWidget {
                     // Danh sách sản phẩm
                     Text(
                       'SẢN PHẨM TRONG ĐƠN (${order.totalQuantity} món)',
-                      style: GoogleFonts.dmSans(
+                      style: GoogleFonts.beVietnamPro(
                         fontSize: 11,
                         letterSpacing: 1.2,
                         fontWeight: FontWeight.w700,
@@ -296,16 +296,16 @@ class AdminOrderDetailDialog extends StatelessWidget {
                                           children: [
                                             Text(
                                               name,
-                                              style: GoogleFonts.dmSans(
-                                                fontSize: 13.5,
+                                              style: GoogleFonts.beVietnamPro(
+                                                fontSize: 14,
                                                 fontWeight: FontWeight.w600,
                                                 color: LumiStyle.plum,
                                               ),
                                             ),
                                             Text(
                                               'Đơn giá: ${_formatVND(price is num ? price : 0)}',
-                                              style: GoogleFonts.dmSans(
-                                                fontSize: 11.5,
+                                              style: GoogleFonts.beVietnamPro(
+                                                fontSize: 12,
                                                 color: LumiStyle.muted,
                                               ),
                                             ),
@@ -314,7 +314,7 @@ class AdminOrderDetailDialog extends StatelessWidget {
                                       ),
                                       Text(
                                         'x$qty',
-                                        style: GoogleFonts.dmSans(
+                                        style: GoogleFonts.beVietnamPro(
                                           fontSize: 13,
                                           fontWeight: FontWeight.w700,
                                           color: LumiStyle.rose,
@@ -323,8 +323,8 @@ class AdminOrderDetailDialog extends StatelessWidget {
                                       const SizedBox(width: 20),
                                       Text(
                                         _formatVND(totalLine),
-                                        style: GoogleFonts.dmSans(
-                                          fontSize: 13.5,
+                                        style: GoogleFonts.beVietnamPro(
+                                          fontSize: 14,
                                           fontWeight: FontWeight.w700,
                                           color: LumiStyle.plum,
                                         ),
@@ -343,7 +343,7 @@ class AdminOrderDetailDialog extends StatelessWidget {
                               children: [
                                 Text(
                                   'Tổng Tiền Thanh Toán:',
-                                  style: GoogleFonts.dmSans(
+                                  style: GoogleFonts.beVietnamPro(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w700,
                                     color: LumiStyle.plum,
@@ -351,7 +351,7 @@ class AdminOrderDetailDialog extends StatelessWidget {
                                 ),
                                 Text(
                                   order.displayTotal,
-                                  style: GoogleFonts.dmSans(
+                                  style: GoogleFonts.beVietnamPro(
                                     fontSize: 18,
                                     fontWeight: FontWeight.w800,
                                     color: LumiStyle.rose,
@@ -459,8 +459,8 @@ class AdminOrderDetailDialog extends StatelessWidget {
                           const SizedBox(width: 8),
                           Text(
                             'Đơn đang giao · Chờ khách hàng bấm xác nhận hoàn thành',
-                            style: GoogleFonts.dmSans(
-                              fontSize: 12.5,
+                            style: GoogleFonts.beVietnamPro(
+                              fontSize: 12,
                               fontWeight: FontWeight.w600,
                               color: const Color(0xFF1D4ED8),
                             ),
@@ -488,8 +488,8 @@ class AdminOrderDetailDialog extends StatelessWidget {
           width: 150,
           child: Text(
             label,
-            style: GoogleFonts.dmSans(
-              fontSize: 12.5,
+            style: GoogleFonts.beVietnamPro(
+              fontSize: 12,
               color: LumiStyle.muted,
               fontWeight: FontWeight.w500,
             ),
@@ -498,7 +498,7 @@ class AdminOrderDetailDialog extends StatelessWidget {
         Expanded(
           child: Text(
             value,
-            style: GoogleFonts.dmSans(
+            style: GoogleFonts.beVietnamPro(
               fontSize: 13,
               color: LumiStyle.plum,
               fontWeight: FontWeight.w600,

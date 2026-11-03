@@ -219,7 +219,7 @@ class _AdminAccessGateState extends State<AdminAccessGate> {
                                           children: [
                                             Text(
                                               'LUMI',
-                                              style: GoogleFonts.dmSans(
+                                              style: GoogleFonts.beVietnamPro(
                                                 color: ink,
                                                 fontSize: 30,
                                                 letterSpacing: 3,
@@ -228,7 +228,7 @@ class _AdminAccessGateState extends State<AdminAccessGate> {
                                             ),
                                             Text(
                                               'KHÔNG GIAN QUẢN TRỊ',
-                                              style: GoogleFonts.dmSans(
+                                              style: GoogleFonts.beVietnamPro(
                                                 color: const Color(0xFF816453),
                                                 fontSize: 9,
                                                 fontWeight: FontWeight.w600,
@@ -248,8 +248,8 @@ class _AdminAccessGateState extends State<AdminAccessGate> {
                                   const SizedBox(height: 24),
                                   Text(
                                     'Chăm chút trải nghiệm.\nKết nối từng ngày.',
-                                    style: GoogleFonts.dmSans(
-                                      fontSize: 23,
+                                    style: GoogleFonts.beVietnamPro(
+                                      fontSize: 22,
                                       fontWeight: FontWeight.w700,
                                       height: 1.2,
                                       color: ink,
@@ -280,7 +280,7 @@ class _AdminAccessGateState extends State<AdminAccessGate> {
                                           ),
                                           child: Text(
                                             label,
-                                            style: GoogleFonts.dmSans(
+                                            style: GoogleFonts.beVietnamPro(
                                               color: const Color(0xFF725A4F),
                                               fontSize: 10,
                                               fontWeight: FontWeight.w600,
@@ -316,9 +316,9 @@ class _AdminAccessGateState extends State<AdminAccessGate> {
                                     signedIn
                                         ? 'Quyền truy cập quản trị'
                                         : 'Chào mừng trở lại.',
-                                    style: GoogleFonts.dmSans(
+                                    style: GoogleFonts.beVietnamPro(
                                       color: ink,
-                                      fontSize: 23,
+                                      fontSize: 22,
                                       height: 1.25,
                                       fontWeight: FontWeight.w700,
                                     ),
@@ -328,7 +328,7 @@ class _AdminAccessGateState extends State<AdminAccessGate> {
                                     signedIn
                                         ? 'Tài khoản hiện tại chưa được xác nhận quyền truy cập portal.'
                                         : 'Đăng nhập để bắt đầu quản lý LUMI.',
-                                    style: GoogleFonts.dmSans(
+                                    style: GoogleFonts.beVietnamPro(
                                       color: const Color(0xFF887970),
                                       fontSize: 12,
                                       height: 1.5,
@@ -400,7 +400,7 @@ class _AdminAccessGateState extends State<AdminAccessGate> {
                                           Expanded(
                                             child: Text(
                                               user.email ?? '',
-                                              style: GoogleFonts.dmSans(
+                                              style: GoogleFonts.beVietnamPro(
                                                 color: ink,
                                                 fontSize: 12,
                                                 height: 1.4,
@@ -413,7 +413,7 @@ class _AdminAccessGateState extends State<AdminAccessGate> {
                                     const SizedBox(height: 13),
                                     Text(
                                       'Liên hệ người quản lý để được cấp quyền. Nếu vừa được cấp, hãy làm mới quyền hoặc đăng nhập lại.',
-                                      style: GoogleFonts.dmSans(
+                                      style: GoogleFonts.beVietnamPro(
                                         color: const Color(0xFF887970),
                                         fontSize: 12,
                                         height: 1.5,
@@ -430,7 +430,7 @@ class _AdminAccessGateState extends State<AdminAccessGate> {
                                       ),
                                       child: Text(
                                         _message!,
-                                        style: GoogleFonts.dmSans(
+                                        style: GoogleFonts.beVietnamPro(
                                           color: const Color(0xFF944932),
                                           fontSize: 12,
                                           height: 1.4,
@@ -479,7 +479,7 @@ class _AdminAccessGateState extends State<AdminAccessGate> {
                                                 : (signedIn
                                                       ? 'Làm mới quyền'
                                                       : 'Đăng nhập quản trị'),
-                                            style: GoogleFonts.dmSans(
+                                            style: GoogleFonts.beVietnamPro(
                                               fontWeight: FontWeight.w700,
                                               fontSize: 14,
                                             ),
@@ -501,7 +501,7 @@ class _AdminAccessGateState extends State<AdminAccessGate> {
                                           FirebaseAuth.instance.signOut(),
                                       child: Text(
                                         'Đăng nhập tài khoản khác',
-                                        style: GoogleFonts.dmSans(
+                                        style: GoogleFonts.beVietnamPro(
                                           color: terracotta,
                                           fontWeight: FontWeight.w600,
                                         ),
@@ -523,7 +523,7 @@ class _AdminAccessGateState extends State<AdminAccessGate> {
                                 Flexible(
                                   child: Text(
                                     'Dành riêng cho tài khoản được cấp quyền',
-                                    style: GoogleFonts.dmSans(
+                                    style: GoogleFonts.beVietnamPro(
                                       fontSize: 10,
                                       color: const Color(0xFF998779),
                                     ),
@@ -560,7 +560,7 @@ class _AdminAccessGateState extends State<AdminAccessGate> {
       children: [
         Text(
           label,
-          style: GoogleFonts.dmSans(
+          style: GoogleFonts.beVietnamPro(
             color: const Color(0xFF66554B),
             fontSize: 12,
             fontWeight: FontWeight.w600,
@@ -581,13 +581,13 @@ class _AdminAccessGateState extends State<AdminAccessGate> {
           onSubmitted: keyboardType == TextInputType.emailAddress
               ? null
               : (_) => _signIn(),
-          style: GoogleFonts.dmSans(
+          style: GoogleFonts.beVietnamPro(
             color: const Color(0xFF403735),
             fontSize: 14,
           ),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: GoogleFonts.dmSans(
+            hintStyle: GoogleFonts.beVietnamPro(
               color: const Color(0xFFAD9C90),
               fontSize: 13,
             ),

@@ -206,7 +206,7 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
             Text(
               LumiAdaptive.text('Yêu cầu đăng nhập'),
               style: LumiAdaptive.style(
-                GoogleFonts.cormorantGaramond(
+                GoogleFonts.beVietnamPro(
                   fontSize: 26,
                   fontWeight: FontWeight.w700,
                   color: LumiAdaptive.color(plum),
@@ -220,7 +220,7 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
               ),
               textAlign: TextAlign.center,
               style: LumiAdaptive.style(
-                GoogleFonts.dmSans(
+                GoogleFonts.beVietnamPro(
                   fontSize: 14,
                   color: LumiAdaptive.color(plum.withValues(alpha: 0.7)),
                 ),
@@ -243,7 +243,7 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
                 child: Text(
                   LumiAdaptive.text('ĐĂNG NHẬP NGAY'),
                   style: LumiAdaptive.style(
-                    GoogleFonts.dmSans(fontWeight: FontWeight.w700),
+                    GoogleFonts.beVietnamPro(fontWeight: FontWeight.w700),
                   ),
                 ),
               ),
@@ -381,7 +381,7 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
         title: Text(
           LumiAdaptive.text('LUMI · Đặt lịch'),
           style: LumiAdaptive.style(
-            GoogleFonts.dmSans(fontWeight: FontWeight.w600),
+            GoogleFonts.beVietnamPro(fontWeight: FontWeight.w600),
           ),
         ),
       ),
@@ -441,7 +441,7 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
                             'Spa mở cửa 09:00 – 18:00. Hiển thị trạng thái slot còn trống theo thời gian thực.',
                           ),
                           style: LumiAdaptive.style(
-                            GoogleFonts.dmSans(
+                            GoogleFonts.beVietnamPro(
                               color: LumiAdaptive.color(
                                 plum.withValues(alpha: .7),
                               ),
@@ -461,7 +461,7 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
                           decoration: InputDecoration(
                             labelText: LumiAdaptive.optionalText('Họ và tên *'),
                             labelStyle: LumiAdaptive.style(
-                              GoogleFonts.dmSans(
+                              GoogleFonts.beVietnamPro(
                                 color: LumiAdaptive.color(
                                   plum.withValues(alpha: 0.7),
                                 ),
@@ -490,7 +490,7 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
                               'Số điện thoại liên hệ *',
                             ),
                             labelStyle: LumiAdaptive.style(
-                              GoogleFonts.dmSans(
+                              GoogleFonts.beVietnamPro(
                                 color: LumiAdaptive.color(
                                   plum.withValues(alpha: 0.7),
                                 ),
@@ -538,7 +538,7 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
                                   child: Text(
                                     LumiAdaptive.text(_error!),
                                     style: LumiAdaptive.style(
-                                      GoogleFonts.dmSans(
+                                      GoogleFonts.beVietnamPro(
                                         color: LumiAdaptive.color(
                                           Colors.red.shade800,
                                         ),
@@ -593,7 +593,7 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
                             : Text(
                                 LumiAdaptive.text('XÁC NHẬN LỊCH HẸN'),
                                 style: LumiAdaptive.style(
-                                  GoogleFonts.dmSans(
+                                  GoogleFonts.beVietnamPro(
                                     fontWeight: FontWeight.w700,
                                     letterSpacing: .7,
                                     fontSize: 14,
@@ -660,7 +660,7 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
                         : LumiAdaptive.text(
                             'Ngày đã chọn hiện đã kín lịch. Quý khách vui lòng chọn ngày khác.',
                           ),
-                    style: GoogleFonts.dmSans(
+                    style: GoogleFonts.beVietnamPro(
                       fontSize: 13,
                       color: const Color(0xFF9A3412),
                       fontWeight: FontWeight.w500,
@@ -755,7 +755,7 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
                           Text(
                             LumiAdaptive.text(slot.timeText),
                             style: LumiAdaptive.style(
-                              GoogleFonts.dmSans(
+                              GoogleFonts.beVietnamPro(
                                 fontSize: 14,
                                 fontWeight: isSelected
                                     ? FontWeight.w700
@@ -771,7 +771,7 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: LumiAdaptive.style(
-                              GoogleFonts.dmSans(
+                              GoogleFonts.beVietnamPro(
                                 fontSize: 10,
                                 fontWeight: isAvail
                                     ? FontWeight.w600
@@ -825,7 +825,7 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
         Text(
           LumiAdaptive.text(label),
           style: LumiAdaptive.style(
-            GoogleFonts.dmSans(
+            GoogleFonts.beVietnamPro(
               fontSize: 11,
               color: LumiAdaptive.color(plum.withValues(alpha: 0.65)),
             ),
@@ -872,7 +872,7 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
               children: [
                 Text(
                   LumiAdaptive.text('YOUR LUMI MOMENT'),
-                  style: GoogleFonts.dmSans(
+                  style: GoogleFonts.beVietnamPro(
                     color: colors.primary,
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
@@ -881,7 +881,7 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
                 const SizedBox(height: 10),
                 Text(
                   LumiAdaptive.text('Một khoảng lặng\nchỉ dành cho bạn.'),
-                  style: GoogleFonts.dmSans(
+                  style: GoogleFonts.beVietnamPro(
                     fontSize: 28,
                     height: 1.2,
                     fontWeight: FontWeight.w700,
@@ -891,7 +891,7 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
                 const SizedBox(height: 20),
                 Text(
                   LumiAdaptive.text('LIỆU TRÌNH ĐÃ CHỌN'),
-                  style: GoogleFonts.dmSans(
+                  style: GoogleFonts.beVietnamPro(
                     fontSize: 14,
                     color: colors.primary,
                     fontWeight: FontWeight.w700,
@@ -900,7 +900,7 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
                 const SizedBox(height: 7),
                 Text(
                   _name,
-                  style: GoogleFonts.dmSans(
+                  style: GoogleFonts.beVietnamPro(
                     fontSize: 21,
                     height: 1.35,
                     fontWeight: FontWeight.w700,
@@ -953,7 +953,7 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
           backgroundColor: colors.secondaryContainer,
           child: Text(
             number,
-            style: GoogleFonts.dmSans(
+            style: GoogleFonts.beVietnamPro(
               color: colors.onSecondaryContainer,
               fontSize: 14,
               fontWeight: FontWeight.w700,
@@ -963,7 +963,7 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
         const SizedBox(width: 12),
         Text(
           LumiAdaptive.text(title),
-          style: GoogleFonts.dmSans(
+          style: GoogleFonts.beVietnamPro(
             fontSize: 21,
             height: 1.3,
             color: colors.onSurface,
@@ -1002,7 +1002,7 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
               LumiAdaptive.text('Đặt lịch thành công'),
               textAlign: TextAlign.center,
               style: LumiAdaptive.style(
-                GoogleFonts.cormorantGaramond(
+                GoogleFonts.beVietnamPro(
                   color: LumiAdaptive.color(plum),
                   fontSize: 32,
                   fontWeight: FontWeight.w700,
@@ -1025,7 +1025,7 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
               child: Text(
                 LumiAdaptive.text('ĐANG CHỜ LUMI XÁC NHẬN'),
                 style: LumiAdaptive.style(
-                  GoogleFonts.dmSans(
+                  GoogleFonts.beVietnamPro(
                     color: LumiAdaptive.color(const Color(0xFF856404)),
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
@@ -1084,7 +1084,7 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
               ),
               textAlign: TextAlign.center,
               style: LumiAdaptive.style(
-                GoogleFonts.dmSans(
+                GoogleFonts.beVietnamPro(
                   color: LumiAdaptive.color(plum.withValues(alpha: .7)),
                   fontSize: 13,
                   height: 1.5,
@@ -1110,7 +1110,7 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
                 child: Text(
                   LumiAdaptive.text('HOÀN TẤT & VỀ TRANG CHỦ'),
                   style: LumiAdaptive.style(
-                    GoogleFonts.dmSans(fontWeight: FontWeight.w700),
+                    GoogleFonts.beVietnamPro(fontWeight: FontWeight.w700),
                   ),
                 ),
               ),
@@ -1128,7 +1128,7 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
         Text(
           LumiAdaptive.text(label),
           style: LumiAdaptive.style(
-            GoogleFonts.dmSans(
+            GoogleFonts.beVietnamPro(
               color: LumiAdaptive.color(plum.withValues(alpha: 0.6)),
               fontSize: 13,
             ),
@@ -1140,7 +1140,7 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
             LumiAdaptive.text(value),
             textAlign: TextAlign.right,
             style: LumiAdaptive.style(
-              GoogleFonts.dmSans(
+              GoogleFonts.beVietnamPro(
                 color: LumiAdaptive.color(plum),
                 fontWeight: FontWeight.w600,
                 fontSize: 13,

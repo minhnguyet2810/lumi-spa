@@ -47,7 +47,7 @@ class AdminUserDetailDialog extends StatelessWidget {
                     child: user.photoUrl == null || user.photoUrl!.isEmpty
                         ? Text(
                             user.initials,
-                            style: GoogleFonts.cormorantGaramond(
+                            style: GoogleFonts.beVietnamPro(
                               fontSize: 22,
                               fontWeight: FontWeight.w700,
                               color: Colors.white,
@@ -65,7 +65,7 @@ class AdminUserDetailDialog extends StatelessWidget {
                             Flexible(
                               child: Text(
                                 user.displayName,
-                                style: GoogleFonts.cormorantGaramond(
+                                style: GoogleFonts.beVietnamPro(
                                   fontSize: 22,
                                   fontWeight: FontWeight.w700,
                                   color: LumiStyle.plum,
@@ -87,7 +87,7 @@ class AdminUserDetailDialog extends StatelessWidget {
                               ),
                               child: Text(
                                 user.roleLabel,
-                                style: GoogleFonts.dmSans(
+                                style: GoogleFonts.beVietnamPro(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w700,
                                   color: user.roleColor,
@@ -99,7 +99,7 @@ class AdminUserDetailDialog extends StatelessWidget {
                         const SizedBox(height: 4),
                         Text(
                           'ID: ${user.id}',
-                          style: GoogleFonts.dmSans(
+                          style: GoogleFonts.beVietnamPro(
                             fontSize: 11,
                             color: LumiStyle.muted,
                           ),
@@ -120,7 +120,7 @@ class AdminUserDetailDialog extends StatelessWidget {
               // Thông tin liên hệ
               Text(
                 'THÔNG TIN LIÊN HỆ',
-                style: GoogleFonts.dmSans(
+                style: GoogleFonts.beVietnamPro(
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 1,
@@ -156,7 +156,7 @@ class AdminUserDetailDialog extends StatelessWidget {
               // Thống kê hoạt động
               Text(
                 'HOẠT ĐỘNG TẠI LUMI SPA',
-                style: GoogleFonts.dmSans(
+                style: GoogleFonts.beVietnamPro(
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 1,
@@ -198,7 +198,7 @@ class AdminUserDetailDialog extends StatelessWidget {
                   style: FilledButton.styleFrom(
                     backgroundColor: LumiStyle.plum,
                   ),
-                  child: Text('Đóng', style: GoogleFonts.dmSans()),
+                  child: Text('Đóng', style: GoogleFonts.beVietnamPro()),
                 ),
               ),
             ],
@@ -222,13 +222,13 @@ class AdminUserDetailDialog extends StatelessWidget {
           width: 100,
           child: Text(
             label,
-            style: GoogleFonts.dmSans(fontSize: 12, color: LumiStyle.muted),
+            style: GoogleFonts.beVietnamPro(fontSize: 12, color: LumiStyle.muted),
           ),
         ),
         Expanded(
           child: Text(
             value,
-            style: GoogleFonts.dmSans(
+            style: GoogleFonts.beVietnamPro(
               fontSize: 13,
               fontWeight: FontWeight.w600,
               color: LumiStyle.plum,
@@ -270,7 +270,7 @@ class AdminUserDetailDialog extends StatelessWidget {
             const SizedBox(height: 6),
             Text(
               value,
-              style: GoogleFonts.cormorantGaramond(
+              style: GoogleFonts.beVietnamPro(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
                 color: LumiStyle.plum,
@@ -279,7 +279,7 @@ class AdminUserDetailDialog extends StatelessWidget {
             const SizedBox(height: 2),
             Text(
               label,
-              style: GoogleFonts.dmSans(fontSize: 11, color: LumiStyle.muted),
+              style: GoogleFonts.beVietnamPro(fontSize: 11, color: LumiStyle.muted),
             ),
           ],
         ),

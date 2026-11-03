@@ -49,7 +49,7 @@ class AdminUserCard extends StatelessWidget {
                   child: user.photoUrl == null || user.photoUrl!.isEmpty
                       ? Text(
                           user.initials,
-                          style: GoogleFonts.cormorantGaramond(
+                          style: GoogleFonts.beVietnamPro(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
                             color: LumiStyle.plum,
@@ -67,7 +67,7 @@ class AdminUserCard extends StatelessWidget {
                           Flexible(
                             child: Text(
                               user.displayName,
-                              style: GoogleFonts.cormorantGaramond(
+                              style: GoogleFonts.beVietnamPro(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w700,
                                 color: LumiStyle.plum,
@@ -88,7 +88,7 @@ class AdminUserCard extends StatelessWidget {
                             ),
                             child: Text(
                               user.roleLabel,
-                              style: GoogleFonts.dmSans(
+                              style: GoogleFonts.beVietnamPro(
                                 fontSize: 10,
                                 fontWeight: FontWeight.w700,
                                 color: user.roleColor,
@@ -100,7 +100,7 @@ class AdminUserCard extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         user.email.isNotEmpty ? user.email : user.phone,
-                        style: GoogleFonts.dmSans(
+                        style: GoogleFonts.beVietnamPro(
                           fontSize: 12,
                           color: LumiStyle.muted,
                         ),
@@ -118,7 +118,7 @@ class AdminUserCard extends StatelessWidget {
                           const SizedBox(width: 4),
                           Text(
                             '${user.bookingCount} lịch',
-                            style: GoogleFonts.dmSans(
+                            style: GoogleFonts.beVietnamPro(
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
                             ),
@@ -132,7 +132,7 @@ class AdminUserCard extends StatelessWidget {
                           const SizedBox(width: 4),
                           Text(
                             '${user.orderCount} đơn',
-                            style: GoogleFonts.dmSans(
+                            style: GoogleFonts.beVietnamPro(
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
                             ),
@@ -147,7 +147,7 @@ class AdminUserCard extends StatelessWidget {
                             const SizedBox(width: 4),
                             Text(
                               user.displayTotalSpent,
-                              style: GoogleFonts.dmSans(
+                              style: GoogleFonts.beVietnamPro(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,
                                 color: const Color(0xFF16A34A),

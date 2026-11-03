@@ -302,7 +302,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                   Text(
                     LumiAdaptive.text('Bộ lọc & Sắp xếp'),
                     style: LumiAdaptive.style(
-                      GoogleFonts.dmSans(
+                      GoogleFonts.beVietnamPro(
                         fontWeight: FontWeight.w700,
                         fontSize: 14,
                         color: LumiAdaptive.color(ink),
@@ -356,7 +356,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                       child: Text(
                         LumiAdaptive.text('Đặt lại'),
                         style: LumiAdaptive.style(
-                          GoogleFonts.dmSans(
+                          GoogleFonts.beVietnamPro(
                             fontWeight: FontWeight.w600,
                             fontSize: 14,
                             color: LumiAdaptive.color(rose),
@@ -397,7 +397,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                 Text(
                   LumiAdaptive.text('Dòng sản phẩm chính'),
                   style: LumiAdaptive.style(
-                    GoogleFonts.dmSans(
+                    GoogleFonts.beVietnamPro(
                       color: LumiAdaptive.color(ink),
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
@@ -437,7 +437,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                     ),
                   ),
                   style: LumiAdaptive.style(
-                    GoogleFonts.dmSans(
+                    GoogleFonts.beVietnamPro(
                       color: LumiAdaptive.color(ink),
                       fontSize: 14,
                     ),
@@ -470,7 +470,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                     'Dung tích / Quy cách (tự động theo sản phẩm)',
                   ),
                   style: LumiAdaptive.style(
-                    GoogleFonts.dmSans(
+                    GoogleFonts.beVietnamPro(
                       color: LumiAdaptive.color(ink),
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
@@ -510,7 +510,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                     ),
                   ),
                   style: LumiAdaptive.style(
-                    GoogleFonts.dmSans(
+                    GoogleFonts.beVietnamPro(
                       color: LumiAdaptive.color(ink),
                       fontSize: 14,
                     ),
@@ -539,7 +539,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                     Text(
                       LumiAdaptive.text('Khoảng giá'),
                       style: LumiAdaptive.style(
-                        GoogleFonts.dmSans(
+                        GoogleFonts.beVietnamPro(
                           color: LumiAdaptive.color(ink),
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
@@ -551,7 +551,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                         '${_money(minPrice)} – ${_money(maxPrice)}',
                       ),
                       style: LumiAdaptive.style(
-                        GoogleFonts.dmSans(
+                        GoogleFonts.beVietnamPro(
                           color: LumiAdaptive.color(rose),
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
@@ -596,7 +596,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                 Text(
                   LumiAdaptive.text('Sắp xếp'),
                   style: LumiAdaptive.style(
-                    GoogleFonts.dmSans(
+                    GoogleFonts.beVietnamPro(
                       color: LumiAdaptive.color(ink),
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
@@ -634,7 +634,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                     ),
                   ),
                   style: LumiAdaptive.style(
-                    GoogleFonts.dmSans(
+                    GoogleFonts.beVietnamPro(
                       color: LumiAdaptive.color(ink),
                       fontSize: 14,
                     ),
@@ -677,7 +677,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                     label: Text(
                       LumiAdaptive.text('Thu gọn bộ lọc'),
                       style: LumiAdaptive.style(
-                        GoogleFonts.dmSans(
+                        GoogleFonts.beVietnamPro(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
                           color: LumiAdaptive.color(rose),
@@ -733,7 +733,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
             LumiAdaptive.text(label),
             textAlign: TextAlign.center,
             style: LumiAdaptive.style(
-              GoogleFonts.dmSans(
+              GoogleFonts.beVietnamPro(
                 fontSize: 14,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                 color: LumiAdaptive.color(isSelected ? Colors.white : ink),
@@ -847,7 +847,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
             Text(
               LumiAdaptive.text('Giỏ hàng đang trống'),
               style: LumiAdaptive.style(
-                GoogleFonts.dmSans(
+                GoogleFonts.beVietnamPro(
                   color: LumiAdaptive.color(ink),
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
@@ -861,7 +861,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
               ),
               textAlign: TextAlign.center,
               style: LumiAdaptive.style(
-                GoogleFonts.dmSans(
+                GoogleFonts.beVietnamPro(
                   color: LumiAdaptive.color(muted),
                   fontSize: 14,
                 ),
@@ -928,7 +928,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                         Text(
                           LumiAdaptive.text('Giỏ hàng của bạn'),
                           style: LumiAdaptive.style(
-                            GoogleFonts.dmSans(
+                            GoogleFonts.beVietnamPro(
                               fontSize: 24,
                               fontWeight: FontWeight.w700,
                               color: LumiAdaptive.color(ink),
@@ -1000,7 +1000,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                                         maxLines: 2,
                                         overflow: TextOverflow.ellipsis,
                                         style: LumiAdaptive.style(
-                                          GoogleFonts.dmSans(
+                                          GoogleFonts.beVietnamPro(
                                             fontWeight: FontWeight.w600,
                                             color: LumiAdaptive.color(ink),
                                           ),
@@ -1012,7 +1012,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                                           _money(line.product['price']),
                                         ),
                                         style: LumiAdaptive.style(
-                                          GoogleFonts.dmSans(
+                                          GoogleFonts.beVietnamPro(
                                             color: LumiAdaptive.color(muted),
                                             fontSize: 14,
                                           ),
@@ -1050,7 +1050,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                                     Text(
                                       LumiAdaptive.text('${line.quantity}'),
                                       style: LumiAdaptive.style(
-                                        GoogleFonts.dmSans(
+                                        GoogleFonts.beVietnamPro(
                                           color: LumiAdaptive.color(ink),
                                           fontWeight: FontWeight.w700,
                                         ),
@@ -1098,7 +1098,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                         Text(
                           LumiAdaptive.text(_money(total)),
                           style: LumiAdaptive.style(
-                            GoogleFonts.dmSans(
+                            GoogleFonts.beVietnamPro(
                               fontSize: 18,
                               fontWeight: FontWeight.w700,
                               color: LumiAdaptive.color(ink),
@@ -1139,7 +1139,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                         'Giỏ hàng hiện chỉ lưu trong phiên sử dụng.',
                       ),
                       style: LumiAdaptive.style(
-                        GoogleFonts.dmSans(
+                        GoogleFonts.beVietnamPro(
                           fontSize: 14,
                           color: LumiAdaptive.color(muted),
                         ),
@@ -1178,7 +1178,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                         Text(
                           LumiAdaptive.text('LUMI BEAUTY'),
                           style: LumiAdaptive.style(
-                            GoogleFonts.dmSans(
+                            GoogleFonts.beVietnamPro(
                               color: LumiAdaptive.color(rose),
                               letterSpacing: 2,
                               fontWeight: FontWeight.w700,
@@ -1189,7 +1189,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                         Text(
                           LumiAdaptive.text(_name(item)),
                           style: LumiAdaptive.style(
-                            GoogleFonts.dmSans(
+                            GoogleFonts.beVietnamPro(
                               fontSize: 37,
                               fontWeight: FontWeight.w600,
                               color: LumiAdaptive.color(ink),
@@ -1200,7 +1200,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                         Text(
                           LumiAdaptive.text(_money(item['price'])),
                           style: LumiAdaptive.style(
-                            GoogleFonts.dmSans(
+                            GoogleFonts.beVietnamPro(
                               fontSize: 21,
                               fontWeight: FontWeight.w700,
                               color: LumiAdaptive.color(rose),
@@ -1211,7 +1211,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                         Text(
                           LumiAdaptive.text('Giới thiệu sản phẩm'),
                           style: LumiAdaptive.style(
-                            GoogleFonts.dmSans(
+                            GoogleFonts.beVietnamPro(
                               fontSize: 20,
                               fontWeight: FontWeight.w700,
                               color: LumiAdaptive.color(ink),
@@ -1226,7 +1226,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                                 .toString(),
                           ),
                           style: LumiAdaptive.style(
-                            GoogleFonts.dmSans(
+                            GoogleFonts.beVietnamPro(
                               fontSize: 16,
                               height: 1.6,
                               color: LumiAdaptive.color(muted),
@@ -1240,8 +1240,8 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                           Text(
                             LumiAdaptive.text('Thành phần'),
                             style: LumiAdaptive.style(
-                              GoogleFonts.dmSans(
-                                fontSize: 19,
+                              GoogleFonts.beVietnamPro(
+                                fontSize: 18,
                                 fontWeight: FontWeight.w700,
                                 color: LumiAdaptive.color(ink),
                               ),
@@ -1251,7 +1251,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                           Text(
                             LumiAdaptive.text(item['ingredients'].toString()),
                             style: LumiAdaptive.style(
-                              GoogleFonts.dmSans(
+                              GoogleFonts.beVietnamPro(
                                 fontSize: 15,
                                 color: LumiAdaptive.color(muted),
                               ),
@@ -1263,8 +1263,8 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                           Text(
                             LumiAdaptive.text('Hướng dẫn sử dụng'),
                             style: LumiAdaptive.style(
-                              GoogleFonts.dmSans(
-                                fontSize: 19,
+                              GoogleFonts.beVietnamPro(
+                                fontSize: 18,
                                 fontWeight: FontWeight.w700,
                                 color: LumiAdaptive.color(ink),
                               ),
@@ -1274,7 +1274,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                           Text(
                             LumiAdaptive.text(item['usage'].toString()),
                             style: LumiAdaptive.style(
-                              GoogleFonts.dmSans(
+                              GoogleFonts.beVietnamPro(
                                 fontSize: 15,
                                 color: LumiAdaptive.color(muted),
                               ),
@@ -1336,7 +1336,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
             LumiAdaptive.text(title),
             textAlign: TextAlign.center,
             style: LumiAdaptive.style(
-              GoogleFonts.dmSans(
+              GoogleFonts.beVietnamPro(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
                 color: LumiAdaptive.color(ink),
@@ -1348,7 +1348,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
             LumiAdaptive.text(description),
             textAlign: TextAlign.center,
             style: LumiAdaptive.style(
-              GoogleFonts.dmSans(
+              GoogleFonts.beVietnamPro(
                 fontSize: 14,
                 height: 1.5,
                 color: LumiAdaptive.color(muted),
@@ -1379,7 +1379,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
           Text(
             LumiAdaptive.text('Chăm sóc da mỗi ngày'),
             style: LumiAdaptive.style(
-              GoogleFonts.dmSans(
+              GoogleFonts.beVietnamPro(
                 fontSize: 30,
                 height: 1.2,
                 fontWeight: FontWeight.w600,
@@ -1394,7 +1394,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
               'được lựa chọn dành cho bạn.',
             ),
             style: LumiAdaptive.style(
-              GoogleFonts.dmSans(
+              GoogleFonts.beVietnamPro(
                 fontSize: 14,
                 height: 1.4,
                 color: LumiAdaptive.color(muted),
@@ -1436,7 +1436,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                         Text(
                           LumiAdaptive.text('THE LUMI COLLECTION'),
                           style: LumiAdaptive.style(
-                            GoogleFonts.dmSans(
+                            GoogleFonts.beVietnamPro(
                               color: LumiAdaptive.color(Colors.white),
                               fontSize: 14,
                               letterSpacing: 1.5,
@@ -1448,7 +1448,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                         Text(
                           LumiAdaptive.text('Đẹp từ những\nđiều dịu dàng.'),
                           style: LumiAdaptive.style(
-                            GoogleFonts.dmSans(
+                            GoogleFonts.beVietnamPro(
                               color: LumiAdaptive.color(Colors.white),
                               fontSize: 24,
                               height: 1.2,
@@ -1468,7 +1468,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
             controller: search,
             onChanged: (_) => setState(() {}),
             style: LumiAdaptive.style(
-              GoogleFonts.dmSans(fontSize: 16, color: LumiAdaptive.color(ink)),
+              GoogleFonts.beVietnamPro(fontSize: 16, color: LumiAdaptive.color(ink)),
             ),
             decoration: InputDecoration(
               hintText: LumiAdaptive.optionalText(
@@ -1499,7 +1499,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
           Text(
             LumiAdaptive.text('Bộ sưu tập LUMI'),
             style: LumiAdaptive.style(
-              GoogleFonts.dmSans(
+              GoogleFonts.beVietnamPro(
                 fontSize: 22,
                 fontWeight: FontWeight.w700,
                 color: LumiAdaptive.color(ink),
@@ -1616,7 +1616,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                           ),
                           showCheckmark: false,
                           labelStyle: LumiAdaptive.style(
-                            GoogleFonts.dmSans(
+                            GoogleFonts.beVietnamPro(
                               color: LumiAdaptive.color(
                                 category == active ? Colors.white : ink,
                               ),
@@ -1634,7 +1634,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                   Text(
                     LumiAdaptive.text('${filtered.length} sản phẩm'),
                     style: LumiAdaptive.style(
-                      GoogleFonts.dmSans(
+                      GoogleFonts.beVietnamPro(
                         color: LumiAdaptive.color(muted),
                         fontSize: 14,
                       ),
@@ -1687,7 +1687,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                                 style: LumiAdaptive.style(
-                                  GoogleFonts.dmSans(
+                                  GoogleFonts.beVietnamPro(
                                     fontSize: 15,
                                     fontWeight: FontWeight.w700,
                                     color: LumiAdaptive.color(ink),
@@ -1698,7 +1698,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                               Text(
                                 LumiAdaptive.text(_money(item['price'])),
                                 style: LumiAdaptive.style(
-                                  GoogleFonts.dmSans(
+                                  GoogleFonts.beVietnamPro(
                                     fontSize: 14,
                                     color: LumiAdaptive.color(rose),
                                     fontWeight: FontWeight.w700,
@@ -1745,7 +1745,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                 'LUMI BEAUTY · Một chút chăm sóc, một chút yêu thương dành cho chính mình.',
               ),
               style: LumiAdaptive.style(
-                GoogleFonts.dmSans(
+                GoogleFonts.beVietnamPro(
                   fontSize: 15,
                   height: 1.5,
                   color: LumiAdaptive.color(ink),

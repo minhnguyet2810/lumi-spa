@@ -162,7 +162,7 @@ class _LumiAppointmentsScreenState extends State<LumiAppointmentsScreen> {
         title: Text(
           LumiAdaptive.text('Hủy lịch hẹn?'),
           style: LumiAdaptive.style(
-            GoogleFonts.dmSans(
+            GoogleFonts.beVietnamPro(
               fontSize: 24,
               fontWeight: FontWeight.w700,
               color: LumiAdaptive.color(plum),
@@ -174,7 +174,7 @@ class _LumiAppointmentsScreenState extends State<LumiAppointmentsScreen> {
             'Quý khách có chắc chắn muốn hủy lịch hẹn liệu trình "${booking.serviceName}" vào lúc ${booking.formattedDateTime} không?\n\nPhòng và chuyên viên sẽ được giải phóng trên hệ thống cho khách hàng khác.',
           ),
           style: LumiAdaptive.style(
-            GoogleFonts.dmSans(
+            GoogleFonts.beVietnamPro(
               fontSize: 14,
               height: 1.5,
               color: LumiAdaptive.color(plum),
@@ -187,7 +187,7 @@ class _LumiAppointmentsScreenState extends State<LumiAppointmentsScreen> {
             child: Text(
               LumiAdaptive.text('GIỮ LỊCH'),
               style: LumiAdaptive.style(
-                GoogleFonts.dmSans(
+                GoogleFonts.beVietnamPro(
                   fontWeight: FontWeight.w600,
                   color: LumiAdaptive.color(muted),
                 ),
@@ -210,7 +210,7 @@ class _LumiAppointmentsScreenState extends State<LumiAppointmentsScreen> {
             child: Text(
               LumiAdaptive.text('XÁC NHẬN HỦY'),
               style: LumiAdaptive.style(
-                GoogleFonts.dmSans(fontWeight: FontWeight.w700),
+                GoogleFonts.beVietnamPro(fontWeight: FontWeight.w700),
               ),
             ),
           ),
@@ -306,7 +306,7 @@ class _LumiAppointmentsScreenState extends State<LumiAppointmentsScreen> {
             LumiAdaptive.text(displayTitle),
             textAlign: TextAlign.center,
             style: LumiAdaptive.style(
-              GoogleFonts.dmSans(
+              GoogleFonts.beVietnamPro(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
                 color: LumiAdaptive.color(selected ? plum : muted),
@@ -380,7 +380,7 @@ class _LumiAppointmentsScreenState extends State<LumiAppointmentsScreen> {
             LumiAdaptive.text(title),
             textAlign: TextAlign.center,
             style: LumiAdaptive.style(
-              GoogleFonts.dmSans(
+              GoogleFonts.beVietnamPro(
                 fontSize: 26,
                 fontWeight: FontWeight.w700,
                 color: LumiAdaptive.color(ink),
@@ -392,7 +392,7 @@ class _LumiAppointmentsScreenState extends State<LumiAppointmentsScreen> {
             LumiAdaptive.text(desc),
             textAlign: TextAlign.center,
             style: LumiAdaptive.style(
-              GoogleFonts.dmSans(
+              GoogleFonts.beVietnamPro(
                 fontSize: 14,
                 height: 1.5,
                 color: LumiAdaptive.color(muted),
@@ -425,7 +425,7 @@ class _LumiAppointmentsScreenState extends State<LumiAppointmentsScreen> {
                   widget.isLoggedIn ? 'Chọn dịch vụ' : 'ĐĂNG NHẬP NGAY',
                 ),
                 style: LumiAdaptive.style(
-                  GoogleFonts.dmSans(
+                  GoogleFonts.beVietnamPro(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 0.2,
@@ -459,7 +459,7 @@ class _LumiAppointmentsScreenState extends State<LumiAppointmentsScreen> {
           Text(
             LumiAdaptive.text('Không thể tải lịch hẹn'),
             style: LumiAdaptive.style(
-              GoogleFonts.dmSans(
+              GoogleFonts.beVietnamPro(
                 fontSize: 24,
                 fontWeight: FontWeight.w700,
                 color: LumiAdaptive.color(plum),
@@ -474,7 +474,7 @@ class _LumiAppointmentsScreenState extends State<LumiAppointmentsScreen> {
             ),
             textAlign: TextAlign.center,
             style: LumiAdaptive.style(
-              GoogleFonts.dmSans(
+              GoogleFonts.beVietnamPro(
                 fontSize: 14,
                 color: LumiAdaptive.color(muted),
                 height: 1.4,
@@ -493,7 +493,7 @@ class _LumiAppointmentsScreenState extends State<LumiAppointmentsScreen> {
                 label: Text(
                   LumiAdaptive.text('ĐĂNG NHẬP LẠI'),
                   style: LumiAdaptive.style(
-                    GoogleFonts.dmSans(
+                    GoogleFonts.beVietnamPro(
                       fontWeight: FontWeight.w700,
                       letterSpacing: 0.2,
                     ),
@@ -521,7 +521,7 @@ class _LumiAppointmentsScreenState extends State<LumiAppointmentsScreen> {
             label: Text(
               LumiAdaptive.text('Thử lại'),
               style: LumiAdaptive.style(
-                GoogleFonts.dmSans(
+                GoogleFonts.beVietnamPro(
                   fontWeight: FontWeight.w700,
                   color: LumiAdaptive.color(rose),
                 ),
@@ -556,7 +556,7 @@ class _LumiAppointmentsScreenState extends State<LumiAppointmentsScreen> {
           Text(
             LumiAdaptive.text('Lịch hẹn'),
             style: LumiAdaptive.style(
-              GoogleFonts.dmSans(
+              GoogleFonts.beVietnamPro(
                 fontSize: 28,
                 height: 1.25,
                 fontWeight: FontWeight.w700,

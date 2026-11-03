@@ -102,7 +102,7 @@ class _LumiAboutPageState extends State<LumiAboutPage> {
               Text(
                 LumiAdaptive.text(en ? 'OUR STORY' : 'CÂU CHUYỆN LUMI'),
                 style: LumiAdaptive.style(
-                  GoogleFonts.dmSans(
+                  GoogleFonts.beVietnamPro(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
                     color: colors.primary,
@@ -113,7 +113,7 @@ class _LumiAboutPageState extends State<LumiAboutPage> {
               Text(
                 LumiAdaptive.text(field('title')),
                 style: LumiAdaptive.style(
-                  GoogleFonts.dmSans(
+                  GoogleFonts.beVietnamPro(
                     fontSize: 32,
                     height: 1.2,
                     color: colors.onSurface,
@@ -125,8 +125,8 @@ class _LumiAboutPageState extends State<LumiAboutPage> {
               Text(
                 LumiAdaptive.text(field('intro')),
                 style: LumiAdaptive.style(
-                  GoogleFonts.dmSans(
-                    fontSize: 17,
+                  GoogleFonts.beVietnamPro(
+                    fontSize: 16,
                     height: 1.7,
                     color: colors.onSurface,
                   ),
@@ -152,8 +152,8 @@ class _LumiAboutPageState extends State<LumiAboutPage> {
                       Text(
                         LumiAdaptive.text(field('quote')),
                         style: LumiAdaptive.style(
-                          GoogleFonts.dmSans(
-                            fontSize: 23,
+                          GoogleFonts.beVietnamPro(
+                            fontSize: 22,
                             height: 1.45,
                             fontWeight: FontWeight.w600,
                             color: colors.onSecondaryContainer,
@@ -179,7 +179,7 @@ class _LumiAboutPageState extends State<LumiAboutPage> {
                       Text(
                         LumiAdaptive.text((i + 1).toString().padLeft(2, '0')),
                         style: LumiAdaptive.style(
-                          GoogleFonts.dmSans(
+                          GoogleFonts.beVietnamPro(
                             fontSize: 15,
                             fontWeight: FontWeight.w700,
                             color: colors.primary,
@@ -192,7 +192,7 @@ class _LumiAboutPageState extends State<LumiAboutPage> {
                           (sections[i]['title'] ?? '').toString(),
                         ),
                         style: LumiAdaptive.style(
-                          GoogleFonts.dmSans(
+                          GoogleFonts.beVietnamPro(
                             fontSize: 22,
                             height: 1.3,
                             fontWeight: FontWeight.w700,
@@ -206,8 +206,8 @@ class _LumiAboutPageState extends State<LumiAboutPage> {
                           (sections[i]['body'] ?? '').toString(),
                         ),
                         style: LumiAdaptive.style(
-                          GoogleFonts.dmSans(
-                            fontSize: 17,
+                          GoogleFonts.beVietnamPro(
+                            fontSize: 16,
                             height: 1.7,
                             color: colors.onSurface,
                           ),
@@ -223,7 +223,7 @@ class _LumiAboutPageState extends State<LumiAboutPage> {
                   en ? 'Thank you for making LUMI part of your day.' : 'Cảm ơn bạn đã để LUMI trở thành một phần trong hành trình chăm sóc bản thân.',
                 ),
                 style: LumiAdaptive.style(
-                  GoogleFonts.dmSans(
+                  GoogleFonts.beVietnamPro(
                     fontSize: 18,
                     height: 1.6,
                     fontWeight: FontWeight.w600,

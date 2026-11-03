@@ -49,7 +49,7 @@ class _AdminPortalHubScreenState extends State<AdminPortalHubScreen>
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
           'Dọn dẹp dữ liệu test?',
-          style: GoogleFonts.cormorantGaramond(
+          style: GoogleFonts.beVietnamPro(
             fontSize: 22,
             fontWeight: FontWeight.w700,
             color: LumiStyle.plum,
@@ -57,14 +57,14 @@ class _AdminPortalHubScreenState extends State<AdminPortalHubScreen>
         ),
         content: Text(
           'Hệ thống sẽ dọn dẹp các đơn hàng và lịch hẹn thử nghiệm cũ trong Firestore để bạn bắt đầu kiểm thử từ trạng thái sạch hoàn toàn.\n\n(Dữ liệu người dùng sẽ được giữ nguyên an toàn).',
-          style: GoogleFonts.dmSans(fontSize: 13, height: 1.5),
+          style: GoogleFonts.beVietnamPro(fontSize: 13, height: 1.5),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
             child: Text(
               'HỦY',
-              style: GoogleFonts.dmSans(color: LumiStyle.muted),
+              style: GoogleFonts.beVietnamPro(color: LumiStyle.muted),
             ),
           ),
           FilledButton.icon(
@@ -73,7 +73,7 @@ class _AdminPortalHubScreenState extends State<AdminPortalHubScreen>
             icon: const Icon(Icons.delete_sweep_rounded, size: 16),
             label: Text(
               'DỌN DẸP NGAY',
-              style: GoogleFonts.dmSans(fontWeight: FontWeight.w700),
+              style: GoogleFonts.beVietnamPro(fontWeight: FontWeight.w700),
             ),
           ),
         ],
@@ -186,7 +186,7 @@ class _AdminPortalHubScreenState extends State<AdminPortalHubScreen>
                   ),
                   child: Text(
                     count > 99 ? '99+' : '$count',
-                    style: GoogleFonts.dmSans(
+                    style: GoogleFonts.beVietnamPro(
                       color: Colors.white,
                       fontSize: 10,
                       fontWeight: FontWeight.w700,
@@ -238,7 +238,7 @@ class _AdminPortalHubScreenState extends State<AdminPortalHubScreen>
                 children: [
                   Text(
                     'LUMI',
-                    style: GoogleFonts.dmSans(
+                    style: GoogleFonts.beVietnamPro(
                       fontSize: 24,
                       fontWeight: FontWeight.w800,
                       color: ink,
@@ -249,7 +249,7 @@ class _AdminPortalHubScreenState extends State<AdminPortalHubScreen>
                     'KHÔNG GIAN QUẢN TRỊ',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.dmSans(
+                    style: GoogleFonts.beVietnamPro(
                       fontSize: 9,
                       fontWeight: FontWeight.w600,
                       letterSpacing: 1.1,
@@ -352,7 +352,7 @@ class _AdminPortalHubScreenState extends State<AdminPortalHubScreen>
                           children: [
                             Text(
                               'Chăm chút từng trải nghiệm.',
-                              style: GoogleFonts.dmSans(
+                              style: GoogleFonts.beVietnamPro(
                                 fontSize: 21,
                                 height: 1.2,
                                 fontWeight: FontWeight.w700,
@@ -362,7 +362,7 @@ class _AdminPortalHubScreenState extends State<AdminPortalHubScreen>
                             const SizedBox(height: 7),
                             Text(
                               'Lịch hẹn, đơn hàng và khách hàng trong một không gian.',
-                              style: GoogleFonts.dmSans(
+                              style: GoogleFonts.beVietnamPro(
                                 fontSize: 12,
                                 height: 1.5,
                                 color: const Color(0xFF756863),
@@ -407,11 +407,11 @@ class _AdminPortalHubScreenState extends State<AdminPortalHubScreen>
                     ),
                     labelColor: const Color(0xFF894A36),
                     unselectedLabelColor: const Color(0xFF81726A),
-                    labelStyle: GoogleFonts.dmSans(
+                    labelStyle: GoogleFonts.beVietnamPro(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
                     ),
-                    unselectedLabelStyle: GoogleFonts.dmSans(
+                    unselectedLabelStyle: GoogleFonts.beVietnamPro(
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
                     ),

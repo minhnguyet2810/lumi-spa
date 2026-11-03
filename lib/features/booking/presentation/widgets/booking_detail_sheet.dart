@@ -50,7 +50,7 @@ class BookingDetailSheet extends StatelessWidget {
               Text(
                 LumiAdaptive.text('Chi tiết lịch hẹn'),
                 style: LumiAdaptive.style(
-                  GoogleFonts.cormorantGaramond(
+                  GoogleFonts.beVietnamPro(
                     fontSize: 28,
                     fontWeight: FontWeight.w700,
                     color: LumiAdaptive.color(plum),
@@ -105,7 +105,7 @@ class BookingDetailSheet extends StatelessWidget {
                 label: Text(
                   LumiAdaptive.text('HỦY LỊCH HẸN NÀY'),
                   style: LumiAdaptive.style(
-                    GoogleFonts.dmSans(
+                    GoogleFonts.beVietnamPro(
                       fontWeight: FontWeight.w700,
                       color: LumiAdaptive.color(Colors.red.shade700),
                       fontSize: 13,
@@ -136,7 +136,7 @@ class BookingDetailSheet extends StatelessWidget {
         Text(
           LumiAdaptive.text(label),
           style: LumiAdaptive.style(
-            GoogleFonts.dmSans(
+            GoogleFonts.beVietnamPro(
               fontSize: 13,
               color: LumiAdaptive.color(plum.withValues(alpha: 0.65)),
             ),
@@ -148,7 +148,7 @@ class BookingDetailSheet extends StatelessWidget {
             LumiAdaptive.text(value),
             textAlign: TextAlign.right,
             style: LumiAdaptive.style(
-              GoogleFonts.dmSans(
+              GoogleFonts.beVietnamPro(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
                 color: LumiAdaptive.color(plum),
@@ -192,7 +192,7 @@ class BookingDetailSheet extends StatelessWidget {
       child: Text(
         LumiAdaptive.text(item.statusLabel),
         style: LumiAdaptive.style(
-          GoogleFonts.dmSans(
+          GoogleFonts.beVietnamPro(
             color: LumiAdaptive.color(fg),
             fontSize: 11,
             fontWeight: FontWeight.w700,

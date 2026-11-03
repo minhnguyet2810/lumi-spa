@@ -37,7 +37,7 @@ class AdminOrderTable extends StatelessWidget {
               const SizedBox(height: 12),
               Text(
                 'Không có đơn hàng nào trong danh mục này',
-                style: GoogleFonts.dmSans(
+                style: GoogleFonts.beVietnamPro(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: LumiStyle.muted,
@@ -64,13 +64,13 @@ class AdminOrderTable extends StatelessWidget {
             headingRowColor: WidgetStateProperty.all(
               LumiStyle.blushSurface.withValues(alpha: 0.5),
             ),
-            headingTextStyle: GoogleFonts.dmSans(
+            headingTextStyle: GoogleFonts.beVietnamPro(
               fontSize: 12,
               fontWeight: FontWeight.w700,
               letterSpacing: 0.8,
               color: LumiStyle.plum,
             ),
-            dataTextStyle: GoogleFonts.dmSans(
+            dataTextStyle: GoogleFonts.beVietnamPro(
               fontSize: 13,
               color: LumiStyle.plum,
             ),
@@ -93,7 +93,7 @@ class AdminOrderTable extends StatelessWidget {
                   DataCell(
                     Text(
                       '#${order.id}',
-                      style: GoogleFonts.dmSans(
+                      style: GoogleFonts.beVietnamPro(
                         fontWeight: FontWeight.w700,
                         color: LumiStyle.plum,
                       ),
@@ -104,7 +104,7 @@ class AdminOrderTable extends StatelessWidget {
                   DataCell(
                     Text(
                       order.formattedCreatedAt,
-                      style: GoogleFonts.dmSans(
+                      style: GoogleFonts.beVietnamPro(
                         fontSize: 12,
                         color: LumiStyle.muted,
                       ),
@@ -119,7 +119,7 @@ class AdminOrderTable extends StatelessWidget {
                       children: [
                         Text(
                           order.customerName,
-                          style: GoogleFonts.dmSans(
+                          style: GoogleFonts.beVietnamPro(
                             fontWeight: FontWeight.w600,
                             color: LumiStyle.plum,
                           ),
@@ -127,8 +127,8 @@ class AdminOrderTable extends StatelessWidget {
                         if (order.phone.isNotEmpty)
                           Text(
                             order.phone,
-                            style: GoogleFonts.dmSans(
-                              fontSize: 11.5,
+                            style: GoogleFonts.beVietnamPro(
+                              fontSize: 12,
                               color: LumiStyle.muted,
                             ),
                           ),
@@ -144,7 +144,7 @@ class AdminOrderTable extends StatelessWidget {
                         order.itemsSummary,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.dmSans(fontSize: 12),
+                        style: GoogleFonts.beVietnamPro(fontSize: 12),
                       ),
                     ),
                   ),
@@ -153,7 +153,7 @@ class AdminOrderTable extends StatelessWidget {
                   DataCell(
                     Text(
                       order.displayTotal,
-                      style: GoogleFonts.dmSans(
+                      style: GoogleFonts.beVietnamPro(
                         fontWeight: FontWeight.w700,
                         color: LumiStyle.rose,
                       ),
@@ -164,7 +164,7 @@ class AdminOrderTable extends StatelessWidget {
                   DataCell(
                     Text(
                       order.paymentMethod,
-                      style: GoogleFonts.dmSans(
+                      style: GoogleFonts.beVietnamPro(
                         fontSize: 12,
                         color: LumiStyle.muted,
                       ),
@@ -187,7 +187,7 @@ class AdminOrderTable extends StatelessWidget {
                       ),
                       child: Text(
                         order.statusLabel,
-                        style: GoogleFonts.dmSans(
+                        style: GoogleFonts.beVietnamPro(
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
                           color: order.statusColor,
@@ -285,7 +285,7 @@ class AdminOrderTable extends StatelessWidget {
                             ),
                             child: Text(
                               'Chờ khách nhận',
-                              style: GoogleFonts.dmSans(
+                              style: GoogleFonts.beVietnamPro(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
                                 color: const Color(0xFF1D4ED8),

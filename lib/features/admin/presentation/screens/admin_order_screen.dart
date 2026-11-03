@@ -87,7 +87,7 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
           'Duyệt đơn hàng?',
-          style: GoogleFonts.dmSans(
+          style: GoogleFonts.beVietnamPro(
             fontSize: 22,
             fontWeight: FontWeight.w700,
             color: LumiStyle.plum,
@@ -95,14 +95,14 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
         ),
         content: Text(
           'Xác nhận duyệt đơn hàng #${order.id} của khách ${order.customerName} (${order.displayTotal})?\nHệ thống sẽ tự động gửi email xác nhận và thông báo cho khách hàng.',
-          style: GoogleFonts.dmSans(fontSize: 13, height: 1.5),
+          style: GoogleFonts.beVietnamPro(fontSize: 13, height: 1.5),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
             child: Text(
               'HỦY',
-              style: GoogleFonts.dmSans(color: LumiStyle.muted),
+              style: GoogleFonts.beVietnamPro(color: LumiStyle.muted),
             ),
           ),
           FilledButton(
@@ -110,7 +110,7 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
             style: FilledButton.styleFrom(backgroundColor: LumiStyle.rose),
             child: Text(
               'DUYỆT & GỬI EMAIL',
-              style: GoogleFonts.dmSans(fontWeight: FontWeight.w700),
+              style: GoogleFonts.beVietnamPro(fontWeight: FontWeight.w700),
             ),
           ),
         ],
@@ -339,7 +339,7 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
               children: [
                 Text(
                   'Đang đồng bộ đơn hàng qua Backend API (Port 3000)',
-                  style: GoogleFonts.dmSans(
+                  style: GoogleFonts.beVietnamPro(
                     fontWeight: FontWeight.w700,
                     fontSize: 13,
                     color: const Color(0xFF92400E),
@@ -348,7 +348,7 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
                 const SizedBox(height: 2),
                 Text(
                   'Firestore Security Rules hiện chặn quyền đọc trực tiếp từ máy khách.',
-                  style: GoogleFonts.dmSans(
+                  style: GoogleFonts.beVietnamPro(
                     fontSize: 12,
                     color: const Color(0xFFB45309),
                   ),
@@ -366,7 +366,7 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
             ),
             child: Text(
               'Kiểm tra quyền',
-              style: GoogleFonts.dmSans(
+              style: GoogleFonts.beVietnamPro(
                 fontWeight: FontWeight.w700,
                 fontSize: 11,
                 color: const Color(0xFF92400E),
@@ -413,7 +413,7 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
                     const SizedBox(height: 16),
                     Text(
                       'Phát hiện lỗi Firestore Rules. Đang chuyển sang nạp qua Backend API...',
-                      style: GoogleFonts.dmSans(
+                      style: GoogleFonts.beVietnamPro(
                         fontSize: 13,
                         color: LumiStyle.muted,
                       ),
@@ -437,7 +437,7 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
                     const SizedBox(height: 12),
                     Text(
                       'Lỗi kết nối đơn hàng Firestore',
-                      style: GoogleFonts.dmSans(
+                      style: GoogleFonts.beVietnamPro(
                         fontSize: 22,
                         fontWeight: FontWeight.w700,
                         color: LumiStyle.plum,
@@ -447,7 +447,7 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
                     Text(
                       '${snapshot.error}',
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.dmSans(
+                      style: GoogleFonts.beVietnamPro(
                         fontSize: 12,
                         color: LumiStyle.muted,
                       ),
@@ -467,7 +467,7 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
                           ),
                           label: Text(
                             'Tải qua Backend API',
-                            style: GoogleFonts.dmSans(),
+                            style: GoogleFonts.beVietnamPro(),
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -476,7 +476,7 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
                           icon: const Icon(Icons.security_rounded, size: 16),
                           label: Text(
                             'Kiểm tra quyền',
-                            style: GoogleFonts.dmSans(),
+                            style: GoogleFonts.beVietnamPro(),
                           ),
                         ),
                       ],
@@ -568,7 +568,7 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
                                 onChanged: (_) => setState(() {}),
                                 decoration: InputDecoration(
                                   hintText: 'Tìm kiếm mã đơn, khách hàng, số điện thoại hoặc sản phẩm...',
-                                  hintStyle: GoogleFonts.dmSans(
+                                  hintStyle: GoogleFonts.beVietnamPro(
                                     fontSize: 13,
                                     color: LumiStyle.muted,
                                   ),
@@ -712,7 +712,7 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
                             const SizedBox(height: 16),
                             Text(
                               'Không có đơn hàng nào phù hợp',
-                              style: GoogleFonts.dmSans(
+                              style: GoogleFonts.beVietnamPro(
                                 fontSize: 20,
                                 fontWeight: FontWeight.w700,
                                 color: LumiStyle.plum,
@@ -721,7 +721,7 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
                             const SizedBox(height: 6),
                             Text(
                               'Thử thay đổi bộ lọc trạng thái hoặc từ khóa tìm kiếm.',
-                              style: GoogleFonts.dmSans(
+                              style: GoogleFonts.beVietnamPro(
                                 fontSize: 13,
                                 color: LumiStyle.muted,
                               ),
@@ -834,7 +834,7 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
                     fit: BoxFit.scaleDown,
                     child: Text(
                       '$count',
-                      style: GoogleFonts.dmSans(
+                      style: GoogleFonts.beVietnamPro(
                         fontSize: 28,
                         height: 1,
                         fontWeight: FontWeight.w800,
@@ -849,7 +849,7 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
           const SizedBox(height: 10),
           Text(
             title,
-            style: GoogleFonts.dmSans(
+            style: GoogleFonts.beVietnamPro(
               fontSize: 12,
               height: 1.4,
               fontWeight: FontWeight.w600,
@@ -876,7 +876,7 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
         selectedColor: LumiStyle.plum,
         backgroundColor: Colors.white,
         side: BorderSide(color: isSelected ? LumiStyle.plum : LumiStyle.line),
-        labelStyle: GoogleFonts.dmSans(
+        labelStyle: GoogleFonts.beVietnamPro(
           fontSize: 12,
           fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
           color: isSelected ? Colors.white : LumiStyle.plum,

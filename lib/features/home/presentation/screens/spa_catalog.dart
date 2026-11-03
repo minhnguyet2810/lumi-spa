@@ -101,7 +101,7 @@ class _LumiSpaCatalogState extends State<LumiSpaCatalog> {
           child: Text(
             LumiAdaptive.text(text),
             style: LumiAdaptive.style(
-              GoogleFonts.dmSans(
+              GoogleFonts.beVietnamPro(
                 fontSize: 21,
                 fontWeight: FontWeight.w700,
                 color: LumiAdaptive.color(ink),
@@ -113,7 +113,7 @@ class _LumiSpaCatalogState extends State<LumiSpaCatalog> {
           Text(
             LumiAdaptive.text(detail),
             style: LumiAdaptive.style(
-              GoogleFonts.dmSans(
+              GoogleFonts.beVietnamPro(
                 fontSize: 14,
                 color: LumiAdaptive.color(rose),
                 fontWeight: FontWeight.w600,
@@ -138,7 +138,7 @@ class _LumiSpaCatalogState extends State<LumiSpaCatalog> {
           Text(
             LumiAdaptive.text('Liệu trình chăm sóc'),
             style: LumiAdaptive.style(
-              GoogleFonts.dmSans(
+              GoogleFonts.beVietnamPro(
                 fontSize: 30,
                 height: 1.2,
                 fontWeight: FontWeight.w600,
@@ -152,7 +152,7 @@ class _LumiSpaCatalogState extends State<LumiSpaCatalog> {
               'Khám phá những liệu trình phù hợp với nhu cầu của bạn.',
             ),
             style: LumiAdaptive.style(
-              GoogleFonts.dmSans(
+              GoogleFonts.beVietnamPro(
                 fontSize: 15,
                 height: 1.5,
                 color: LumiAdaptive.color(muted),
@@ -189,7 +189,7 @@ class _LumiSpaCatalogState extends State<LumiSpaCatalog> {
                   child: Text(
                     LumiAdaptive.text('Một khoảng lặng cho riêng mình'),
                     style: LumiAdaptive.style(
-                      GoogleFonts.dmSans(
+                      GoogleFonts.beVietnamPro(
                         color: LumiAdaptive.color(Colors.white),
                         fontWeight: FontWeight.w700,
                         fontSize: 18,
@@ -205,12 +205,12 @@ class _LumiSpaCatalogState extends State<LumiSpaCatalog> {
             controller: _search,
             onChanged: (_) => setState(() {}),
             style: LumiAdaptive.style(
-              GoogleFonts.dmSans(fontSize: 16, color: LumiAdaptive.color(ink)),
+              GoogleFonts.beVietnamPro(fontSize: 16, color: LumiAdaptive.color(ink)),
             ),
             decoration: InputDecoration(
               hintText: LumiAdaptive.optionalText('Tìm dịch vụ, liệu trình...'),
               hintStyle: LumiAdaptive.style(
-                GoogleFonts.dmSans(
+                GoogleFonts.beVietnamPro(
                   color: LumiAdaptive.color(muted),
                   fontSize: 15,
                 ),
@@ -268,7 +268,7 @@ class _LumiSpaCatalogState extends State<LumiSpaCatalog> {
                   selectedColor: LumiAdaptive.color(rose, surface: true),
                   showCheckmark: false,
                   labelStyle: LumiAdaptive.style(
-                    GoogleFonts.dmSans(
+                    GoogleFonts.beVietnamPro(
                       color: LumiAdaptive.color(selected ? Colors.white : ink),
                       fontWeight: FontWeight.w600,
                       fontSize: 14,
@@ -350,7 +350,7 @@ class _LumiSpaCatalogState extends State<LumiSpaCatalog> {
                 Text(
                   LumiAdaptive.text('Cần tư vấn liệu trình?'),
                   style: LumiAdaptive.style(
-                    GoogleFonts.dmSans(
+                    GoogleFonts.beVietnamPro(
                       fontSize: 20,
                       fontWeight: FontWeight.w700,
                       color: LumiAdaptive.color(ink),
@@ -363,7 +363,7 @@ class _LumiSpaCatalogState extends State<LumiSpaCatalog> {
                     'LUMI sẽ giúp bạn lựa chọn trải nghiệm phù hợp.',
                   ),
                   style: LumiAdaptive.style(
-                    GoogleFonts.dmSans(
+                    GoogleFonts.beVietnamPro(
                       fontSize: 15,
                       height: 1.5,
                       color: LumiAdaptive.color(muted),
@@ -427,8 +427,8 @@ class _LumiSpaCatalogState extends State<LumiSpaCatalog> {
               LumiAdaptive.text(title),
               textAlign: TextAlign.center,
               style: LumiAdaptive.style(
-                GoogleFonts.dmSans(
-                  fontSize: 17,
+                GoogleFonts.beVietnamPro(
+                  fontSize: 16,
                   color: LumiAdaptive.color(ink),
                   fontWeight: FontWeight.w700,
                 ),
@@ -439,7 +439,7 @@ class _LumiSpaCatalogState extends State<LumiSpaCatalog> {
               LumiAdaptive.text(subtitle),
               textAlign: TextAlign.center,
               style: LumiAdaptive.style(
-                GoogleFonts.dmSans(
+                GoogleFonts.beVietnamPro(
                   fontSize: 14,
                   height: 1.5,
                   color: LumiAdaptive.color(muted),
@@ -490,7 +490,7 @@ class _LumiSpaCatalogState extends State<LumiSpaCatalog> {
                   Text(
                     LumiAdaptive.text(categoryOf(service).toUpperCase()),
                     style: LumiAdaptive.style(
-                      GoogleFonts.dmSans(
+                      GoogleFonts.beVietnamPro(
                         color: LumiAdaptive.color(rose),
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
@@ -502,7 +502,7 @@ class _LumiSpaCatalogState extends State<LumiSpaCatalog> {
                   Text(
                     LumiAdaptive.text(name),
                     style: LumiAdaptive.style(
-                      GoogleFonts.dmSans(
+                      GoogleFonts.beVietnamPro(
                         fontSize: 28,
                         fontWeight: FontWeight.w600,
                         color: LumiAdaptive.color(ink),
@@ -516,7 +516,7 @@ class _LumiSpaCatalogState extends State<LumiSpaCatalog> {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: LumiAdaptive.style(
-                        GoogleFonts.dmSans(
+                        GoogleFonts.beVietnamPro(
                           fontSize: 14,
                           height: 1.5,
                           color: LumiAdaptive.color(muted),
@@ -536,7 +536,7 @@ class _LumiSpaCatalogState extends State<LumiSpaCatalog> {
                       Text(
                         LumiAdaptive.text(duration),
                         style: LumiAdaptive.style(
-                          GoogleFonts.dmSans(
+                          GoogleFonts.beVietnamPro(
                             color: LumiAdaptive.color(muted),
                             fontSize: 14,
                           ),
@@ -546,7 +546,7 @@ class _LumiSpaCatalogState extends State<LumiSpaCatalog> {
                       Text(
                         LumiAdaptive.text(cost),
                         style: LumiAdaptive.style(
-                          GoogleFonts.dmSans(
+                          GoogleFonts.beVietnamPro(
                             color: LumiAdaptive.color(ink),
                             fontSize: 16,
                             fontWeight: FontWeight.w700,

@@ -205,7 +205,7 @@ class _LoginScreenState extends State<LoginScreen>
   InputDecoration _pill(String hint, IconData icon) => InputDecoration(
     hintText: LumiAdaptive.optionalText(hint),
     hintStyle: LumiAdaptive.style(
-      GoogleFonts.dmSans(
+      GoogleFonts.beVietnamPro(
         fontSize: 14,
         color: LumiAdaptive.color(const Color(0xFF89938E)),
       ),
@@ -318,8 +318,8 @@ class _LoginScreenState extends State<LoginScreen>
                                   Text(
                                     LumiAdaptive.text('LUMI.'),
                                     style: LumiAdaptive.style(
-                                      GoogleFonts.dmSans(
-                                        fontSize: 27,
+                                      GoogleFonts.beVietnamPro(
+                                        fontSize: 28,
                                         fontWeight: FontWeight.w800,
                                         color: LumiAdaptive.color(Colors.white),
                                       ),
@@ -331,7 +331,7 @@ class _LoginScreenState extends State<LoginScreen>
                                       'Your little escape,\nright here.',
                                     ),
                                     style: LumiAdaptive.style(
-                                      GoogleFonts.dmSans(
+                                      GoogleFonts.beVietnamPro(
                                         fontSize: 14,
                                         height: 1.35,
                                         color: LumiAdaptive.color(Colors.white),
@@ -342,7 +342,7 @@ class _LoginScreenState extends State<LoginScreen>
                                   Text(
                                     LumiAdaptive.text('SPA & WELLNESS'),
                                     style: LumiAdaptive.style(
-                                      GoogleFonts.dmSans(
+                                      GoogleFonts.beVietnamPro(
                                         fontSize: 14,
                                         letterSpacing: 2,
                                         fontWeight: FontWeight.w700,
@@ -374,8 +374,8 @@ class _LoginScreenState extends State<LoginScreen>
                                       : 'Welcome Back',
                                 ),
                                 style: LumiAdaptive.style(
-                                  GoogleFonts.dmSans(
-                                    fontSize: 27,
+                                  GoogleFonts.beVietnamPro(
+                                    fontSize: 28,
                                     fontWeight: FontWeight.w800,
                                     letterSpacing: -0.9,
                                     color: LumiAdaptive.color(_ink),
@@ -452,7 +452,7 @@ class _LoginScreenState extends State<LoginScreen>
                                       child: Text(
                                         LumiAdaptive.text('Stay signed in'),
                                         style: LumiAdaptive.style(
-                                          GoogleFonts.dmSans(
+                                          GoogleFonts.beVietnamPro(
                                             fontSize: 14,
                                             color: LumiAdaptive.color(
                                               const Color(0xFF767676),
@@ -466,7 +466,7 @@ class _LoginScreenState extends State<LoginScreen>
                                       child: Text(
                                         LumiAdaptive.text('Forgot Password?'),
                                         style: LumiAdaptive.style(
-                                          GoogleFonts.dmSans(
+                                          GoogleFonts.beVietnamPro(
                                             fontSize: 14,
                                             fontWeight: FontWeight.w700,
                                             color: LumiAdaptive.color(_rose),
@@ -531,7 +531,7 @@ class _LoginScreenState extends State<LoginScreen>
                                                   : 'Log In',
                                             ),
                                             style: LumiAdaptive.style(
-                                              GoogleFonts.dmSans(
+                                              GoogleFonts.beVietnamPro(
                                                 fontSize: 16,
                                                 fontWeight: FontWeight.w700,
                                               ),
@@ -558,7 +558,7 @@ class _LoginScreenState extends State<LoginScreen>
                                     child: Text(
                                       LumiAdaptive.text('LUMI SPA & WELLNESS'),
                                       style: LumiAdaptive.style(
-                                        GoogleFonts.dmSans(
+                                        GoogleFonts.beVietnamPro(
                                           color: LumiAdaptive.color(
                                             const Color(0xFF9A9A9A),
                                           ),
@@ -588,7 +588,7 @@ class _LoginScreenState extends State<LoginScreen>
                                           : "Don't have an account?",
                                     ),
                                     style: LumiAdaptive.style(
-                                      GoogleFonts.dmSans(
+                                      GoogleFonts.beVietnamPro(
                                         fontSize: 14,
                                         color: LumiAdaptive.color(
                                           const Color(0xFF8A8A8A),
@@ -607,7 +607,7 @@ class _LoginScreenState extends State<LoginScreen>
                                         registering ? 'Log In' : 'Sign Up',
                                       ),
                                       style: LumiAdaptive.style(
-                                        GoogleFonts.dmSans(
+                                        GoogleFonts.beVietnamPro(
                                           fontSize: 14,
                                           fontWeight: FontWeight.w800,
                                           color: LumiAdaptive.color(_rose),

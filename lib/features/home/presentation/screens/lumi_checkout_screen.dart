@@ -171,10 +171,10 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
       filled: true,
       fillColor: LumiAdaptive.color(Colors.white, surface: true),
       labelStyle: LumiAdaptive.style(
-        GoogleFonts.dmSans(color: LumiAdaptive.color(muted)),
+        GoogleFonts.beVietnamPro(color: LumiAdaptive.color(muted)),
       ),
       hintStyle: LumiAdaptive.style(
-        GoogleFonts.dmSans(
+        GoogleFonts.beVietnamPro(
           color: LumiAdaptive.color(muted.withValues(alpha: .65)),
         ),
       ),
@@ -205,9 +205,9 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
         Text(
           LumiAdaptive.text(title),
           style: LumiAdaptive.style(
-            GoogleFonts.dmSans(
+            GoogleFonts.beVietnamPro(
               color: LumiAdaptive.color(ink),
-              fontSize: 19,
+              fontSize: 18,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -269,7 +269,7 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: LumiAdaptive.style(
-                    GoogleFonts.dmSans(
+                    GoogleFonts.beVietnamPro(
                       color: LumiAdaptive.color(ink),
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
@@ -280,7 +280,7 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
                 Text(
                   LumiAdaptive.text('Số lượng: ${item.quantity}'),
                   style: LumiAdaptive.style(
-                    GoogleFonts.dmSans(
+                    GoogleFonts.beVietnamPro(
                       color: LumiAdaptive.color(muted),
                       fontSize: 13,
                     ),
@@ -293,7 +293,7 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
           Text(
             LumiAdaptive.text(_money(item.total)),
             style: LumiAdaptive.style(
-              GoogleFonts.dmSans(
+              GoogleFonts.beVietnamPro(
                 color: LumiAdaptive.color(rose),
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
@@ -314,7 +314,7 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
           Text(
             LumiAdaptive.text(title),
             style: LumiAdaptive.style(
-              GoogleFonts.dmSans(
+              GoogleFonts.beVietnamPro(
                 color: LumiAdaptive.color(isTotal ? ink : muted),
                 fontSize: isTotal ? 16 : 14,
                 fontWeight: isTotal ? FontWeight.w700 : FontWeight.w400,
@@ -324,7 +324,7 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
           Text(
             LumiAdaptive.text(value == 0 ? 'Miễn phí' : _money(value)),
             style: LumiAdaptive.style(
-              GoogleFonts.dmSans(
+              GoogleFonts.beVietnamPro(
                 color: LumiAdaptive.color(isTotal ? rose : ink),
                 fontSize: isTotal ? 18 : 14,
                 fontWeight: isTotal ? FontWeight.w700 : FontWeight.w500,
@@ -358,7 +358,7 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
         title: Text(
           LumiAdaptive.text(title),
           style: LumiAdaptive.style(
-            GoogleFonts.dmSans(
+            GoogleFonts.beVietnamPro(
               color: LumiAdaptive.color(ink),
               fontWeight: FontWeight.w700,
             ),
@@ -367,7 +367,7 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
         subtitle: Text(
           LumiAdaptive.text(subtitle),
           style: LumiAdaptive.style(
-            GoogleFonts.dmSans(color: LumiAdaptive.color(muted), fontSize: 13),
+            GoogleFonts.beVietnamPro(color: LumiAdaptive.color(muted), fontSize: 13),
           ),
         ),
         secondary: Icon(
@@ -394,7 +394,7 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
             child: Text(
               LumiAdaptive.text(label),
               style: LumiAdaptive.style(
-                GoogleFonts.dmSans(
+                GoogleFonts.beVietnamPro(
                   color: LumiAdaptive.color(muted),
                   fontSize: 13,
                 ),
@@ -405,7 +405,7 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
             child: Text(
               LumiAdaptive.text(value),
               style: LumiAdaptive.style(
-                GoogleFonts.dmSans(
+                GoogleFonts.beVietnamPro(
                   color: LumiAdaptive.color(ink),
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
@@ -462,7 +462,7 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
           Text(
             LumiAdaptive.text('Thông tin chuyển khoản'),
             style: LumiAdaptive.style(
-              GoogleFonts.dmSans(
+              GoogleFonts.beVietnamPro(
                 color: LumiAdaptive.color(ink),
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
@@ -482,7 +482,7 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
               'chụp giao dịch để đối chiếu khi cần.',
             ),
             style: LumiAdaptive.style(
-              GoogleFonts.dmSans(
+              GoogleFonts.beVietnamPro(
                 color: LumiAdaptive.color(muted),
                 fontSize: 12,
                 height: 1.4,
@@ -668,7 +668,7 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
                 : 'ĐẶT HÀNG · ${_money(grandTotal)}',
           ),
           style: LumiAdaptive.style(
-            GoogleFonts.dmSans(fontWeight: FontWeight.w700, letterSpacing: .4),
+            GoogleFonts.beVietnamPro(fontWeight: FontWeight.w700, letterSpacing: .4),
           ),
         ),
         style: LumiAdaptive.style(
@@ -700,7 +700,7 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
         title: Text(
           LumiAdaptive.text('Thanh toán'),
           style: LumiAdaptive.style(
-            GoogleFonts.dmSans(
+            GoogleFonts.beVietnamPro(
               color: LumiAdaptive.color(ink),
               fontWeight: FontWeight.w700,
             ),
@@ -712,7 +712,7 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
               child: Text(
                 LumiAdaptive.text('Giỏ hàng đang trống.'),
                 style: LumiAdaptive.style(
-                  GoogleFonts.dmSans(color: LumiAdaptive.color(muted)),
+                  GoogleFonts.beVietnamPro(color: LumiAdaptive.color(muted)),
                 ),
               ),
             )
@@ -1003,7 +1003,7 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
                     ),
                     textAlign: TextAlign.center,
                     style: LumiAdaptive.style(
-                      GoogleFonts.dmSans(
+                      GoogleFonts.beVietnamPro(
                         color: LumiAdaptive.color(muted),
                         fontSize: 12,
                       ),

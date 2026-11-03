@@ -217,7 +217,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                       Text(
                         LumiAdaptive.text('0${_index + 1} / 05'),
                         style: LumiAdaptive.style(
-                          GoogleFonts.dmSans(
+                          GoogleFonts.beVietnamPro(
                             fontSize: 13,
                             color: LumiAdaptive.color(Colors.white),
                             letterSpacing: 1.2,
@@ -233,7 +233,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                   Text(
                     LumiAdaptive.text('THE ART OF SELF-CARE'),
                     style: LumiAdaptive.style(
-                      GoogleFonts.dmSans(
+                      GoogleFonts.beVietnamPro(
                         fontSize: 11,
                         color: LumiAdaptive.color(Colors.white),
                         fontWeight: FontWeight.w600,
@@ -271,7 +271,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                       LumiAdaptive.text(_subtitles[_index]),
                       key: ValueKey('subtitle_$_index'),
                       style: LumiAdaptive.style(
-                        GoogleFonts.dmSans(
+                        GoogleFonts.beVietnamPro(
                           fontSize: 16,
                           height: 1.45,
                           color: LumiAdaptive.color(Colors.white),
@@ -352,8 +352,8 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                         LumiAdaptive.text('ĐÃ CÓ TÀI KHOẢN? ĐĂNG NHẬP'),
                         textAlign: TextAlign.center,
                         style: LumiAdaptive.style(
-                          GoogleFonts.dmSans(
-                            fontSize: 13.5,
+                          GoogleFonts.beVietnamPro(
+                            fontSize: 14,
                             fontWeight: FontWeight.w600,
                             letterSpacing: 0.6,
                             color: LumiAdaptive.color(Colors.white),

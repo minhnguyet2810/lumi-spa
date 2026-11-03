@@ -17,10 +17,7 @@ import 'package:flutter/foundation.dart'
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      throw UnsupportedError(
-        'DefaultFirebaseOptions have not been configured for web - '
-        'you can reconfigure this by running the FlutterFire CLI again.',
-      );
+      return web;
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
@@ -36,10 +33,7 @@ class DefaultFirebaseOptions {
           'you can reconfigure this by running the FlutterFire CLI again.',
         );
       case TargetPlatform.windows:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for windows - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return windows;
       case TargetPlatform.linux:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for linux - '
@@ -59,4 +53,15 @@ class DefaultFirebaseOptions {
     projectId: 'lumi-spa',
     storageBucket: 'lumi-spa.firebasestorage.app',
   );
+
+  static const FirebaseOptions web = FirebaseOptions(
+    apiKey: 'AIzaSyBPHbOTyVscZfPZQhAGDepXjKN4kHjU6rY',
+    appId: '1:147383769123:web:68c90cacc313d56627f996',
+    messagingSenderId: '147383769123',
+    projectId: 'lumi-spa',
+    authDomain: 'lumi-spa.firebaseapp.com',
+    storageBucket: 'lumi-spa.firebasestorage.app',
+  );
+
+  static const FirebaseOptions windows = web;
 }

@@ -90,3 +90,8 @@ lumi_services_backup_*.json
 
 # Local Flutter tooling preferences
 devtools_options.yaml
+
+# IDE & Tooling
+.vscode/
+.postman/
+postman/

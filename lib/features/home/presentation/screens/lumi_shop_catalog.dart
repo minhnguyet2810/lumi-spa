@@ -1,14 +1,50 @@
+import '../../../../core/widgets/lumi_catalog_image.dart';
+import '../../../../core/theme/lumi_adaptive.dart';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/data/lumi_catalog_repository.dart';
 
+class LumiCartItem {
+  const LumiCartItem({required this.product, required this.quantity});
+
+  final Map<String, dynamic> product;
+  final int quantity;
+
+  num get total {
+    final rawPrice = product['price'];
+    final price = rawPrice is num
+        ? rawPrice
+        : num.tryParse(rawPrice?.toString() ?? '') ?? 0;
+
+    return price * quantity;
+  }
+}
+
 class LumiShopCatalog extends StatefulWidget {
   static VoidCallback? openActiveCart;
-  // Badge updates the shared Home AppBar without rebuilding the shop.
+
   static final ValueNotifier<int> cartQuantityNotifier = ValueNotifier<int>(0);
 
+  static final Map<String, LumiCartLine> sessionCart = {};
+
+  static List<LumiCartItem> get currentCart {
+    return sessionCart.values
+        .map(
+          (line) =>
+              LumiCartItem(product: line.product, quantity: line.quantity),
+        )
+        .toList();
+  }
+
+  static void clearCart() {
+    sessionCart.clear();
+    cartQuantityNotifier.value = 0;
+  }
+
   const LumiShopCatalog({super.key, required this.onCheckout});
+
   final VoidCallback onCheckout;
 
   @override
@@ -16,21 +52,22 @@ class LumiShopCatalog extends StatefulWidget {
 }
 
 class _LumiShopCatalogState extends State<LumiShopCatalog> {
-  static const rose = Color(0xFFB56F86);
-  static const ink = Color(0xFF503B42);
-  static const muted = Color(0xFF78676B);
-  static const blue = Color(0xFFDDECEF);
-  static const blush = Color(0xFFF4E4E8);
-  static const cream = Color(0xFFFFFAF8);
+  static const rose = Color(0xFFA5553E);
+  static const ink = Color(0xFF403735);
+  static const muted = Color(0xFF756863);
+  static const blue = Color(0xFFEAF3F7);
+  static const blush = Color(0xFFFBE7DC);
+  static const cream = Color(0xFFFFF8EF);
   final search = TextEditingController();
   // Giữ giỏ hàng khi đổi tab và khi quay lại từ Login trong phiên app.
-  static final Map<String, _CartLine> _sessionCart = {};
-  final Map<String, _CartLine> cart = _sessionCart;
+  final Map<String, LumiCartLine> cart = LumiShopCatalog.sessionCart;
   String selected = 'Tất cả';
-  // LUMI_FILTERS_V1: bộ lọc dùng trực tiếp trên dữ liệu API hiện có.
+  // Bộ lọc sản phẩm LUMI: Dòng sản phẩm chính, Dung tích / Quy cách tự động theo sản phẩm
   String selectedSize = 'Tất cả';
+  int minPrice = 0;
   int maxPrice = 1000000;
   String sortOrder = 'popular';
+  bool _isFilterExpanded = false;
   late Future<List<Map<String, dynamic>>> products;
 
   @override
@@ -100,155 +137,631 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
     return 'Chưa rõ dung tích';
   }
 
+  String _formatSizeForCategory(String category, String size) {
+    if (size == 'Tất cả') return 'Tất cả dung tích / quy cách';
+
+    if (category == 'Mặt nạ chăm sóc chuyên sâu') {
+      if (size.contains('100g')) return 'Dạng hũ: $size (Mặt nạ đất sét / bùn)';
+      if (size.contains('miếng')) {
+        return 'Dạng hộp: $size (Mặt nạ miếng sinh học)';
+      }
+    }
+
+    if (category == 'Chống nắng & Bảo vệ quang học') {
+      if (size.contains('50ml')) {
+        return 'Dạng tuýp: $size (Kem / Gel chống nắng)';
+      }
+      if (size.contains('15g')) return 'Dạng hộp: $size (Cushion phấn nước)';
+    }
+
+    if (category == 'Tinh chất đặc trị & Tế bào gốc') {
+      if (size.contains('15ml')) {
+        return 'Dạng lọ: $size (Serum đặc trị mụn SOS)';
+      }
+      if (size.contains('30ml')) {
+        return 'Dạng lọ: $size (Serum phục hồi & dưỡng trắng)';
+      }
+      if (size.contains('50ml')) return 'Dạng chai: $size (Ampoule cấp ẩm B5)';
+      if (size.contains('ống')) return 'Dạng vỉ: $size (Tế bào gốc EGF)';
+    }
+
+    if (category == 'Dưỡng ẩm & Khóa dưỡng') {
+      if (size.contains('15ml')) return 'Dạng tuýp: $size (Kem mắt)';
+      if (size.contains('30ml')) return 'Dạng lọ: $size (Dầu dưỡng da mặt)';
+      if (size.contains('40ml')) return 'Dạng tuýp: $size (Balm phục hồi)';
+      if (size.contains('50ml')) return 'Dạng tuýp: $size (Gel cream dưỡng ẩm)';
+      if (size.contains('50g')) {
+        return 'Dạng hũ: $size (Kem dưỡng khóa ẩm / Đêm)';
+      }
+      if (size.contains('80ml')) {
+        return 'Dạng chai: $size (Lotion kiềm dầu / Mặt nạ ngủ)';
+      }
+    }
+
+    if (category == 'Làm sạch & Cân bằng') {
+      if (size.contains('70g')) {
+        return 'Dạng lọ bột: $size (Bột rửa mặt Enzyme)';
+      }
+      if (size.contains('100ml')) return 'Dạng tuýp: $size (Gel tẩy da chết)';
+      if (size.contains('150ml')) {
+        return 'Dạng chai: $size (Sữa rửa mặt bọt / Toner / Xịt khoáng)';
+      }
+      if (size.contains('200ml')) {
+        return 'Dạng chai: $size (Dầu / Gel rửa mặt / Toner)';
+      }
+      if (size.contains('300ml')) {
+        return 'Dạng chai: $size (Nước tẩy trang Micellar)';
+      }
+    }
+
+    if (category == 'Chăm sóc cơ thể & Dưỡng sinh') {
+      if (size.contains('50ml')) return 'Dạng tuýp: $size (Kem dưỡng tay)';
+      if (size.contains('100ml')) return 'Dạng chai: $size (Serum da đầu)';
+      if (size.contains('150ml')) {
+        return 'Dạng chai: $size (Serum AHA dưỡng thể)';
+      }
+      if (size.contains('200ml')) {
+        return 'Dạng chai: $size (Dầu massage / Kem ủ tóc)';
+      }
+      if (size.contains('250ml')) return 'Dạng chai: $size (Sữa dưỡng thể)';
+      if (size.contains('250g')) return 'Dạng hũ: $size (Muối tắm cà phê)';
+      if (size.contains('300ml')) return 'Dạng chai: $size (Dầu gội thảo mộc)';
+      if (size.contains('400g')) return 'Dạng hũ: $size (Muối ngâm chân gừng)';
+      if (size.contains('2x10g')) {
+        return 'Dạng hũ đôi: $size (Sáp dưỡng & tẩy tế bào chết môi)';
+      }
+    }
+
+    final s = size.toLowerCase();
+    if (s.contains('hũ')) return 'Dạng hũ: $size';
+    if (s.contains('hộp') || s.contains('miếng')) return 'Dạng hộp: $size';
+    if (s.contains('ống')) return 'Dạng vỉ / ống: $size';
+    if (s.contains('g')) return 'Dạng hũ / lọ: $size';
+    if (s.contains('ml')) return 'Dạng tuýp / chai: $size';
+    return size;
+  }
+
   Widget _filterPanel(List<Map<String, dynamic>> items) {
-    final sizes = ['Tất cả', ...items.map(_size).toSet().toList()..sort()];
-    return Container(
-      padding: const EdgeInsets.all(14),
+    final categories = [
+      'Tất cả',
+      ...items.map(_category).toSet().toList()..sort(),
+    ];
+
+    // Quy cách tự động lọc theo Dòng sản phẩm chính đang chọn ("theo sản phẩm")
+    final categoryFilteredItems = selected == 'Tất cả'
+        ? items
+        : items.where((it) => _category(it) == selected).toList();
+
+    final availableSizes = [
+      'Tất cả',
+      ...categoryFilteredItems.map(_size).toSet().toList()..sort(),
+    ];
+
+    final isFiltered =
+        selected != 'Tất cả' ||
+        selectedSize != 'Tất cả' ||
+        minPrice > 0 ||
+        maxPrice < 1000000 ||
+        sortOrder != 'popular';
+
+    int activeFilterCount = 0;
+    if (selected != 'Tất cả') activeFilterCount++;
+    if (selectedSize != 'Tất cả') activeFilterCount++;
+    if (minPrice > 0 || maxPrice < 1000000) activeFilterCount++;
+    if (sortOrder != 'popular') activeFilterCount++;
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeInOut,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: blush.withValues(alpha: .45),
-        borderRadius: BorderRadius.circular(16),
+        color: LumiAdaptive.color(const Color(0xFFFBF4F5), surface: true),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: LumiAdaptive.color(
+            _isFilterExpanded
+                ? rose.withValues(alpha: 0.35)
+                : const Color(0xFFEFE4E6),
+          ),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: LumiAdaptive.color(
+              ink.withValues(alpha: .03),
+              surface: true,
+            ),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              const Icon(Icons.tune_rounded, color: rose, size: 19),
-              const SizedBox(width: 7),
-              Text(
-                'Lọc sản phẩm',
-                style: GoogleFonts.dmSans(
-                  fontWeight: FontWeight.w700,
-                  color: ink,
-                ),
-              ),
-              const Spacer(),
-              TextButton(
-                onPressed: () => setState(() {
-                  selected = 'Tất cả';
-                  selectedSize = 'Tất cả';
-                  maxPrice = 1000000;
-                  sortOrder = 'popular';
-                }),
-                child: const Text('Đặt lại'),
-              ),
-            ],
-          ),
-          const SizedBox(height: 5),
-          Text(
-            'Dung tích / quy cách',
-            style: GoogleFonts.dmSans(color: muted, fontSize: 12),
-          ),
-          const SizedBox(height: 7),
-          Wrap(
-            spacing: 7,
-            runSpacing: 7,
-            children: sizes
-                .map(
-                  (size) => ChoiceChip(
-                    label: Text(size),
-                    selected: selectedSize == size,
-                    onSelected: (_) => setState(() => selectedSize = size),
-                    selectedColor: rose,
-                    backgroundColor: Colors.white,
-                    showCheckmark: false,
-                    labelStyle: GoogleFonts.dmSans(
-                      color: selectedSize == size ? Colors.white : ink,
-                      fontSize: 12,
+          // THANH NGANG GỌN GÀNG (Chạm vào để mở rộng/thu gọn menu filter)
+          InkWell(
+            onTap: () => setState(() => _isFilterExpanded = !_isFilterExpanded),
+            borderRadius: BorderRadius.circular(12),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 2),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(7),
+                    decoration: BoxDecoration(
+                      color: LumiAdaptive.color(blush, surface: true),
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    side: BorderSide.none,
+                    child: Icon(
+                      Icons.tune_rounded,
+                      color: LumiAdaptive.color(rose),
+                      size: 18,
+                    ),
                   ),
-                )
-                .toList(),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'Giá tối đa: ${_money(maxPrice)}',
-            style: GoogleFonts.dmSans(color: ink, fontSize: 13),
-          ),
-          Slider(
-            value: maxPrice.toDouble(),
-            min: 0,
-            max: 1000000,
-            divisions: 20,
-            activeColor: rose,
-            onChanged: (value) => setState(() => maxPrice = value.round()),
-          ),
-          DropdownButtonFormField<String>(
-            initialValue: sortOrder,
-            isExpanded: true,
-            decoration: InputDecoration(
-              labelText: 'Sắp xếp',
-              filled: true,
-              fillColor: Colors.white,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
+                  const SizedBox(width: 10),
+                  Text(
+                    LumiAdaptive.text('Bộ lọc & Sắp xếp'),
+                    style: LumiAdaptive.style(
+                      GoogleFonts.dmSans(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14,
+                        color: LumiAdaptive.color(ink),
+                      ),
+                    ),
+                  ),
+                  if (isFiltered) ...[
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: LumiAdaptive.color(rose, surface: true),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        LumiAdaptive.text('Đang lọc ($activeFilterCount)'),
+                        style: LumiAdaptive.style(
+                          TextStyle(
+                            color: LumiAdaptive.color(Colors.white),
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                  const Spacer(),
+                  if (isFiltered) ...[
+                    TextButton(
+                      style: LumiAdaptive.style(
+                        TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                      ),
+                      onPressed: () => setState(() {
+                        selected = 'Tất cả';
+                        selectedSize = 'Tất cả';
+                        minPrice = 0;
+                        maxPrice = 1000000;
+                        sortOrder = 'popular';
+                        search.clear();
+                      }),
+                      child: Text(
+                        LumiAdaptive.text('Đặt lại'),
+                        style: LumiAdaptive.style(
+                          GoogleFonts.dmSans(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                            color: LumiAdaptive.color(rose),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                  ],
+                  AnimatedRotation(
+                    turns: _isFilterExpanded ? 0.5 : 0.0,
+                    duration: const Duration(milliseconds: 250),
+                    child: Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      color: LumiAdaptive.color(ink),
+                      size: 24,
+                    ),
+                  ),
+                ],
               ),
             ),
-            items: const [
-              DropdownMenuItem(
-                value: 'popular',
-                child: Text('Mặc định / phổ biến'),
-              ),
-              DropdownMenuItem(value: 'low', child: Text('Giá thấp đến cao')),
-              DropdownMenuItem(value: 'high', child: Text('Giá cao đến thấp')),
-              DropdownMenuItem(value: 'name', child: Text('Tên A–Z')),
-            ],
-            onChanged: (value) {
-              if (value != null) setState(() => sortOrder = value);
-            },
+          ),
+
+          // MENU BỘ LỌC CHI TIẾT (Mở rộng khi chạm vào)
+          AnimatedCrossFade(
+            firstChild: const SizedBox.shrink(),
+            secondChild: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 12),
+                Divider(
+                  color: LumiAdaptive.color(Color(0xFFEFE4E6), surface: true),
+                  height: 1,
+                ),
+                const SizedBox(height: 14),
+
+                // 1. Lọc theo từng dòng sản phẩm chính
+                Text(
+                  LumiAdaptive.text('Dòng sản phẩm chính'),
+                  style: LumiAdaptive.style(
+                    GoogleFonts.dmSans(
+                      color: LumiAdaptive.color(ink),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                DropdownButtonFormField<String>(
+                  key: ValueKey('category_$selected'),
+                  initialValue: categories.contains(selected)
+                      ? selected
+                      : 'Tất cả',
+                  isExpanded: true,
+                  decoration: InputDecoration(
+                    prefixIcon: Icon(
+                      Icons.auto_awesome_outlined,
+                      color: LumiAdaptive.color(rose),
+                      size: 18,
+                    ),
+                    filled: true,
+                    fillColor: LumiAdaptive.color(Colors.white, surface: true),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 10,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: LumiAdaptive.color(Color(0xFFE5DCDA)),
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: LumiAdaptive.color(Color(0xFFE5DCDA)),
+                      ),
+                    ),
+                  ),
+                  style: LumiAdaptive.style(
+                    GoogleFonts.dmSans(
+                      color: LumiAdaptive.color(ink),
+                      fontSize: 14,
+                    ),
+                  ),
+                  items: categories.map((cat) {
+                    return DropdownMenuItem<String>(
+                      value: cat,
+                      child: Text(
+                        LumiAdaptive.text(
+                          cat == 'Tất cả' ? 'Tất cả dòng sản phẩm' : cat,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    );
+                  }).toList(),
+                  onChanged: (val) {
+                    if (val != null) {
+                      setState(() {
+                        selected = val;
+                        selectedSize = 'Tất cả';
+                      });
+                    }
+                  },
+                ),
+                const SizedBox(height: 14),
+
+                // 2. Dung tích & quy cách tự động hiện theo sản phẩm
+                Text(
+                  LumiAdaptive.text(
+                    'Dung tích / Quy cách (tự động theo sản phẩm)',
+                  ),
+                  style: LumiAdaptive.style(
+                    GoogleFonts.dmSans(
+                      color: LumiAdaptive.color(ink),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                DropdownButtonFormField<String>(
+                  key: ValueKey('size_${selected}_$selectedSize'),
+                  initialValue: availableSizes.contains(selectedSize)
+                      ? selectedSize
+                      : 'Tất cả',
+                  isExpanded: true,
+                  decoration: InputDecoration(
+                    prefixIcon: Icon(
+                      Icons.inventory_2_outlined,
+                      color: LumiAdaptive.color(rose),
+                      size: 18,
+                    ),
+                    filled: true,
+                    fillColor: LumiAdaptive.color(Colors.white, surface: true),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 10,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: LumiAdaptive.color(Color(0xFFE5DCDA)),
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: LumiAdaptive.color(Color(0xFFE5DCDA)),
+                      ),
+                    ),
+                  ),
+                  style: LumiAdaptive.style(
+                    GoogleFonts.dmSans(
+                      color: LumiAdaptive.color(ink),
+                      fontSize: 14,
+                    ),
+                  ),
+                  items: availableSizes.map((size) {
+                    return DropdownMenuItem<String>(
+                      value: size,
+                      child: Text(
+                        LumiAdaptive.text(
+                          _formatSizeForCategory(selected, size),
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    );
+                  }).toList(),
+                  onChanged: (val) {
+                    if (val != null) setState(() => selectedSize = val);
+                  },
+                ),
+                const SizedBox(height: 14),
+
+                // 3. Khoảng giá
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      LumiAdaptive.text('Khoảng giá'),
+                      style: LumiAdaptive.style(
+                        GoogleFonts.dmSans(
+                          color: LumiAdaptive.color(ink),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      LumiAdaptive.text(
+                        '${_money(minPrice)} – ${_money(maxPrice)}',
+                      ),
+                      style: LumiAdaptive.style(
+                        GoogleFonts.dmSans(
+                          color: LumiAdaptive.color(rose),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                RangeSlider(
+                  values: RangeValues(
+                    minPrice.toDouble().clamp(0, 1000000),
+                    maxPrice.toDouble().clamp(0, 1000000),
+                  ),
+                  min: 0,
+                  max: 1000000,
+                  divisions: 20,
+                  activeColor: LumiAdaptive.color(rose),
+                  inactiveColor: LumiAdaptive.color(const Color(0xFFE5DCDA)),
+                  labels: RangeLabels(_money(minPrice), _money(maxPrice)),
+                  onChanged: (values) {
+                    setState(() {
+                      minPrice = values.start.round();
+                      maxPrice = values.end.round();
+                    });
+                  },
+                ),
+                Row(
+                  children: [
+                    _priceChip('Tất cả', 0, 1000000),
+                    const SizedBox(width: 6),
+                    _priceChip('< 350k', 0, 350000),
+                    const SizedBox(width: 6),
+                    _priceChip('350k–500k', 350000, 500000),
+                    const SizedBox(width: 6),
+                    _priceChip('> 500k', 500000, 1000000),
+                  ],
+                ),
+                const SizedBox(height: 14),
+
+                // 4. Sắp xếp
+                Text(
+                  LumiAdaptive.text('Sắp xếp'),
+                  style: LumiAdaptive.style(
+                    GoogleFonts.dmSans(
+                      color: LumiAdaptive.color(ink),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                DropdownButtonFormField<String>(
+                  key: ValueKey('sort_$sortOrder'),
+                  initialValue: sortOrder,
+                  isExpanded: true,
+                  decoration: InputDecoration(
+                    prefixIcon: Icon(
+                      Icons.sort_rounded,
+                      color: LumiAdaptive.color(rose),
+                      size: 18,
+                    ),
+                    filled: true,
+                    fillColor: LumiAdaptive.color(Colors.white, surface: true),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 10,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: LumiAdaptive.color(Color(0xFFE5DCDA)),
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: LumiAdaptive.color(Color(0xFFE5DCDA)),
+                      ),
+                    ),
+                  ),
+                  style: LumiAdaptive.style(
+                    GoogleFonts.dmSans(
+                      color: LumiAdaptive.color(ink),
+                      fontSize: 14,
+                    ),
+                  ),
+                  items: [
+                    DropdownMenuItem(
+                      value: 'popular',
+                      child: Text(LumiAdaptive.text('Phổ biến nhất')),
+                    ),
+                    DropdownMenuItem(
+                      value: 'low',
+                      child: Text(
+                        LumiAdaptive.text('Giá tăng dần (Thấp đến cao)'),
+                      ),
+                    ),
+                    DropdownMenuItem(
+                      value: 'high',
+                      child: Text(
+                        LumiAdaptive.text('Giá giảm dần (Cao đến thấp)'),
+                      ),
+                    ),
+                  ],
+                  onChanged: (value) {
+                    if (value != null) setState(() => sortOrder = value);
+                  },
+                ),
+                const SizedBox(height: 16),
+
+                // Nút thu gọn bộ lọc
+                SizedBox(
+                  width: double.infinity,
+                  height: 40,
+                  child: OutlinedButton.icon(
+                    onPressed: () => setState(() => _isFilterExpanded = false),
+                    icon: Icon(
+                      Icons.expand_less_rounded,
+                      size: 18,
+                      color: LumiAdaptive.color(rose),
+                    ),
+                    label: Text(
+                      LumiAdaptive.text('Thu gọn bộ lọc'),
+                      style: LumiAdaptive.style(
+                        GoogleFonts.dmSans(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: LumiAdaptive.color(rose),
+                        ),
+                      ),
+                    ),
+                    style: LumiAdaptive.style(
+                      OutlinedButton.styleFrom(
+                        side: BorderSide(color: LumiAdaptive.color(rose)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            crossFadeState: _isFilterExpanded
+                ? CrossFadeState.showSecond
+                : CrossFadeState.showFirst,
+            duration: const Duration(milliseconds: 250),
           ),
         ],
       ),
     );
   }
 
-  String? _imageUrl(Map<String, dynamic> item) {
-    final images = item['imageUrls'];
-    if (images is List) {
-      for (final image in images) {
-        if (image is String && image.trim().isNotEmpty) {
-          return image.trim();
-        }
-      }
-    }
-
-    for (final key in ['imageUrl', 'image', 'thumbnail']) {
-      final value = item[key];
-      if (value is String && value.trim().isNotEmpty) {
-        return value.trim();
-      }
-    }
-
-    return null;
-  }
-
-  Widget _photo(Map<String, dynamic> item, {double height = 145}) {
-    final url = _imageUrl(item);
-    return Container(
-      height: height,
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: blue,
-        borderRadius: BorderRadius.circular(17),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: url == null
-          ? const Icon(Icons.spa_outlined, size: 55, color: rose)
-          : Image.network(
-              url,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) =>
-                  const Icon(Icons.spa_outlined, size: 55, color: rose),
+  Widget _priceChip(String label, int min, int max) {
+    final isSelected = minPrice == min && maxPrice == max;
+    return Expanded(
+      child: InkWell(
+        onTap: () => setState(() {
+          minPrice = min;
+          maxPrice = max;
+        }),
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          decoration: BoxDecoration(
+            color: LumiAdaptive.color(
+              isSelected ? rose : Colors.white,
+              surface: true,
             ),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: LumiAdaptive.color(
+                isSelected ? rose : const Color(0xFFE5DCDA),
+              ),
+            ),
+          ),
+          child: Text(
+            LumiAdaptive.text(label),
+            textAlign: TextAlign.center,
+            style: LumiAdaptive.style(
+              GoogleFonts.dmSans(
+                fontSize: 14,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                color: LumiAdaptive.color(isSelected ? Colors.white : ink),
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 
+  String? _imageUrl(Map<String, dynamic> item) {
+    final urls = LumiImageSources.fromItem(item);
+    return urls.isEmpty ? null : urls.first;
+  }
+
+  Widget _photo(Map<String, dynamic> item, {double height = 145}) => ClipRRect(
+    borderRadius: BorderRadius.circular(18),
+    child: LumiCatalogImage(item: item, height: height),
+  );
+
   void _updateCartBadge() {
-    LumiShopCatalog.cartQuantityNotifier.value = cart.values.fold<int>(
+    final quantity = cart.values.fold<int>(
       0,
       (sum, line) => sum + line.quantity,
     );
+
+    LumiShopCatalog.cartQuantityNotifier.value = quantity;
   }
 
   void _add(Map<String, dynamic> item) {
@@ -256,133 +769,543 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
     setState(() {
       final old = cart[key];
       if (old == null) {
-        cart[key] = _CartLine(item, 1);
+        cart[key] = LumiCartLine(item, 1);
       } else {
         old.quantity++;
       }
     });
+
     _updateCartBadge();
-    ScaffoldMessenger.of(context)
-        .showSnackBar(const SnackBar(content: Text('Đã thêm vào giỏ hàng')));
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(LumiAdaptive.text('Đã thêm vào giỏ hàng'))),
+    );
+  }
+
+  Future<void> _confirmRemove(
+    BuildContext sheetContext,
+    String key,
+    VoidCallback refreshSheet,
+  ) async {
+    final shouldRemove = await showDialog<bool>(
+      context: sheetContext,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: Text(LumiAdaptive.text('Xóa sản phẩm?')),
+          content: Text(
+            LumiAdaptive.text(
+              'Bạn có chắc muốn xóa sản phẩm này khỏi giỏ hàng không?',
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(dialogContext, false);
+              },
+              child: Text(LumiAdaptive.text('Hủy')),
+            ),
+            FilledButton(
+              style: LumiAdaptive.style(
+                FilledButton.styleFrom(
+                  backgroundColor: LumiAdaptive.color(rose, surface: true),
+                ),
+              ),
+              onPressed: () {
+                Navigator.pop(dialogContext, true);
+              },
+              child: Text(LumiAdaptive.text('Xóa')),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldRemove != true || !mounted) {
+      return;
+    }
+
+    setState(() {
+      cart.remove(key);
+    });
+
+    _updateCartBadge();
+    refreshSheet();
+  }
+
+  Widget _emptyCartView(BuildContext sheetContext) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 35),
+      child: Center(
+        child: Column(
+          children: [
+            Icon(
+              Icons.shopping_bag_outlined,
+              size: 65,
+              color: LumiAdaptive.color(rose),
+            ),
+            const SizedBox(height: 15),
+            Text(
+              LumiAdaptive.text('Giỏ hàng đang trống'),
+              style: LumiAdaptive.style(
+                GoogleFonts.dmSans(
+                  color: LumiAdaptive.color(ink),
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              LumiAdaptive.text(
+                'Hãy khám phá các sản phẩm chăm sóc da của LUMI.',
+              ),
+              textAlign: TextAlign.center,
+              style: LumiAdaptive.style(
+                GoogleFonts.dmSans(
+                  color: LumiAdaptive.color(muted),
+                  fontSize: 14,
+                ),
+              ),
+            ),
+            const SizedBox(height: 18),
+            OutlinedButton(
+              onPressed: () {
+                Navigator.pop(sheetContext);
+              },
+              style: LumiAdaptive.style(
+                OutlinedButton.styleFrom(
+                  foregroundColor: LumiAdaptive.color(rose),
+                  side: BorderSide(color: LumiAdaptive.color(rose)),
+                ),
+              ),
+              child: Text(LumiAdaptive.text('Tiếp tục mua sắm')),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _quantityButton({
+    required IconData icon,
+    required VoidCallback? onPressed,
+  }) {
+    return IconButton(
+      onPressed: onPressed,
+      visualDensity: VisualDensity.compact,
+      icon: Icon(
+        icon,
+        color: LumiAdaptive.color(onPressed == null ? Colors.grey : rose),
+      ),
+    );
   }
 
   void _cartSheet() {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: cream,
-      builder: (sheetContext) => StatefulBuilder(
-        builder: (sheetContext, refreshSheet) {
-          final lines = cart.entries.toList();
-          final total = lines.fold<num>(0, (sum, entry) {
-            return sum +
-                (_amount(entry.value.product['price']) ?? 0) *
-                    entry.value.quantity;
-          });
-          return SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(22, 24, 22, 25),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Giỏ hàng của bạn',
-                    style: GoogleFonts.dmSans(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w700,
-                      color: ink,
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  if (lines.isEmpty)
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 35),
-                      child: Center(child: Text('Giỏ hàng đang trống.')),
-                    ),
-                  Flexible(
-                    child: ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: lines.length,
-                      itemBuilder: (context, index) {
-                        final entry = lines[index];
-                        return ListTile(
-                          contentPadding: EdgeInsets.zero,
-                          title: Text(
-                            _name(entry.value.product),
-                            style: GoogleFonts.dmSans(
-                              fontWeight: FontWeight.w600,
-                              color: ink,
+      backgroundColor: LumiAdaptive.color(cream, surface: true),
+      builder: (sheetContext) {
+        return StatefulBuilder(
+          builder: (sheetContext, refreshSheet) {
+            final lines = cart.entries.toList();
+
+            final total = lines.fold<num>(0, (sum, entry) {
+              final price = _amount(entry.value.product['price']) ?? 0;
+
+              return sum + price * entry.value.quantity;
+            });
+
+            return SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(22, 24, 22, 25),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          LumiAdaptive.text('Giỏ hàng của bạn'),
+                          style: LumiAdaptive.style(
+                            GoogleFonts.dmSans(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w700,
+                              color: LumiAdaptive.color(ink),
                             ),
                           ),
-                          subtitle: Text(_money(entry.value.product['price'])),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                onPressed: () {
-                                  setState(() {
-                                    entry.value.quantity--;
-                                    if (entry.value.quantity <= 0) {
-                                      cart.remove(entry.key);
-                                    }
-                                  });
-                                  _updateCartBadge();
-                                  refreshSheet(() {});
-                                },
-                                icon: const Icon(Icons.remove_circle_outline),
-                              ),
-                              Text('${entry.value.quantity}'),
-                              IconButton(
-                                onPressed: () {
-                                  setState(() => entry.value.quantity++);
-                                  _updateCartBadge();
-                                  refreshSheet(() {});
-                                },
-                                icon: const Icon(Icons.add_circle_outline),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
+                        ),
+                        const Spacer(),
+                        IconButton(
+                          onPressed: () {
+                            Navigator.pop(sheetContext);
+                          },
+                          icon: const Icon(Icons.close),
+                        ),
+                      ],
                     ),
-                  ),
-                  const Divider(),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('Tạm tính'),
-                      Text(
-                        _money(total),
-                        style: GoogleFonts.dmSans(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                          color: ink,
+                    const SizedBox(height: 14),
+                    if (lines.isEmpty)
+                      _emptyCartView(sheetContext)
+                    else
+                      Flexible(
+                        child: ListView.separated(
+                          shrinkWrap: true,
+                          itemCount: lines.length,
+                          separatorBuilder: (_, _) {
+                            return const Divider(height: 10);
+                          },
+                          itemBuilder: (context, index) {
+                            final entry = lines[index];
+                            final line = entry.value;
+
+                            return Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Container(
+                                  width: 58,
+                                  height: 58,
+                                  decoration: BoxDecoration(
+                                    color: LumiAdaptive.color(
+                                      blue,
+                                      surface: true,
+                                    ),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  clipBehavior: Clip.antiAlias,
+                                  child: _imageUrl(line.product) == null
+                                      ? Icon(
+                                          Icons.spa_outlined,
+                                          color: LumiAdaptive.color(rose),
+                                        )
+                                      : Image.network(
+                                          _imageUrl(line.product)!,
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (_, _, _) {
+                                            return Icon(
+                                              Icons.spa_outlined,
+                                              color: LumiAdaptive.color(rose),
+                                            );
+                                          },
+                                        ),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        LumiAdaptive.text(_name(line.product)),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: LumiAdaptive.style(
+                                          GoogleFonts.dmSans(
+                                            fontWeight: FontWeight.w600,
+                                            color: LumiAdaptive.color(ink),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        LumiAdaptive.text(
+                                          _money(line.product['price']),
+                                        ),
+                                        style: LumiAdaptive.style(
+                                          GoogleFonts.dmSans(
+                                            color: LumiAdaptive.color(muted),
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 5),
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    _quantityButton(
+                                      icon: line.quantity == 1
+                                          ? Icons.delete_outline
+                                          : Icons.remove_circle_outline,
+                                      onPressed: () {
+                                        if (line.quantity == 1) {
+                                          _confirmRemove(
+                                            sheetContext,
+                                            entry.key,
+                                            () => refreshSheet(() {}),
+                                          );
+                                          return;
+                                        }
+
+                                        setState(() {
+                                          line.quantity--;
+                                        });
+
+                                        _updateCartBadge();
+                                        refreshSheet(() {});
+                                      },
+                                    ),
+                                    Text(
+                                      LumiAdaptive.text('${line.quantity}'),
+                                      style: LumiAdaptive.style(
+                                        GoogleFonts.dmSans(
+                                          color: LumiAdaptive.color(ink),
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ),
+                                    _quantityButton(
+                                      icon: Icons.add_circle_outline,
+                                      onPressed: () {
+                                        setState(() {
+                                          line.quantity++;
+                                        });
+
+                                        _updateCartBadge();
+                                        refreshSheet(() {});
+                                      },
+                                    ),
+                                    IconButton(
+                                      onPressed: () {
+                                        _confirmRemove(
+                                          sheetContext,
+                                          entry.key,
+                                          () => refreshSheet(() {}),
+                                        );
+                                      },
+                                      visualDensity: VisualDensity.compact,
+                                      icon: Icon(
+                                        Icons.delete_outline,
+                                        color: LumiAdaptive.color(
+                                          Colors.redAccent,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            );
+                          },
                         ),
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 15),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton(
-                      onPressed: lines.isEmpty
-                          ? null
-                          : () {
-                              Navigator.pop(sheetContext);
-                              widget.onCheckout();
-                            },
-                      style: FilledButton.styleFrom(
-                        backgroundColor: rose,
-                        padding: const EdgeInsets.all(17),
+                    const Divider(),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(LumiAdaptive.text('Tạm tính')),
+                        Text(
+                          LumiAdaptive.text(_money(total)),
+                          style: LumiAdaptive.style(
+                            GoogleFonts.dmSans(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                              color: LumiAdaptive.color(ink),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 15),
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton(
+                        onPressed: lines.isEmpty
+                            ? null
+                            : () {
+                                Navigator.pop(sheetContext);
+                                widget.onCheckout();
+                              },
+                        style: LumiAdaptive.style(
+                          FilledButton.styleFrom(
+                            backgroundColor: LumiAdaptive.color(
+                              rose,
+                              surface: true,
+                            ),
+                            disabledBackgroundColor: LumiAdaptive.color(
+                              Colors.grey.shade300,
+                              surface: true,
+                            ),
+                            padding: const EdgeInsets.all(17),
+                          ),
+                        ),
+                        child: Text(LumiAdaptive.text('Tiếp tục thanh toán')),
                       ),
-                      child: const Text('Tiếp tục thanh toán'),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      LumiAdaptive.text(
+                        'Giỏ hàng hiện chỉ lưu trong phiên sử dụng.',
+                      ),
+                      style: LumiAdaptive.style(
+                        GoogleFonts.dmSans(
+                          fontSize: 14,
+                          color: LumiAdaptive.color(muted),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _details(Map<String, dynamic> item) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (detailContext) {
+          return Scaffold(
+            backgroundColor: LumiAdaptive.color(cream, surface: true),
+            appBar: AppBar(
+              title: Text(LumiAdaptive.text('Chi tiết sản phẩm')),
+              backgroundColor: LumiAdaptive.color(cream, surface: true),
+              foregroundColor: LumiAdaptive.color(ink),
+            ),
+            body: SafeArea(
+              child: Column(
+                children: [
+                  Expanded(
+                    child: ListView(
+                      padding: const EdgeInsets.all(20),
+                      children: [
+                        _photo(item, height: 260),
+                        const SizedBox(height: 24),
+                        Text(
+                          LumiAdaptive.text('LUMI BEAUTY'),
+                          style: LumiAdaptive.style(
+                            GoogleFonts.dmSans(
+                              color: LumiAdaptive.color(rose),
+                              letterSpacing: 2,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          LumiAdaptive.text(_name(item)),
+                          style: LumiAdaptive.style(
+                            GoogleFonts.dmSans(
+                              fontSize: 37,
+                              fontWeight: FontWeight.w600,
+                              color: LumiAdaptive.color(ink),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          LumiAdaptive.text(_money(item['price'])),
+                          style: LumiAdaptive.style(
+                            GoogleFonts.dmSans(
+                              fontSize: 21,
+                              fontWeight: FontWeight.w700,
+                              color: LumiAdaptive.color(rose),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 22),
+                        Text(
+                          LumiAdaptive.text('Giới thiệu sản phẩm'),
+                          style: LumiAdaptive.style(
+                            GoogleFonts.dmSans(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                              color: LumiAdaptive.color(ink),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 9),
+                        Text(
+                          LumiAdaptive.text(
+                            (item['description'] ??
+                                    'Thông tin đang được cập nhật.')
+                                .toString(),
+                          ),
+                          style: LumiAdaptive.style(
+                            GoogleFonts.dmSans(
+                              fontSize: 16,
+                              height: 1.6,
+                              color: LumiAdaptive.color(muted),
+                            ),
+                          ),
+                        ),
+                        if ((item['ingredients'] ?? '')
+                            .toString()
+                            .isNotEmpty) ...[
+                          const SizedBox(height: 20),
+                          Text(
+                            LumiAdaptive.text('Thành phần'),
+                            style: LumiAdaptive.style(
+                              GoogleFonts.dmSans(
+                                fontSize: 19,
+                                fontWeight: FontWeight.w700,
+                                color: LumiAdaptive.color(ink),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 7),
+                          Text(
+                            LumiAdaptive.text(item['ingredients'].toString()),
+                            style: LumiAdaptive.style(
+                              GoogleFonts.dmSans(
+                                fontSize: 15,
+                                color: LumiAdaptive.color(muted),
+                              ),
+                            ),
+                          ),
+                        ],
+                        if ((item['usage'] ?? '').toString().isNotEmpty) ...[
+                          const SizedBox(height: 20),
+                          Text(
+                            LumiAdaptive.text('Hướng dẫn sử dụng'),
+                            style: LumiAdaptive.style(
+                              GoogleFonts.dmSans(
+                                fontSize: 19,
+                                fontWeight: FontWeight.w700,
+                                color: LumiAdaptive.color(ink),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 7),
+                          Text(
+                            LumiAdaptive.text(item['usage'].toString()),
+                            style: LumiAdaptive.style(
+                              GoogleFonts.dmSans(
+                                fontSize: 15,
+                                color: LumiAdaptive.color(muted),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'Giỏ hàng hiện chỉ lưu trong phiên sử dụng. Chưa tạo đơn hàng thật.',
-                    style: GoogleFonts.dmSans(fontSize: 12, color: muted),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 10, 20, 18),
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: 54,
+                      child: FilledButton.icon(
+                        style: LumiAdaptive.style(
+                          FilledButton.styleFrom(
+                            backgroundColor: LumiAdaptive.color(
+                              rose,
+                              surface: true,
+                            ),
+                          ),
+                        ),
+                        onPressed: () {
+                          _add(item);
+                          Navigator.of(detailContext).pop();
+                        },
+                        icon: const Icon(Icons.shopping_bag_outlined),
+                        label: Text(LumiAdaptive.text('Thêm vào giỏ hàng')),
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -393,160 +1316,50 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
     );
   }
 
-  void _details(Map<String, dynamic> item) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (detailContext) => Scaffold(
-          backgroundColor: cream,
-          appBar: AppBar(
-            title: const Text('Chi tiết sản phẩm'),
-            backgroundColor: cream,
-            foregroundColor: ink,
-          ),
-          body: SafeArea(
-            child: Column(
-              children: [
-                Expanded(
-                  child: ListView(
-                    padding: const EdgeInsets.all(20),
-                    children: [
-                      _photo(item, height: 260),
-                      const SizedBox(height: 24),
-                      Text(
-                        'LUMI BEAUTY',
-                        style: GoogleFonts.dmSans(
-                          color: rose,
-                          letterSpacing: 2,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        _name(item),
-                        style: GoogleFonts.cormorantGaramond(
-                          fontSize: 37,
-                          fontWeight: FontWeight.w600,
-                          color: ink,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        _money(item['price']),
-                        style: GoogleFonts.dmSans(
-                          fontSize: 21,
-                          fontWeight: FontWeight.w700,
-                          color: rose,
-                        ),
-                      ),
-                      const SizedBox(height: 22),
-                      Text(
-                        'Giới thiệu sản phẩm',
-                        style: GoogleFonts.dmSans(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w700,
-                          color: ink,
-                        ),
-                      ),
-                      const SizedBox(height: 9),
-                      Text(
-                        (item['description'] ?? 'Thông tin đang được cập nhật.')
-                            .toString(),
-                        style: GoogleFonts.dmSans(
-                          fontSize: 16,
-                          height: 1.6,
-                          color: muted,
-                        ),
-                      ),
-                      if ((item['ingredients'] ?? '')
-                          .toString()
-                          .isNotEmpty) ...[
-                        const SizedBox(height: 20),
-                        Text(
-                          'Thành phần',
-                          style: GoogleFonts.dmSans(
-                            fontSize: 19,
-                            fontWeight: FontWeight.w700,
-                            color: ink,
-                          ),
-                        ),
-                        const SizedBox(height: 7),
-                        Text(
-                          item['ingredients'].toString(),
-                          style: GoogleFonts.dmSans(fontSize: 15, color: muted),
-                        ),
-                      ],
-                      if ((item['usage'] ?? '').toString().isNotEmpty) ...[
-                        const SizedBox(height: 20),
-                        Text(
-                          'Hướng dẫn sử dụng',
-                          style: GoogleFonts.dmSans(
-                            fontSize: 19,
-                            fontWeight: FontWeight.w700,
-                            color: ink,
-                          ),
-                        ),
-                        const SizedBox(height: 7),
-                        Text(
-                          item['usage'].toString(),
-                          style: GoogleFonts.dmSans(fontSize: 15, color: muted),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 10, 20, 18),
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: 54,
-                    child: FilledButton.icon(
-                      style: FilledButton.styleFrom(backgroundColor: rose),
-                      onPressed: () {
-                        _add(item);
-                        Navigator.of(detailContext).pop();
-                      },
-                      icon: const Icon(Icons.shopping_bag_outlined),
-                      label: const Text('Thêm vào giỏ hàng'),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _empty(String title, String description, {bool retry = false}) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(25),
       decoration: BoxDecoration(
-        color: blue,
+        color: LumiAdaptive.color(blue, surface: true),
         borderRadius: BorderRadius.circular(22),
       ),
       child: Column(
         children: [
-          const Icon(Icons.shopping_bag_outlined, size: 42, color: rose),
+          Icon(
+            Icons.shopping_bag_outlined,
+            size: 42,
+            color: LumiAdaptive.color(rose),
+          ),
           const SizedBox(height: 12),
           Text(
-            title,
+            LumiAdaptive.text(title),
             textAlign: TextAlign.center,
-            style: GoogleFonts.dmSans(
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              color: ink,
+            style: LumiAdaptive.style(
+              GoogleFonts.dmSans(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: LumiAdaptive.color(ink),
+              ),
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            description,
+            LumiAdaptive.text(description),
             textAlign: TextAlign.center,
-            style: GoogleFonts.dmSans(fontSize: 14, height: 1.5, color: muted),
+            style: LumiAdaptive.style(
+              GoogleFonts.dmSans(
+                fontSize: 14,
+                height: 1.5,
+                color: LumiAdaptive.color(muted),
+              ),
+            ),
           ),
           if (retry)
-            TextButton(onPressed: _refresh, child: const Text('THỬ LẠI')),
+            TextButton(
+              onPressed: _refresh,
+              child: Text(LumiAdaptive.text('THỬ LẠI')),
+            ),
         ],
       ),
     );
@@ -554,28 +1367,39 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
 
   @override
   Widget build(BuildContext context) {
+    LumiAdaptive.depend(context);
     LumiShopCatalog.openActiveCart = _cartSheet;
     return RefreshIndicator(
       onRefresh: _refresh,
-      color: rose,
+      color: LumiAdaptive.color(rose, surface: true),
       child: ListView(
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 115),
         children: [
           // LUMI V4: Cart in shared AppBar.
           Text(
-            'Chăm sóc da,\nnâng niu bản thân.',
-            style: GoogleFonts.cormorantGaramond(
-              fontSize: 30,
-              height: 1.02,
-              fontWeight: FontWeight.w600,
-              color: ink,
+            LumiAdaptive.text('Chăm sóc da mỗi ngày'),
+            style: LumiAdaptive.style(
+              GoogleFonts.dmSans(
+                fontSize: 30,
+                height: 1.2,
+                fontWeight: FontWeight.w600,
+                color: LumiAdaptive.color(ink),
+              ),
             ),
           ),
           const SizedBox(height: 7),
           Text(
-            'Khám phá những sản phẩm chăm sóc da '
-            'được lựa chọn dành cho bạn.',
-            style: GoogleFonts.dmSans(fontSize: 13, height: 1.4, color: muted),
+            LumiAdaptive.text(
+              'Khám phá những sản phẩm chăm sóc da '
+              'được lựa chọn dành cho bạn.',
+            ),
+            style: LumiAdaptive.style(
+              GoogleFonts.dmSans(
+                fontSize: 14,
+                height: 1.4,
+                color: LumiAdaptive.color(muted),
+              ),
+            ),
           ),
           const SizedBox(height: 15),
           ClipRRect(
@@ -590,14 +1414,14 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                     'assets/images/welcome_spa_1.png',
                     fit: BoxFit.cover,
                   ),
-                  const DecoratedBox(
+                  DecoratedBox(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.centerLeft,
                         end: Alignment.centerRight,
                         colors: [
-                          Color(0xB0392630),
-                          Color(0x44392630),
+                          LumiAdaptive.color(Color(0xB0392630), surface: true),
+                          LumiAdaptive.color(Color(0x44392630), surface: true),
                           Colors.transparent,
                         ],
                       ),
@@ -610,22 +1434,26 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         Text(
-                          'THE LUMI COLLECTION',
-                          style: GoogleFonts.dmSans(
-                            color: Colors.white,
-                            fontSize: 10,
-                            letterSpacing: 1.5,
-                            fontWeight: FontWeight.w700,
+                          LumiAdaptive.text('THE LUMI COLLECTION'),
+                          style: LumiAdaptive.style(
+                            GoogleFonts.dmSans(
+                              color: LumiAdaptive.color(Colors.white),
+                              fontSize: 14,
+                              letterSpacing: 1.5,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                         ),
                         const SizedBox(height: 5),
                         Text(
-                          'Đẹp từ những\nđiều dịu dàng.',
-                          style: GoogleFonts.cormorantGaramond(
-                            color: Colors.white,
-                            fontSize: 24,
-                            height: 1.02,
-                            fontWeight: FontWeight.w600,
+                          LumiAdaptive.text('Đẹp từ những\nđiều dịu dàng.'),
+                          style: LumiAdaptive.style(
+                            GoogleFonts.dmSans(
+                              color: LumiAdaptive.color(Colors.white),
+                              fontSize: 24,
+                              height: 1.2,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
                       ],
@@ -639,10 +1467,17 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
           TextField(
             controller: search,
             onChanged: (_) => setState(() {}),
-            style: GoogleFonts.dmSans(fontSize: 16, color: ink),
+            style: LumiAdaptive.style(
+              GoogleFonts.dmSans(fontSize: 16, color: LumiAdaptive.color(ink)),
+            ),
             decoration: InputDecoration(
-              hintText: 'Tìm sản phẩm chăm sóc da...',
-              prefixIcon: const Icon(Icons.search_rounded, color: rose),
+              hintText: LumiAdaptive.optionalText(
+                'Tìm sản phẩm chăm sóc da...',
+              ),
+              prefixIcon: Icon(
+                Icons.search_rounded,
+                color: LumiAdaptive.color(rose),
+              ),
               suffixIcon: search.text.isEmpty
                   ? null
                   : IconButton(
@@ -653,20 +1488,22 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                       icon: const Icon(Icons.close_rounded),
                     ),
               filled: true,
-              fillColor: Colors.white,
+              fillColor: LumiAdaptive.color(Colors.white, surface: true),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16),
-                borderSide: const BorderSide(color: blush),
+                borderSide: BorderSide(color: LumiAdaptive.color(blush)),
               ),
             ),
           ),
           const SizedBox(height: 19),
           Text(
-            'Bộ sưu tập LUMI',
-            style: GoogleFonts.dmSans(
-              fontSize: 22,
-              fontWeight: FontWeight.w700,
-              color: ink,
+            LumiAdaptive.text('Bộ sưu tập LUMI'),
+            style: LumiAdaptive.style(
+              GoogleFonts.dmSans(
+                fontSize: 22,
+                fontWeight: FontWeight.w700,
+                color: LumiAdaptive.color(ink),
+              ),
             ),
           ),
           const SizedBox(height: 12),
@@ -674,9 +1511,13 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
             future: products,
             builder: (context, snapshot) {
               if (snapshot.connectionState != ConnectionState.done) {
-                return const Padding(
+                return Padding(
                   padding: EdgeInsets.all(35),
-                  child: Center(child: CircularProgressIndicator(color: rose)),
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      color: LumiAdaptive.color(rose),
+                    ),
+                  ),
                 );
               }
               if (snapshot.hasError) {
@@ -697,18 +1538,26 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
               final active = categories.contains(selected)
                   ? selected
                   : 'Tất cả';
-              final activeSize =
-                  items.any((item) => _size(item) == selectedSize)
+              final categoryFilteredItems = active == 'Tất cả'
+                  ? items
+                  : items.where((it) => _category(it) == active).toList();
+              final availableSizes = [
+                'Tất cả',
+                ...categoryFilteredItems.map(_size).toSet(),
+              ];
+              final activeSize = availableSizes.contains(selectedSize)
                   ? selectedSize
                   : 'Tất cả';
+
               final filtered = items.where((item) {
                 final matchesCategory =
                     active == 'Tất cả' || _category(item) == active;
+                final itemSize = _size(item);
                 final matchesSize =
-                    activeSize == 'Tất cả' || _size(item) == activeSize;
+                    activeSize == 'Tất cả' || itemSize == activeSize;
                 final price = _amount(item['price']);
                 final matchesPrice =
-                    price != null && price >= 0 && price <= maxPrice;
+                    price != null && price >= minPrice && price <= maxPrice;
                 final text = '${_name(item)} ${item['description'] ?? ''}'
                     .toLowerCase();
                 return matchesCategory &&
@@ -728,18 +1577,23 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                     _amount(a['price']) ?? 0,
                   ),
                 );
-              } else if (sortOrder == 'name') {
-                filtered.sort(
-                  (a, b) =>
-                      _name(a).toLowerCase().compareTo(_name(b).toLowerCase()),
-                );
+              } else {
+                // popular: sắp xếp theo thứ tự phổ biến
+                filtered.sort((a, b) {
+                  final orderA =
+                      int.tryParse(a['sortOrder']?.toString() ?? '') ?? 999;
+                  final orderB =
+                      int.tryParse(b['sortOrder']?.toString() ?? '') ?? 999;
+                  return orderA.compareTo(orderB);
+                });
               }
+
               // popular giữ thứ tự do API cung cấp; chưa có số lượt bán thực tế.
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   SizedBox(
-                    height: 46,
+                    height: 60,
                     child: ListView.separated(
                       scrollDirection: Axis.horizontal,
                       itemCount: categories.length,
@@ -748,16 +1602,26 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                       itemBuilder: (context, index) {
                         final category = categories[index];
                         return ChoiceChip(
-                          label: Text(category),
+                          label: Text(LumiAdaptive.text(category)),
                           selected: category == active,
                           onSelected: (_) =>
                               setState(() => selected = category),
-                          selectedColor: rose,
-                          backgroundColor: index.isEven ? blush : blue,
+                          selectedColor: LumiAdaptive.color(
+                            rose,
+                            surface: true,
+                          ),
+                          backgroundColor: LumiAdaptive.color(
+                            index.isEven ? blush : blue,
+                            surface: true,
+                          ),
                           showCheckmark: false,
-                          labelStyle: GoogleFonts.dmSans(
-                            color: category == active ? Colors.white : ink,
-                            fontWeight: FontWeight.w600,
+                          labelStyle: LumiAdaptive.style(
+                            GoogleFonts.dmSans(
+                              color: LumiAdaptive.color(
+                                category == active ? Colors.white : ink,
+                              ),
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                           side: BorderSide.none,
                         );
@@ -768,8 +1632,13 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                   _filterPanel(items),
                   const SizedBox(height: 17),
                   Text(
-                    '${filtered.length} sản phẩm',
-                    style: GoogleFonts.dmSans(color: muted, fontSize: 13),
+                    LumiAdaptive.text('${filtered.length} sản phẩm'),
+                    style: LumiAdaptive.style(
+                      GoogleFonts.dmSans(
+                        color: LumiAdaptive.color(muted),
+                        fontSize: 14,
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 12),
                   if (filtered.isEmpty)
@@ -781,13 +1650,16 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: filtered.length,
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 12,
-                          mainAxisSpacing: 12,
-                          mainAxisExtent: 315,
-                        ),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 12,
+                      mainAxisExtent:
+                          345 +
+                          (MediaQuery.textScalerOf(context).scale(16) - 16)
+                                  .clamp(0.0, 80.0) *
+                              5,
+                    ),
                     itemBuilder: (context, index) {
                       final item = filtered[index];
                       return InkWell(
@@ -796,9 +1668,14 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                         child: Container(
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: LumiAdaptive.color(
+                              Colors.white,
+                              surface: true,
+                            ),
                             borderRadius: BorderRadius.circular(18),
-                            border: Border.all(color: blush),
+                            border: Border.all(
+                              color: LumiAdaptive.color(blush),
+                            ),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -806,22 +1683,26 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                               _photo(item, height: 135),
                               const SizedBox(height: 9),
                               Text(
-                                _name(item),
+                                LumiAdaptive.text(_name(item)),
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
-                                style: GoogleFonts.dmSans(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w700,
-                                  color: ink,
+                                style: LumiAdaptive.style(
+                                  GoogleFonts.dmSans(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w700,
+                                    color: LumiAdaptive.color(ink),
+                                  ),
                                 ),
                               ),
                               const SizedBox(height: 5),
                               Text(
-                                _money(item['price']),
-                                style: GoogleFonts.dmSans(
-                                  fontSize: 14,
-                                  color: rose,
-                                  fontWeight: FontWeight.w700,
+                                LumiAdaptive.text(_money(item['price'])),
+                                style: LumiAdaptive.style(
+                                  GoogleFonts.dmSans(
+                                    fontSize: 14,
+                                    color: LumiAdaptive.color(rose),
+                                    fontWeight: FontWeight.w700,
+                                  ),
                                 ),
                               ),
                               const Spacer(),
@@ -829,11 +1710,17 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                                 width: double.infinity,
                                 child: OutlinedButton(
                                   onPressed: () => _details(item),
-                                  style: OutlinedButton.styleFrom(
-                                    foregroundColor: rose,
-                                    side: const BorderSide(color: rose),
+                                  style: LumiAdaptive.style(
+                                    OutlinedButton.styleFrom(
+                                      foregroundColor: LumiAdaptive.color(rose),
+                                      side: BorderSide(
+                                        color: LumiAdaptive.color(rose),
+                                      ),
+                                    ),
                                   ),
-                                  child: const Text('Xem chi tiết'),
+                                  child: Text(
+                                    LumiAdaptive.text('Xem chi tiết'),
+                                  ),
                                 ),
                               ),
                             ],
@@ -850,12 +1737,20 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
           Container(
             padding: const EdgeInsets.all(19),
             decoration: BoxDecoration(
-              color: blue,
+              color: LumiAdaptive.color(blue, surface: true),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
-              'LUMI BEAUTY · Một chút chăm sóc, một chút yêu thương dành cho chính mình.',
-              style: GoogleFonts.dmSans(fontSize: 15, height: 1.5, color: ink),
+              LumiAdaptive.text(
+                'LUMI BEAUTY · Một chút chăm sóc, một chút yêu thương dành cho chính mình.',
+              ),
+              style: LumiAdaptive.style(
+                GoogleFonts.dmSans(
+                  fontSize: 15,
+                  height: 1.5,
+                  color: LumiAdaptive.color(ink),
+                ),
+              ),
             ),
           ),
         ],
@@ -864,8 +1759,9 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
   }
 }
 
-class _CartLine {
-  _CartLine(this.product, this.quantity);
+class LumiCartLine {
+  LumiCartLine(this.product, this.quantity);
+
   final Map<String, dynamic> product;
   int quantity;
 }

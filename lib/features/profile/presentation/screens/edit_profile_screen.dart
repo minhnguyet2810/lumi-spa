@@ -1,3 +1,5 @@
+import '../../../../core/theme/lumi_adaptive.dart';
+
 import 'package:flutter/material.dart';
 
 import '../../../../core/data/lumi_account_repository.dart';
@@ -59,109 +61,144 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Chỉnh sửa hồ sơ')),
-    body: FutureBuilder<LumiAccountProfile>(
-      future: _profileFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: CircularProgressIndicator(color: LumiStyle.rose),
-          );
-        }
-        if (snapshot.hasError) {
-          return _errorState(snapshot.error.toString());
-        }
+  Widget build(BuildContext context) => LumiAdaptive.watch(
+    context,
+    () => Scaffold(
+      appBar: AppBar(title: Text(LumiAdaptive.text('Chỉnh sửa hồ sơ'))),
+      body: FutureBuilder<LumiAccountProfile>(
+        future: _profileFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(
+              child: CircularProgressIndicator(
+                color: LumiAdaptive.color(LumiStyle.rose),
+              ),
+            );
+          }
+          if (snapshot.hasError) {
+            return _errorState(snapshot.error.toString());
+          }
 
-        return ListView(
-          padding: const EdgeInsets.all(24),
-          children: [
-            Text('Thông tin cá nhân', style: LumiStyle.heading(size: 36)),
-            const SizedBox(height: 8),
-            Text(
-              'Cập nhật họ tên và số điện thoại của bạn.',
-              style: LumiStyle.body(),
-            ),
-            const SizedBox(height: 24),
-            Text('Email', style: LumiStyle.label()),
-            const SizedBox(height: 8),
-            TextFormField(
-              initialValue: snapshot.data!.email,
-              enabled: false,
-              decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.mail_outline_rounded),
+          return ListView(
+            padding: const EdgeInsets.all(24),
+            children: [
+              Text(
+                LumiAdaptive.text('Thông tin cá nhân'),
+                style: LumiAdaptive.style(LumiStyle.heading(size: 36)),
               ),
-            ),
-            const SizedBox(height: 18),
-            Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Họ và tên', style: LumiStyle.label()),
-                  const SizedBox(height: 8),
-                  TextFormField(
-                    controller: _nameController,
-                    textCapitalization: TextCapitalization.words,
-                    maxLength: 100,
-                    decoration: const InputDecoration(
-                      hintText: 'Nhập họ và tên',
-                      prefixIcon: Icon(Icons.person_outline_rounded),
+              const SizedBox(height: 8),
+              Text(
+                LumiAdaptive.text('Cập nhật họ tên và số điện thoại của bạn.'),
+                style: LumiAdaptive.style(LumiStyle.body()),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                LumiAdaptive.text('Email'),
+                style: LumiAdaptive.style(LumiStyle.label()),
+              ),
+              const SizedBox(height: 8),
+              TextFormField(
+                initialValue: snapshot.data!.email,
+                enabled: false,
+                decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.mail_outline_rounded),
+                ),
+              ),
+              const SizedBox(height: 18),
+              Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      LumiAdaptive.text('Họ và tên'),
+                      style: LumiAdaptive.style(LumiStyle.label()),
                     ),
-                    validator: (value) {
-                      final name = value?.trim() ?? '';
-                      if (name.isEmpty) return 'Vui lòng nhập họ và tên.';
-                      if (name.length > 100) return 'Tên không quá 100 ký tự.';
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 14),
-                  Text('Số điện thoại', style: LumiStyle.label()),
-                  const SizedBox(height: 8),
-                  TextFormField(
-                    controller: _phoneController,
-                    keyboardType: TextInputType.phone,
-                    decoration: const InputDecoration(
-                      hintText: 'Nhập số điện thoại',
-                      prefixIcon: Icon(Icons.phone_outlined),
-                    ),
-                    validator: (value) {
-                      final phone = value?.trim() ?? '';
-                      if (!RegExp(r'^[0-9+().\s-]{8,20}$').hasMatch(phone)) {
-                        return 'Số điện thoại phải có 8–20 ký tự hợp lệ.';
-                      }
-                      return null;
-                    },
-                  ),
-                ],
-              ),
-            ),
-            if (_error != null) ...[
-              const SizedBox(height: 16),
-              Text(_error!, style: LumiStyle.body(color: LumiStyle.rose)),
-            ],
-            const SizedBox(height: 26),
-            FilledButton(
-              onPressed: _saving ? null : _save,
-              style: FilledButton.styleFrom(
-                backgroundColor: LumiStyle.plum,
-                foregroundColor: LumiStyle.ivory,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-              ),
-              child: _saving
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: _nameController,
+                      textCapitalization: TextCapitalization.words,
+                      maxLength: 100,
+                      decoration: InputDecoration(
+                        hintText: LumiAdaptive.optionalText('Nhập họ và tên'),
+                        prefixIcon: Icon(Icons.person_outline_rounded),
                       ),
-                    )
-                  : const Text('Lưu thay đổi'),
-            ),
-          ],
-        );
-      },
+                      validator: (value) {
+                        final name = value?.trim() ?? '';
+                        if (name.isEmpty) {
+                          return 'Vui lòng nhập họ và tên.';
+                        }
+                        if (name.length > 100) {
+                          return 'Tên không quá 100 ký tự.';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 14),
+                    Text(
+                      LumiAdaptive.text('Số điện thoại'),
+                      style: LumiAdaptive.style(LumiStyle.label()),
+                    ),
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: _phoneController,
+                      keyboardType: TextInputType.phone,
+                      decoration: InputDecoration(
+                        hintText: LumiAdaptive.optionalText(
+                          'Nhập số điện thoại',
+                        ),
+                        prefixIcon: Icon(Icons.phone_outlined),
+                      ),
+                      validator: (value) {
+                        final phone = value?.trim() ?? '';
+                        if (!RegExp(r'^[0-9+().\s-]{8,20}$').hasMatch(phone)) {
+                          return 'Số điện thoại phải có 8–20 ký tự hợp lệ.';
+                        }
+                        return null;
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              if (_error != null) ...[
+                const SizedBox(height: 16),
+                Text(
+                  LumiAdaptive.text(_error!),
+                  style: LumiAdaptive.style(
+                    LumiStyle.body(
+                      color: LumiAdaptive.color(LumiStyle.rose, surface: true),
+                    ),
+                  ),
+                ),
+              ],
+              const SizedBox(height: 26),
+              FilledButton(
+                onPressed: _saving ? null : _save,
+                style: LumiAdaptive.style(
+                  FilledButton.styleFrom(
+                    backgroundColor: LumiAdaptive.color(
+                      LumiStyle.plum,
+                      surface: true,
+                    ),
+                    foregroundColor: LumiAdaptive.color(LumiStyle.ivory),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                ),
+                child: _saving
+                    ? SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: LumiAdaptive.color(Colors.white),
+                        ),
+                      )
+                    : Text(LumiAdaptive.text('Lưu thay đổi')),
+              ),
+            ],
+          );
+        },
+      ),
     ),
   );
 
@@ -171,15 +208,26 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.cloud_off_outlined, color: LumiStyle.rose, size: 40),
+          Icon(
+            Icons.cloud_off_outlined,
+            color: LumiAdaptive.color(LumiStyle.rose),
+            size: 40,
+          ),
           const SizedBox(height: 14),
-          Text('Không tải được hồ sơ', style: LumiStyle.heading(size: 30)),
+          Text(
+            LumiAdaptive.text('Không tải được hồ sơ'),
+            style: LumiAdaptive.style(LumiStyle.heading(size: 30)),
+          ),
           const SizedBox(height: 8),
-          Text(message, textAlign: TextAlign.center, style: LumiStyle.body()),
+          Text(
+            LumiAdaptive.text(message),
+            textAlign: TextAlign.center,
+            style: LumiAdaptive.style(LumiStyle.body()),
+          ),
           const SizedBox(height: 16),
           OutlinedButton(
             onPressed: () => setState(() => _profileFuture = _loadProfile()),
-            child: const Text('Thử lại'),
+            child: Text(LumiAdaptive.text('Thử lại')),
           ),
         ],
       ),

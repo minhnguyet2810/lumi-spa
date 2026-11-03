@@ -1,3 +1,6 @@
+import '../../../../core/widgets/lumi_catalog_image.dart';
+import '../../../../core/theme/lumi_adaptive.dart';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -18,11 +21,11 @@ class LumiSpaCatalog extends StatefulWidget {
 }
 
 class _LumiSpaCatalogState extends State<LumiSpaCatalog> {
-  static const ink = Color(0xFF503B42);
-  static const rose = Color(0xFFB56F86);
-  static const blue = Color(0xFFDDECEF);
-  static const blush = Color(0xFFF4E4E8);
-  static const muted = Color(0xFF78676B);
+  static const ink = Color(0xFF403735);
+  static const rose = Color(0xFFA5553E);
+  static const blue = Color(0xFFEAF3F7);
+  static const blush = Color(0xFFFBE7DC);
+  static const muted = Color(0xFF756863);
   final _search = TextEditingController();
   String _category = 'Tất cả';
   final categories = const [
@@ -96,21 +99,25 @@ class _LumiSpaCatalogState extends State<LumiSpaCatalog> {
       children: [
         Expanded(
           child: Text(
-            text,
-            style: GoogleFonts.dmSans(
-              fontSize: 21,
-              fontWeight: FontWeight.w700,
-              color: ink,
+            LumiAdaptive.text(text),
+            style: LumiAdaptive.style(
+              GoogleFonts.dmSans(
+                fontSize: 21,
+                fontWeight: FontWeight.w700,
+                color: LumiAdaptive.color(ink),
+              ),
             ),
           ),
         ),
         if (detail != null)
           Text(
-            detail,
-            style: GoogleFonts.dmSans(
-              fontSize: 13,
-              color: rose,
-              fontWeight: FontWeight.w600,
+            LumiAdaptive.text(detail),
+            style: LumiAdaptive.style(
+              GoogleFonts.dmSans(
+                fontSize: 14,
+                color: LumiAdaptive.color(rose),
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
       ],
@@ -119,27 +126,38 @@ class _LumiSpaCatalogState extends State<LumiSpaCatalog> {
 
   @override
   Widget build(BuildContext context) {
+    LumiAdaptive.depend(context);
     return RefreshIndicator(
       onRefresh: widget.onRefresh,
-      color: rose,
+      color: LumiAdaptive.color(rose, surface: true),
       child: ListView(
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 115),
         children: [
           // LUMI V4: Shared brand header.
 
           Text(
-            'Chăm sóc dành riêng cho bạn.',
-            style: GoogleFonts.cormorantGaramond(
-              fontSize: 30,
-              height: 1.03,
-              fontWeight: FontWeight.w600,
-              color: ink,
+            LumiAdaptive.text('Liệu trình chăm sóc'),
+            style: LumiAdaptive.style(
+              GoogleFonts.dmSans(
+                fontSize: 30,
+                height: 1.2,
+                fontWeight: FontWeight.w600,
+                color: LumiAdaptive.color(ink),
+              ),
             ),
           ),
           const SizedBox(height: 10),
           Text(
-            'Khám phá những liệu trình phù hợp với nhu cầu của bạn.',
-            style: GoogleFonts.dmSans(fontSize: 15, height: 1.5, color: muted),
+            LumiAdaptive.text(
+              'Khám phá những liệu trình phù hợp với nhu cầu của bạn.',
+            ),
+            style: LumiAdaptive.style(
+              GoogleFonts.dmSans(
+                fontSize: 15,
+                height: 1.5,
+                color: LumiAdaptive.color(muted),
+              ),
+            ),
           ),
           const SizedBox(height: 20),
           ClipRRect(
@@ -155,22 +173,27 @@ class _LumiSpaCatalogState extends State<LumiSpaCatalog> {
                 ),
                 Container(
                   height: 190,
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
-                      colors: [Colors.transparent, Color(0xAA35252E)],
+                      colors: [
+                        Colors.transparent,
+                        LumiAdaptive.color(Color(0xAA35252E), surface: true),
+                      ],
                     ),
                   ),
                 ),
                 Padding(
                   padding: const EdgeInsets.all(18),
                   child: Text(
-                    'Một khoảng lặng cho riêng mình',
-                    style: GoogleFonts.dmSans(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 18,
+                    LumiAdaptive.text('Một khoảng lặng cho riêng mình'),
+                    style: LumiAdaptive.style(
+                      GoogleFonts.dmSans(
+                        color: LumiAdaptive.color(Colors.white),
+                        fontWeight: FontWeight.w700,
+                        fontSize: 18,
+                      ),
                     ),
                   ),
                 ),
@@ -181,11 +204,21 @@ class _LumiSpaCatalogState extends State<LumiSpaCatalog> {
           TextField(
             controller: _search,
             onChanged: (_) => setState(() {}),
-            style: GoogleFonts.dmSans(fontSize: 16, color: ink),
+            style: LumiAdaptive.style(
+              GoogleFonts.dmSans(fontSize: 16, color: LumiAdaptive.color(ink)),
+            ),
             decoration: InputDecoration(
-              hintText: 'Tìm dịch vụ, liệu trình...',
-              hintStyle: GoogleFonts.dmSans(color: muted, fontSize: 15),
-              prefixIcon: const Icon(Icons.search_rounded, color: rose),
+              hintText: LumiAdaptive.optionalText('Tìm dịch vụ, liệu trình...'),
+              hintStyle: LumiAdaptive.style(
+                GoogleFonts.dmSans(
+                  color: LumiAdaptive.color(muted),
+                  fontSize: 15,
+                ),
+              ),
+              prefixIcon: Icon(
+                Icons.search_rounded,
+                color: LumiAdaptive.color(rose),
+              ),
               suffixIcon: _search.text.isEmpty
                   ? null
                   : IconButton(
@@ -196,22 +229,27 @@ class _LumiSpaCatalogState extends State<LumiSpaCatalog> {
                       icon: const Icon(Icons.close_rounded),
                     ),
               filled: true,
-              fillColor: Colors.white,
+              fillColor: LumiAdaptive.color(Colors.white, surface: true),
               contentPadding: const EdgeInsets.symmetric(vertical: 17),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(17),
-                borderSide: const BorderSide(color: Color(0xFFEADCE0)),
+                borderSide: BorderSide(
+                  color: LumiAdaptive.color(Color(0xFFEADFD5)),
+                ),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(17),
-                borderSide: const BorderSide(color: rose, width: 1.5),
+                borderSide: BorderSide(
+                  color: LumiAdaptive.color(rose),
+                  width: 1.5,
+                ),
               ),
             ),
           ),
           const SizedBox(height: 26),
           heading('Khám phá danh mục'),
           SizedBox(
-            height: 49,
+            height: 60,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               itemCount: categories.length,
@@ -220,16 +258,21 @@ class _LumiSpaCatalogState extends State<LumiSpaCatalog> {
                 final item = categories[index];
                 final selected = item == _category;
                 return ChoiceChip(
-                  label: Text(item),
+                  label: Text(LumiAdaptive.text(item)),
                   selected: selected,
                   onSelected: (_) => setState(() => _category = item),
-                  backgroundColor: index.isEven ? blush : blue,
-                  selectedColor: rose,
+                  backgroundColor: LumiAdaptive.color(
+                    index.isEven ? blush : blue,
+                    surface: true,
+                  ),
+                  selectedColor: LumiAdaptive.color(rose, surface: true),
                   showCheckmark: false,
-                  labelStyle: GoogleFonts.dmSans(
-                    color: selected ? Colors.white : ink,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
+                  labelStyle: LumiAdaptive.style(
+                    GoogleFonts.dmSans(
+                      color: LumiAdaptive.color(selected ? Colors.white : ink),
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
                   ),
                   side: BorderSide.none,
                   shape: RoundedRectangleBorder(
@@ -244,9 +287,13 @@ class _LumiSpaCatalogState extends State<LumiSpaCatalog> {
             future: widget.servicesFuture,
             builder: (context, snapshot) {
               if (snapshot.connectionState != ConnectionState.done) {
-                return const Padding(
+                return Padding(
                   padding: EdgeInsets.all(35),
-                  child: Center(child: CircularProgressIndicator(color: rose)),
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      color: LumiAdaptive.color(rose),
+                    ),
+                  ),
                 );
               }
               if (snapshot.hasError) {
@@ -294,27 +341,33 @@ class _LumiSpaCatalogState extends State<LumiSpaCatalog> {
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: blue,
+              color: LumiAdaptive.color(blue, surface: true),
               borderRadius: BorderRadius.circular(22),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Cần tư vấn liệu trình?',
-                  style: GoogleFonts.dmSans(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                    color: ink,
+                  LumiAdaptive.text('Cần tư vấn liệu trình?'),
+                  style: LumiAdaptive.style(
+                    GoogleFonts.dmSans(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: LumiAdaptive.color(ink),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'LUMI sẽ giúp bạn lựa chọn trải nghiệm phù hợp.',
-                  style: GoogleFonts.dmSans(
-                    fontSize: 15,
-                    height: 1.5,
-                    color: muted,
+                  LumiAdaptive.text(
+                    'LUMI sẽ giúp bạn lựa chọn trải nghiệm phù hợp.',
+                  ),
+                  style: LumiAdaptive.style(
+                    GoogleFonts.dmSans(
+                      fontSize: 15,
+                      height: 1.5,
+                      color: LumiAdaptive.color(muted),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -323,23 +376,29 @@ class _LumiSpaCatalogState extends State<LumiSpaCatalog> {
                   child: FilledButton(
                     onPressed: () {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
+                        SnackBar(
                           content: Text(
-                            'Tư vấn liệu trình đang được phát triển.',
+                            LumiAdaptive.text(
+                              'Tư vấn liệu trình đang được phát triển.',
+                            ),
                           ),
                         ),
                       );
                     },
-                    style: FilledButton.styleFrom(
-                      backgroundColor: rose,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    style: LumiAdaptive.style(
+                      FilledButton.styleFrom(
+                        backgroundColor: LumiAdaptive.color(
+                          rose,
+                          surface: true,
+                        ),
+                        foregroundColor: LumiAdaptive.color(Colors.white),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                      ),
                     ),
-                    child: const Text(
-                      'Đặt lịch tư vấn',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
+                    child: Text(
+                      LumiAdaptive.text('Đặt lịch tư vấn'),
+                      style: LumiAdaptive.style(
+                        TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                       ),
                     ),
                   ),
@@ -357,30 +416,34 @@ class _LumiSpaCatalogState extends State<LumiSpaCatalog> {
         width: double.infinity,
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: blush,
+          color: LumiAdaptive.color(blush, surface: true),
           borderRadius: BorderRadius.circular(20),
         ),
         child: Column(
           children: [
-            const Icon(Icons.spa_outlined, color: rose, size: 34),
+            Icon(Icons.spa_outlined, color: LumiAdaptive.color(rose), size: 34),
             const SizedBox(height: 12),
             Text(
-              title,
+              LumiAdaptive.text(title),
               textAlign: TextAlign.center,
-              style: GoogleFonts.dmSans(
-                fontSize: 17,
-                color: ink,
-                fontWeight: FontWeight.w700,
+              style: LumiAdaptive.style(
+                GoogleFonts.dmSans(
+                  fontSize: 17,
+                  color: LumiAdaptive.color(ink),
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
             const SizedBox(height: 8),
             Text(
-              subtitle,
+              LumiAdaptive.text(subtitle),
               textAlign: TextAlign.center,
-              style: GoogleFonts.dmSans(
-                fontSize: 14,
-                height: 1.5,
-                color: muted,
+              style: LumiAdaptive.style(
+                GoogleFonts.dmSans(
+                  fontSize: 14,
+                  height: 1.5,
+                  color: LumiAdaptive.color(muted),
+                ),
               ),
             ),
             if (retry)
@@ -388,24 +451,11 @@ class _LumiSpaCatalogState extends State<LumiSpaCatalog> {
                 onPressed: () {
                   widget.onRefresh();
                 },
-                child: const Text('THỬ LẠI'),
+                child: Text(LumiAdaptive.text('THỬ LẠI')),
               ),
           ],
         ),
       );
-
-  String? _serviceImage(Map<String, dynamic> service) {
-    final images = service['imageUrls'];
-    if (images is List) {
-      for (final image in images) {
-        if (image is String && image.trim().isNotEmpty) {
-          return image.trim();
-        }
-      }
-    }
-    final url = service['imageUrl'];
-    return url is String && url.trim().isNotEmpty ? url.trim() : null;
-  }
 
   Widget _serviceCard(Map<String, dynamic> service) {
     final name = (service['name'] ?? 'Dịch vụ LUMI').toString();
@@ -413,14 +463,13 @@ class _LumiSpaCatalogState extends State<LumiSpaCatalog> {
     final minutes = service['durationMinutes'];
     final duration = minutes == null ? 'Liệu trình spa' : '$minutes phút';
     final cost = price(service['price']);
-    final imageUrl = _serviceImage(service);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: LumiAdaptive.color(Colors.white, surface: true),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFEEDFE3)),
+        border: Border.all(color: LumiAdaptive.color(const Color(0xFFEEDFE3))),
       ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -431,19 +480,7 @@ class _LumiSpaCatalogState extends State<LumiSpaCatalog> {
             SizedBox(
               height: 188,
               width: double.infinity,
-              child: imageUrl == null
-                  ? Image.asset(
-                      'assets/images/welcome_spa_3.png',
-                      fit: BoxFit.cover,
-                    )
-                  : Image.network(
-                      imageUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, _, _) => Image.asset(
-                        'assets/images/welcome_spa_3.png',
-                        fit: BoxFit.cover,
-                      ),
-                    ),
+              child: LumiCatalogImage(item: service),
             ),
             Padding(
               padding: const EdgeInsets.all(18),
@@ -451,56 +488,69 @@ class _LumiSpaCatalogState extends State<LumiSpaCatalog> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    categoryOf(service).toUpperCase(),
-                    style: GoogleFonts.dmSans(
-                      color: rose,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 1.5,
+                    LumiAdaptive.text(categoryOf(service).toUpperCase()),
+                    style: LumiAdaptive.style(
+                      GoogleFonts.dmSans(
+                        color: LumiAdaptive.color(rose),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1.5,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 7),
                   Text(
-                    name,
-                    style: GoogleFonts.cormorantGaramond(
-                      fontSize: 28,
-                      fontWeight: FontWeight.w600,
-                      color: ink,
+                    LumiAdaptive.text(name),
+                    style: LumiAdaptive.style(
+                      GoogleFonts.dmSans(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w600,
+                        color: LumiAdaptive.color(ink),
+                      ),
                     ),
                   ),
                   if (description.isNotEmpty) ...[
                     const SizedBox(height: 7),
                     Text(
-                      description,
+                      LumiAdaptive.text(description),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.dmSans(
-                        fontSize: 13,
-                        height: 1.5,
-                        color: muted,
+                      style: LumiAdaptive.style(
+                        GoogleFonts.dmSans(
+                          fontSize: 14,
+                          height: 1.5,
+                          color: LumiAdaptive.color(muted),
+                        ),
                       ),
                     ),
                   ],
                   const SizedBox(height: 15),
                   Row(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.schedule_outlined,
                         size: 16,
-                        color: muted,
+                        color: LumiAdaptive.color(muted),
                       ),
                       const SizedBox(width: 5),
                       Text(
-                        duration,
-                        style: GoogleFonts.dmSans(color: muted, fontSize: 13),
+                        LumiAdaptive.text(duration),
+                        style: LumiAdaptive.style(
+                          GoogleFonts.dmSans(
+                            color: LumiAdaptive.color(muted),
+                            fontSize: 14,
+                          ),
+                        ),
                       ),
                       const Spacer(),
                       Text(
-                        cost,
-                        style: GoogleFonts.dmSans(
-                          color: ink,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
+                        LumiAdaptive.text(cost),
+                        style: LumiAdaptive.style(
+                          GoogleFonts.dmSans(
+                            color: LumiAdaptive.color(ink),
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                       ),
                     ],
@@ -511,11 +561,13 @@ class _LumiSpaCatalogState extends State<LumiSpaCatalog> {
                     child: OutlinedButton.icon(
                       onPressed: () => _openServiceDetail(service),
                       icon: const Icon(Icons.arrow_forward_rounded, size: 17),
-                      label: const Text('Khám phá liệu trình'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: rose,
-                        side: const BorderSide(color: rose),
-                        padding: const EdgeInsets.symmetric(vertical: 13),
+                      label: Text(LumiAdaptive.text('Khám phá liệu trình')),
+                      style: LumiAdaptive.style(
+                        OutlinedButton.styleFrom(
+                          foregroundColor: LumiAdaptive.color(rose),
+                          side: BorderSide(color: LumiAdaptive.color(rose)),
+                          padding: const EdgeInsets.symmetric(vertical: 13),
+                        ),
                       ),
                     ),
                   ),

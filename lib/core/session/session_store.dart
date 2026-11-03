@@ -1,4 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
+
+import '../data/lumi_order_store.dart';
+
 import 'package:shared_preferences/shared_preferences.dart';
 
 abstract final class SessionStore {
@@ -20,11 +23,14 @@ abstract final class SessionStore {
   static Future<String> getName() async {
     final user = FirebaseAuth.instance.currentUser;
     final name = user?.displayName?.trim();
-    if (name != null && name.isNotEmpty) return name;
+    if (name != null && name.isNotEmpty) {
+      return name;
+    }
     return user?.email?.split('@').first ?? 'bạn';
   }
 
   static Future<void> logout() async {
+    LumiOrderStore.orders.clear();
     await FirebaseAuth.instance.signOut();
   }
 }

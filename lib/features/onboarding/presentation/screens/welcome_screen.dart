@@ -1,3 +1,5 @@
+import '../../../../core/theme/lumi_adaptive.dart';
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -98,8 +100,10 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       setState(() => _busy = false);
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Không thể lưu tiến trình. Vui lòng thử lại.'),
+        SnackBar(
+          content: Text(
+            LumiAdaptive.text('Không thể lưu tiến trình. Vui lòng thử lại.'),
+          ),
         ),
       );
     }
@@ -129,12 +133,13 @@ class _WelcomeScreenState extends State<WelcomeScreen>
 
   @override
   Widget build(BuildContext context) {
+    LumiAdaptive.depend(context);
     final size = MediaQuery.sizeOf(context);
     final compact = size.height < 760;
     final bottomInset = MediaQuery.paddingOf(context).bottom;
 
     return Scaffold(
-      backgroundColor: LumiStyle.ivory,
+      backgroundColor: LumiAdaptive.color(LumiStyle.ivory, surface: true),
       body: Stack(
         fit: StackFit.expand,
         children: [
@@ -162,16 +167,16 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                     },
                     child: Image.asset(_images[i], fit: BoxFit.cover),
                   ),
-                  const DecoratedBox(
+                  DecoratedBox(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                         colors: [
-                          Color(0x44000000),
+                          LumiAdaptive.color(Color(0x44000000), surface: true),
                           Colors.transparent,
-                          Color(0x55241B20),
-                          Color(0xDD241B20),
+                          LumiAdaptive.color(Color(0x55241B20), surface: true),
+                          LumiAdaptive.color(Color(0xDD241B20), surface: true),
                         ],
                         stops: [0, 0.32, 0.58, 1],
                       ),
@@ -197,16 +202,26 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                   Row(
                     children: [
                       Text(
-                        'LUMI',
-                        style: LumiStyle.heading(size: 36, color: Colors.white),
+                        LumiAdaptive.text('LUMI'),
+                        style: LumiAdaptive.style(
+                          LumiStyle.heading(
+                            size: 36,
+                            color: LumiAdaptive.color(
+                              Colors.white,
+                              surface: true,
+                            ),
+                          ),
+                        ),
                       ),
                       const Spacer(),
                       Text(
-                        '0${_index + 1} / 05',
-                        style: GoogleFonts.dmSans(
-                          fontSize: 13,
-                          color: Colors.white,
-                          letterSpacing: 1.2,
+                        LumiAdaptive.text('0${_index + 1} / 05'),
+                        style: LumiAdaptive.style(
+                          GoogleFonts.dmSans(
+                            fontSize: 13,
+                            color: LumiAdaptive.color(Colors.white),
+                            letterSpacing: 1.2,
+                          ),
                         ),
                       ),
                     ],
@@ -216,12 +231,14 @@ class _WelcomeScreenState extends State<WelcomeScreen>
 
                   // EDITORIAL LABEL
                   Text(
-                    'THE ART OF SELF-CARE',
-                    style: GoogleFonts.dmSans(
-                      fontSize: 11,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 2.3,
+                    LumiAdaptive.text('THE ART OF SELF-CARE'),
+                    style: LumiAdaptive.style(
+                      GoogleFonts.dmSans(
+                        fontSize: 11,
+                        color: LumiAdaptive.color(Colors.white),
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 2.3,
+                      ),
                     ),
                   ),
 
@@ -231,12 +248,17 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                   AnimatedSwitcher(
                     duration: const Duration(milliseconds: 420),
                     child: Text(
-                      _titles[_index],
+                      LumiAdaptive.text(_titles[_index]),
                       key: ValueKey(_index),
-                      style: LumiStyle.heading(
-                        size: compact ? 42 : 47,
-                        color: Colors.white,
-                      ).copyWith(height: 1.02, letterSpacing: -0.6),
+                      style: LumiAdaptive.style(
+                        LumiStyle.heading(
+                          size: compact ? 42 : 47,
+                          color: LumiAdaptive.color(
+                            Colors.white,
+                            surface: true,
+                          ),
+                        ).copyWith(height: 1.02, letterSpacing: -0.6),
+                      ),
                     ),
                   ),
 
@@ -246,13 +268,15 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                   AnimatedSwitcher(
                     duration: const Duration(milliseconds: 350),
                     child: Text(
-                      _subtitles[_index],
+                      LumiAdaptive.text(_subtitles[_index]),
                       key: ValueKey('subtitle_$_index'),
-                      style: GoogleFonts.dmSans(
-                        fontSize: 16,
-                        height: 1.45,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w400,
+                      style: LumiAdaptive.style(
+                        GoogleFonts.dmSans(
+                          fontSize: 16,
+                          height: 1.45,
+                          color: LumiAdaptive.color(Colors.white),
+                          fontWeight: FontWeight.w400,
+                        ),
                       ),
                     ),
                   ),
@@ -281,9 +305,10 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                               duration: const Duration(milliseconds: 280),
                               height: i == _index ? 3 : 2,
                               margin: const EdgeInsets.only(right: 6),
-                              color: i == _index
-                                  ? Colors.white
-                                  : Colors.white54,
+                              color: LumiAdaptive.color(
+                                i == _index ? Colors.white : Colors.white54,
+                                surface: true,
+                              ),
                             ),
                           ),
                         ),
@@ -310,25 +335,29 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                     height: 52,
                     child: OutlinedButton(
                       onPressed: _busy ? null : () => _finish(login: true),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.white,
-                        side: const BorderSide(
-                          color: Color(0xCCFFFFFF),
-                          width: 1,
-                        ),
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(3),
+                      style: LumiAdaptive.style(
+                        OutlinedButton.styleFrom(
+                          foregroundColor: LumiAdaptive.color(Colors.white),
+                          side: BorderSide(
+                            color: LumiAdaptive.color(Color(0xCCFFFFFF)),
+                            width: 1,
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(3),
+                          ),
                         ),
                       ),
                       child: Text(
-                        'ĐÃ CÓ TÀI KHOẢN? ĐĂNG NHẬP',
+                        LumiAdaptive.text('ĐÃ CÓ TÀI KHOẢN? ĐĂNG NHẬP'),
                         textAlign: TextAlign.center,
-                        style: GoogleFonts.dmSans(
-                          fontSize: 13.5,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 0.6,
-                          color: Colors.white,
+                        style: LumiAdaptive.style(
+                          GoogleFonts.dmSans(
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0.6,
+                            color: LumiAdaptive.color(Colors.white),
+                          ),
                         ),
                       ),
                     ),

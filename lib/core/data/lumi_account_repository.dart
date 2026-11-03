@@ -40,15 +40,15 @@ class LumiMembership {
     final rawPoints = json['points'];
     final rawTotalSpent = json['totalSpent'];
     final rawIsDefault = json['isDefault'];
-    final points = rawPoints is num &&
+    final points =
+        rawPoints is num &&
             rawPoints.isFinite &&
             rawPoints >= 0 &&
             rawPoints == rawPoints.toInt()
         ? rawPoints.toInt()
         : null;
-    final totalSpent = rawTotalSpent is num &&
-            rawTotalSpent.isFinite &&
-            rawTotalSpent >= 0
+    final totalSpent =
+        rawTotalSpent is num && rawTotalSpent.isFinite && rawTotalSpent >= 0
         ? rawTotalSpent
         : null;
 
@@ -93,6 +93,99 @@ class LumiNotificationItem {
         isRead: json['isRead'] == true,
         type: (json['type'] ?? json['category'] ?? 'system').toString(),
       );
+}
+
+/// Dữ liệu địa chỉ giao nhận (chuẩn Shopee: Họ tên, SĐT, địa chỉ chi tiết, Tỉnh/Thành, Quận/Huyện, Phường/Xã, Nhãn, Mặc định)
+class LumiAddressItem {
+  const LumiAddressItem({
+    required this.id,
+    required this.recipientName,
+    required this.phone,
+    required this.street,
+    this.province = '',
+    this.district = '',
+    this.ward = '',
+    this.fullAddress = '',
+    this.label = 'Nhà riêng',
+    this.isDefault = false,
+    this.createdAt,
+    this.updatedAt,
+  });
+
+  final String id;
+  final String recipientName;
+  final String phone;
+  final String street;
+  final String province;
+  final String district;
+  final String ward;
+  final String fullAddress;
+  final String label; // 'Nhà riêng' | 'Văn phòng' | 'Khác'
+  final bool isDefault;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+
+  String get displayAddress {
+    if (fullAddress.trim().isNotEmpty) return fullAddress.trim();
+    final parts = [street, ward, district, province].where((s) => s.trim().isNotEmpty).toList();
+    return parts.join(', ');
+  }
+
+  factory LumiAddressItem.fromJson(Map<String, dynamic> json) => LumiAddressItem(
+    id: json['id']?.toString() ?? '',
+    recipientName: json['recipientName']?.toString() ?? '',
+    phone: json['phone']?.toString() ?? '',
+    street: json['street']?.toString() ?? '',
+    province: json['province']?.toString() ?? '',
+    district: json['district']?.toString() ?? '',
+    ward: json['ward']?.toString() ?? '',
+    fullAddress: json['fullAddress']?.toString() ?? '',
+    label: (json['label']?.toString().isNotEmpty == true) ? json['label'].toString() : 'Nhà riêng',
+    isDefault: json['isDefault'] == true,
+    createdAt: DateTime.tryParse(json['createdAt']?.toString() ?? ''),
+    updatedAt: DateTime.tryParse(json['updatedAt']?.toString() ?? ''),
+  );
+
+  Map<String, dynamic> toJson() => {
+    if (id.isNotEmpty) 'id': id,
+    'recipientName': recipientName,
+    'phone': phone,
+    'street': street,
+    'province': province,
+    'district': district,
+    'ward': ward,
+    'fullAddress': displayAddress,
+    'label': label,
+    'isDefault': isDefault,
+  };
+
+  LumiAddressItem copyWith({
+    String? id,
+    String? recipientName,
+    String? phone,
+    String? street,
+    String? province,
+    String? district,
+    String? ward,
+    String? fullAddress,
+    String? label,
+    bool? isDefault,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => LumiAddressItem(
+    id: id ?? this.id,
+    recipientName: recipientName ?? this.recipientName,
+    phone: phone ?? this.phone,
+    street: street ?? this.street,
+    province: province ?? this.province,
+    district: district ?? this.district,
+    ward: ward ?? this.ward,
+    fullAddress: fullAddress ?? this.fullAddress,
+    label: label ?? this.label,
+    isDefault: isDefault ?? this.isDefault,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
 }
 
 abstract final class LumiAccountRepository {
@@ -143,4 +236,44 @@ abstract final class LumiAccountRepository {
 
   static Future<void> markAllNotificationsRead() =>
       _api.patch('/api/notifications/read-all');
+
+  static Future<void> deleteAllNotifications() =>
+      _api.delete('/api/notifications');
+
+  static Future<void> deleteNotification(String id) =>
+      _api.delete('/api/notifications/${Uri.encodeComponent(id)}');
+
+  // Quản lý địa chỉ giao nhận (Shopee style)
+  static Future<List<LumiAddressItem>> fetchAddresses() async {
+    final payload = await _api.get('/api/me/addresses');
+    final data = payload['data'];
+    if (data is! List) {
+      throw const LumiApiException('Dữ liệu địa chỉ không hợp lệ.');
+    }
+    return data
+        .whereType<Map<String, dynamic>>()
+        .map(LumiAddressItem.fromJson)
+        .toList();
+  }
+
+  static Future<LumiAddressItem> addAddress(LumiAddressItem address) async {
+    final payload = await _api.post('/api/me/addresses', body: address.toJson());
+    final data = payload['data'];
+    if (data is! Map<String, dynamic>) {
+      throw const LumiApiException('Không thể lưu địa chỉ.');
+    }
+    return LumiAddressItem.fromJson(data);
+  }
+
+  static Future<void> updateAddress(LumiAddressItem address) async {
+    await _api.put('/api/me/addresses/${Uri.encodeComponent(address.id)}', body: address.toJson());
+  }
+
+  static Future<void> deleteAddress(String id) async {
+    await _api.delete('/api/me/addresses/${Uri.encodeComponent(id)}');
+  }
+
+  static Future<void> setDefaultAddress(String id) async {
+    await _api.patch('/api/me/addresses/${Uri.encodeComponent(id)}/default');
+  }
 }

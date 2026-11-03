@@ -1,3 +1,5 @@
+import '../../../../core/theme/lumi_adaptive.dart';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -49,8 +51,12 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
+    LumiAdaptive.depend(context);
     return Scaffold(
-      backgroundColor: const Color(0xFFFAF7F4),
+      backgroundColor: LumiAdaptive.color(
+        const Color(0xFFFAF7F4),
+        surface: true,
+      ),
       body: Stack(
         fit: StackFit.expand,
         children: [
@@ -65,10 +71,13 @@ class _SplashScreenState extends State<SplashScreen> {
             child: Center(
               child: SizedBox(
                 width: 82,
-                child: const LinearProgressIndicator(
+                child: LinearProgressIndicator(
                   minHeight: 2,
-                  backgroundColor: Color(0x66FFFFFF),
-                  color: Colors.white,
+                  backgroundColor: LumiAdaptive.color(
+                    Color(0x66FFFFFF),
+                    surface: true,
+                  ),
+                  color: LumiAdaptive.color(Colors.white),
                 ),
               ),
             ),

@@ -1,3 +1,4 @@
+import '../../../../core/theme/lumi_adaptive.dart';
 
 import 'dart:convert';
 
@@ -48,23 +49,24 @@ class _SpaScreenState extends State<SpaScreen> {
 
   @override
   Widget build(BuildContext context) {
+    LumiAdaptive.depend(context);
     const plum = Color(0xFF542C43);
     const ivory = Color(0xFFFAF6F0);
 
     return Scaffold(
-      backgroundColor: ivory,
+      backgroundColor: LumiAdaptive.color(ivory, surface: true),
       appBar: AppBar(
-        title: const Text('LUMI SPA'),
-        backgroundColor: ivory,
-        foregroundColor: plum,
+        title: Text(LumiAdaptive.text('LUMI SPA')),
+        backgroundColor: LumiAdaptive.color(ivory, surface: true),
+        foregroundColor: LumiAdaptive.color(plum),
         centerTitle: true,
       ),
       body: FutureBuilder<List<dynamic>>(
         future: servicesFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState != ConnectionState.done) {
-            return const Center(
-              child: CircularProgressIndicator(color: plum),
+            return Center(
+              child: CircularProgressIndicator(color: LumiAdaptive.color(plum)),
             );
           }
 
@@ -73,11 +75,11 @@ class _SpaScreenState extends State<SpaScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text('Không thể tải dịch vụ'),
+                  Text(LumiAdaptive.text('Không thể tải dịch vụ')),
                   const SizedBox(height: 12),
                   ElevatedButton(
                     onPressed: refresh,
-                    child: const Text('Thử lại'),
+                    child: Text(LumiAdaptive.text('Thử lại')),
                   ),
                 ],
               ),
@@ -94,22 +96,26 @@ class _SpaScreenState extends State<SpaScreen> {
             child: ListView(
               padding: const EdgeInsets.all(20),
               children: [
-                const Text(
-                  'A moment for yourself',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontFamily: 'Cormorant Garamond',
-                    color: plum,
+                Text(
+                  LumiAdaptive.text('A moment for yourself'),
+                  style: LumiAdaptive.style(
+                    TextStyle(
+                      fontSize: 28,
+                      fontFamily: 'Cormorant Garamond',
+                      color: LumiAdaptive.color(plum),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  'Khám phá những liệu trình chăm sóc dành riêng cho bạn.',
+                Text(
+                  LumiAdaptive.text(
+                    'Khám phá những liệu trình chăm sóc dành riêng cho bạn.',
+                  ),
                 ),
                 const SizedBox(height: 24),
                 for (final item in services)
                   Card(
-                    color: Colors.white,
+                    color: LumiAdaptive.color(Colors.white, surface: true),
                     margin: const EdgeInsets.only(bottom: 16),
                     child: Padding(
                       padding: const EdgeInsets.all(18),
@@ -117,21 +123,27 @@ class _SpaScreenState extends State<SpaScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            item['name'] ?? '',
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w600,
-                              color: plum,
+                            LumiAdaptive.text(item['name'] ?? ''),
+                            style: LumiAdaptive.style(
+                              TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w600,
+                                color: LumiAdaptive.color(plum),
+                              ),
                             ),
                           ),
                           const SizedBox(height: 8),
-                          Text(item['description'] ?? ''),
+                          Text(LumiAdaptive.text(item['description'] ?? '')),
                           const SizedBox(height: 12),
                           Text(
-                            '${item['durationMinutes']} phút · ${item['price']}đ',
-                            style: const TextStyle(
-                              color: plum,
-                              fontWeight: FontWeight.bold,
+                            LumiAdaptive.text(
+                              '${item['durationMinutes']} phút · ${item['price']}đ',
+                            ),
+                            style: LumiAdaptive.style(
+                              TextStyle(
+                                color: LumiAdaptive.color(plum),
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ],

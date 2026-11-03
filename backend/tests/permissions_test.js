@@ -15,6 +15,7 @@ function harness() {
         ref.get = async () => snap(ref);
         ref.update = async data => records.set(ref.path, { ...records.get(ref.path), ...data });
         ref.set = async (data, options) => records.set(ref.path, { ...(options?.merge ? records.get(ref.path) : {}), ...data });
+        ref.delete = async () => records.delete(ref.path);
         return ref;
       },
       where(field, op, value) { return collection(name, [...filters, d => d[field] === value]); },
@@ -26,7 +27,7 @@ function harness() {
       async add(data) { const ref = this.doc(); records.set(ref.path, data); return ref; },
     };
   }
-  const db = { hasCredentials: true, collection, async runTransaction(fn) {
+  const db = { hasCredentials: true, collection, batch() { const ops = []; return { update: (ref, data) => ops.push(() => records.set(ref.path, { ...records.get(ref.path), ...data })), delete: ref => ops.push(() => records.delete(ref.path)), commit: async () => ops.forEach(f => f()) }; }, async runTransaction(fn) {
     const writes = [];
     const result = await fn({ get: async ref => snap(ref), getAll: async (...refs) => refs.map(snap),
       create: (ref, data) => writes.push(() => records.set(ref.path, data)),
@@ -103,6 +104,18 @@ test('other owner booking cancellation and notification read are denied',async (
   assert.equal((await request(h.app).patch('/api/bookings/private/cancel').set('Authorization','Bearer customer')).status,400);
   assert.equal((await request(h.app).patch('/api/notifications/private/read').set('Authorization','Bearer customer')).status,404);
   assert.equal(h.records.get('bookings/private').status,'pending');assert.equal(h.records.get('notifications/private').isRead,false);
+});
+test('customer can delete own notification and clear all notifications', async () => {
+  const h = harness();
+  h.records.set('notifications/n1', { userId: 'alice', message: 'hello' });
+  h.records.set('notifications/n2', { userId: 'alice', message: 'world' });
+  h.records.set('notifications/n3', { userId: 'bob', message: 'other' });
+  assert.equal((await request(h.app).delete('/api/notifications/n1').set('Authorization', 'Bearer customer')).status, 200);
+  assert.equal(h.records.has('notifications/n1'), false);
+  assert.equal((await request(h.app).delete('/api/notifications').set('Authorization', 'Bearer customer')).status, 200);
+  assert.equal(h.records.has('notifications/n2'), false);
+  assert.equal(h.records.has('notifications/n3'), true);
+  assert.equal((await request(h.app).delete('/api/notifications/n3').set('Authorization', 'Bearer customer')).status, 404);
 });
 test('profile cannot self-assign role/admin/points',async () => {
   const h=harness();h.records.set('users/alice',{displayName:'Old'});const res=await request(h.app).patch('/api/me').set('Authorization','Bearer customer').send({displayName:'Alice',role:'admin',admin:true,points:99999});

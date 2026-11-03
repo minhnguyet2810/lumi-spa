@@ -15,8 +15,10 @@ class NotificationsScreen extends StatefulWidget {
 class _NotificationsScreenState extends State<NotificationsScreen> {
   late Future<List<LumiNotificationItem>> _notificationsFuture;
   final Set<String> _locallyReadIds = {};
+  final Set<String> _deletingIds = {};
   bool _unreadOnly = false;
   bool _markingAll = false;
+  bool _deletingAll = false;
   String? _actionError;
 
   @override
@@ -73,6 +75,94 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     }
   }
 
+  Future<void> _confirmDeleteAll(List<LumiNotificationItem> items) async {
+    if (_deletingAll || items.isEmpty) return;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: LumiAdaptive.color(LumiStyle.ivory, surface: true),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          LumiAdaptive.text('Xóa tất cả thông báo?'),
+          style: LumiAdaptive.style(
+            LumiStyle.heading(size: 24, color: LumiStyle.plum),
+          ),
+        ),
+        content: Text(
+          LumiAdaptive.text(
+            'Toàn bộ thông báo sẽ bị xóa vĩnh viễn khỏi tài khoản của bạn. Bạn có chắc muốn xóa không?',
+          ),
+          style: LumiAdaptive.style(LumiStyle.body(size: 14)),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(
+              LumiAdaptive.text('HỦY'),
+              style: LumiAdaptive.style(LumiStyle.body(color: LumiStyle.muted)),
+            ),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: FilledButton.styleFrom(backgroundColor: Colors.red.shade700),
+            child: Text(
+              LumiAdaptive.text('XÓA TẤT CẢ'),
+              style: LumiAdaptive.style(
+                LumiStyle.body(color: Colors.white).copyWith(fontWeight: FontWeight.w700),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    setState(() {
+      _deletingAll = true;
+      _actionError = null;
+    });
+
+    try {
+      await LumiAccountRepository.deleteAllNotifications();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(LumiAdaptive.text('Đã xóa tất cả thông báo.')),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      _reload();
+    } catch (error) {
+      if (!mounted) return;
+      setState(() => _actionError = error.toString());
+      _showError(error.toString());
+    } finally {
+      if (mounted) setState(() => _deletingAll = false);
+    }
+  }
+
+  Future<void> _deleteSingle(LumiNotificationItem item) async {
+    if (_deletingIds.contains(item.id)) return;
+    setState(() => _deletingIds.add(item.id));
+    try {
+      await LumiAccountRepository.deleteNotification(item.id);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(LumiAdaptive.text('Đã xóa thông báo.')),
+          duration: const Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      _reload();
+    } catch (error) {
+      if (!mounted) return;
+      setState(() => _deletingIds.remove(item.id));
+      _showError(error.toString());
+    }
+  }
+
   void _showError(String error) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -96,6 +186,24 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             tooltip: LumiAdaptive.optionalText('Tải lại'),
             onPressed: _reload,
             icon: const Icon(Icons.refresh_rounded),
+          ),
+          FutureBuilder<List<LumiNotificationItem>>(
+            future: _notificationsFuture,
+            builder: (context, snapshot) {
+              final items = snapshot.data ?? const <LumiNotificationItem>[];
+              if (items.isEmpty) return const SizedBox.shrink();
+              return IconButton(
+                tooltip: LumiAdaptive.optionalText('Xóa tất cả thông báo'),
+                onPressed: _deletingAll ? null : () => _confirmDeleteAll(items),
+                icon: _deletingAll
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.delete_sweep_outlined, color: Colors.red),
+              );
+            },
           ),
         ],
       ),
@@ -153,6 +261,28 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                 LumiStyle.rose,
                                 surface: true,
                               ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    if (items.isNotEmpty)
+                      TextButton.icon(
+                        onPressed: _deletingAll
+                            ? null
+                            : () => _confirmDeleteAll(items),
+                        icon: const Icon(
+                          Icons.delete_outline_rounded,
+                          size: 16,
+                          color: Colors.red,
+                        ),
+                        label: Text(
+                          LumiAdaptive.text(
+                            _deletingAll ? 'Đang xóa...' : 'Xóa tất cả',
+                          ),
+                          style: LumiAdaptive.style(
+                            LumiStyle.body(
+                              size: 13,
+                              color: Colors.red,
                             ),
                           ),
                         ),
@@ -300,7 +430,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           const SizedBox(height: 10),
           Text(
             LumiAdaptive.text(
-              _unreadOnly ? 'Thông báo chưa đọc sẽ xuất hiện tại đây.' : 'Lịch hẹn, ưu đãi và cập nhật mới từ LUMI sẽ được gửi đến bạn tại đây.',
+              _unreadOnly
+                  ? 'Thông báo chưa đọc sẽ xuất hiện tại đây.'
+                  : 'Lịch hẹn, ưu đãi và cập nhật mới từ LUMI sẽ được gửi đến bạn tại đây.',
             ),
             textAlign: TextAlign.center,
             style: LumiAdaptive.style(LumiStyle.body()),
@@ -318,76 +450,112 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   Widget _notificationCard(LumiNotificationItem item) {
     final read = _isRead(item);
-    return Material(
-      color: LumiAdaptive.color(
-        read ? LumiStyle.surface : LumiStyle.blushSurface,
-        surface: true,
+    return Dismissible(
+      key: Key('notif_${item.id}'),
+      direction: DismissDirection.endToStart,
+      background: Container(
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        decoration: BoxDecoration(
+          color: Colors.red.shade600,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.delete_outline_rounded, color: Colors.white, size: 22),
+            const SizedBox(width: 6),
+            Text(
+              LumiAdaptive.text('Xóa'),
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
       ),
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
+      onDismissed: (_) => _deleteSingle(item),
+      child: Material(
+        color: LumiAdaptive.color(
+          read ? LumiStyle.surface : LumiStyle.blushSurface,
+          surface: true,
+        ),
         borderRadius: BorderRadius.circular(16),
-        onTap: () => _markRead(item),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: LumiAdaptive.color(LumiStyle.ivory, surface: true),
-                  borderRadius: BorderRadius.circular(13),
-                ),
-                child: Icon(
-                  _iconFor(item.type),
-                  color: LumiAdaptive.color(LumiStyle.plum),
-                ),
-              ),
-              const SizedBox(width: 13),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      LumiAdaptive.text(item.title),
-                      style: LumiAdaptive.style(
-                        LumiStyle.body(
-                          size: 15,
-                          color: LumiAdaptive.color(
-                            LumiStyle.plum,
-                            surface: true,
-                          ),
-                        ).copyWith(fontWeight: FontWeight.w700),
-                      ),
-                    ),
-                    if (item.message.isNotEmpty) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        LumiAdaptive.text(item.message),
-                        style: LumiAdaptive.style(LumiStyle.body(size: 13)),
-                      ),
-                    ],
-                    const SizedBox(height: 7),
-                    Text(
-                      LumiAdaptive.text(_formatTime(item.createdAt)),
-                      style: LumiAdaptive.style(LumiStyle.body(size: 11)),
-                    ),
-                  ],
-                ),
-              ),
-              if (!read)
-                Padding(
-                  padding: EdgeInsets.only(left: 8, top: 5),
-                  child: CircleAvatar(
-                    radius: 4,
-                    backgroundColor: LumiAdaptive.color(
-                      LumiStyle.rose,
-                      surface: true,
-                    ),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () => _markRead(item),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: LumiAdaptive.color(LumiStyle.ivory, surface: true),
+                    borderRadius: BorderRadius.circular(13),
+                  ),
+                  child: Icon(
+                    _iconFor(item.type),
+                    color: LumiAdaptive.color(LumiStyle.plum),
                   ),
                 ),
-            ],
+                const SizedBox(width: 13),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        LumiAdaptive.text(item.title),
+                        style: LumiAdaptive.style(
+                          LumiStyle.body(
+                            size: 15,
+                            color: LumiAdaptive.color(
+                              LumiStyle.plum,
+                              surface: true,
+                            ),
+                          ).copyWith(fontWeight: FontWeight.w700),
+                        ),
+                      ),
+                      if (item.message.isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          LumiAdaptive.text(item.message),
+                          style: LumiAdaptive.style(LumiStyle.body(size: 13)),
+                        ),
+                      ],
+                      const SizedBox(height: 7),
+                      Text(
+                        LumiAdaptive.text(_formatTime(item.createdAt)),
+                        style: LumiAdaptive.style(LumiStyle.body(size: 11)),
+                      ),
+                    ],
+                  ),
+                ),
+                if (!read)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8, top: 5),
+                    child: CircleAvatar(
+                      radius: 4,
+                      backgroundColor: LumiAdaptive.color(
+                        LumiStyle.rose,
+                        surface: true,
+                      ),
+                    ),
+                  ),
+                IconButton(
+                  tooltip: LumiAdaptive.optionalText('Xóa thông báo này'),
+                  icon: Icon(
+                    Icons.close_rounded,
+                    size: 18,
+                    color: LumiAdaptive.color(LumiStyle.muted, surface: true),
+                  ),
+                  onPressed: () => _deleteSingle(item),
+                ),
+              ],
+            ),
           ),
         ),
       ),

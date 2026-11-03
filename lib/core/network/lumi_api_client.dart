@@ -28,6 +28,11 @@ class LumiApiClient {
     Map<String, dynamic>? body,
   }) => _request('POST', path, body: body);
 
+  Future<Map<String, dynamic>> delete(
+    String path, {
+    Map<String, dynamic>? body,
+  }) => _request('DELETE', path, body: body);
+
   Future<Map<String, dynamic>> patch(
     String path, {
     Map<String, dynamic>? body,

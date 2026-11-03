@@ -143,4 +143,10 @@ abstract final class LumiAccountRepository {
 
   static Future<void> markAllNotificationsRead() =>
       _api.patch('/api/notifications/read-all');
+
+  static Future<void> deleteAllNotifications() =>
+      _api.delete('/api/notifications');
+
+  static Future<void> deleteNotification(String id) =>
+      _api.delete('/api/notifications/${Uri.encodeComponent(id)}');
 }

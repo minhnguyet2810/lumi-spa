@@ -115,4 +115,10 @@ class AdminBookingRepository {
       body: {'reason': reason ?? ''},
     );
   }
+
+  Future<void> completeBooking(BookingItem booking) async {
+    await LumiApiClient.instance.patch(
+      '/api/admin/bookings/${Uri.encodeComponent(booking.id)}/complete',
+    );
+  }
 }

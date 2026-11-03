@@ -22,18 +22,83 @@ class LumiAccountProfile {
       );
 }
 
+class LumiTierInfo {
+  const LumiTierInfo({
+    required this.id,
+    required this.name,
+    required this.label,
+    required this.minPoints,
+    this.maxPoints,
+    required this.minSpent,
+    this.maxSpent,
+    required this.discountPercent,
+    required this.color,
+    required this.badge,
+    required this.benefits,
+  });
+
+  final String id;
+  final String name;
+  final String label;
+  final int minPoints;
+  final int? maxPoints;
+  final num minSpent;
+  final num? maxSpent;
+  final int discountPercent;
+  final String color;
+  final String badge;
+  final List<String> benefits;
+
+  factory LumiTierInfo.fromJson(Map<String, dynamic> json) => LumiTierInfo(
+    id: json['id']?.toString() ?? '',
+    name: json['name']?.toString() ?? '',
+    label: json['label']?.toString() ?? '',
+    minPoints: json['minPoints'] is num ? (json['minPoints'] as num).toInt() : 0,
+    maxPoints: json['maxPoints'] is num ? (json['maxPoints'] as num).toInt() : null,
+    minSpent: json['minSpent'] is num ? json['minSpent'] as num : 0,
+    maxSpent: json['maxSpent'] is num ? json['maxSpent'] as num : null,
+    discountPercent: json['discountPercent'] is num ? (json['discountPercent'] as num).toInt() : 0,
+    color: json['color']?.toString() ?? '#C5A880',
+    badge: json['badge']?.toString() ?? 'Bronze',
+    benefits: (json['benefits'] as List<dynamic>?)
+            ?.map((e) => e.toString())
+            .toList() ??
+        const [],
+  );
+}
+
 class LumiMembership {
   const LumiMembership({
     required this.tier,
     required this.points,
     required this.totalSpent,
     required this.isDefault,
+    this.tierLabel,
+    this.nextTier,
+    this.nextTierLabel,
+    this.pointsToNextTier,
+    this.spentToNextTier,
+    this.progress,
+    this.discountPercent,
+    this.conversionRate = 1000,
+    this.currentTierBenefits = const [],
+    this.allTiers = const [],
   });
 
   final String? tier;
   final int? points;
   final num? totalSpent;
   final bool? isDefault;
+  final String? tierLabel;
+  final String? nextTier;
+  final String? nextTierLabel;
+  final int? pointsToNextTier;
+  final num? spentToNextTier;
+  final double? progress;
+  final int? discountPercent;
+  final int conversionRate;
+  final List<String> currentTierBenefits;
+  final List<LumiTierInfo> allTiers;
 
   factory LumiMembership.fromJson(Map<String, dynamic> json) {
     final rawTier = json['tier'];
@@ -52,6 +117,44 @@ class LumiMembership {
         ? rawTotalSpent
         : null;
 
+    final rawProgress = json['progress'];
+    final progress = rawProgress is num && rawProgress.isFinite
+        ? rawProgress.toDouble()
+        : null;
+
+    final rawPointsToNext = json['pointsToNextTier'];
+    final pointsToNextTier = rawPointsToNext is num && rawPointsToNext.isFinite
+        ? rawPointsToNext.toInt()
+        : null;
+
+    final rawSpentToNext = json['spentToNextTier'];
+    final spentToNextTier = rawSpentToNext is num && rawSpentToNext.isFinite
+        ? rawSpentToNext
+        : null;
+
+    final rawDiscount = json['discountPercent'];
+    final discountPercent = rawDiscount is num && rawDiscount.isFinite
+        ? rawDiscount.toInt()
+        : null;
+
+    final rawConversionRate = json['conversionRate'];
+    final conversionRate = rawConversionRate is num && rawConversionRate.isFinite
+        ? rawConversionRate.toInt()
+        : 1000;
+
+    final rawBenefits = json['currentTierBenefits'] as List<dynamic>?;
+    final currentTierBenefits = rawBenefits != null
+        ? rawBenefits.map((e) => e.toString()).toList()
+        : const <String>[];
+
+    final rawAllTiers = json['allTiers'] as List<dynamic>?;
+    final allTiers = rawAllTiers != null
+        ? rawAllTiers
+            .whereType<Map<String, dynamic>>()
+            .map(LumiTierInfo.fromJson)
+            .toList()
+        : const <LumiTierInfo>[];
+
     return LumiMembership(
       tier: rawTier is String && rawTier.trim().isNotEmpty
           ? rawTier.trim()
@@ -59,6 +162,16 @@ class LumiMembership {
       points: points,
       totalSpent: totalSpent,
       isDefault: rawIsDefault is bool ? rawIsDefault : null,
+      tierLabel: json['tierLabel']?.toString(),
+      nextTier: json['nextTier']?.toString(),
+      nextTierLabel: json['nextTierLabel']?.toString(),
+      pointsToNextTier: pointsToNextTier,
+      spentToNextTier: spentToNextTier,
+      progress: progress,
+      discountPercent: discountPercent,
+      conversionRate: conversionRate,
+      currentTierBenefits: currentTierBenefits,
+      allTiers: allTiers,
     );
   }
 }
@@ -215,6 +328,15 @@ abstract final class LumiAccountRepository {
     final data = payload['data'];
     if (data is! Map<String, dynamic>) {
       throw const LumiApiException('Dữ liệu thành viên không hợp lệ.');
+    }
+    return LumiMembership.fromJson(data);
+  }
+
+  static Future<LumiMembership> syncMembership() async {
+    final payload = await _api.post('/api/membership/sync');
+    final data = payload['data'];
+    if (data is! Map<String, dynamic>) {
+      return fetchMembership();
     }
     return LumiMembership.fromJson(data);
   }

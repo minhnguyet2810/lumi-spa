@@ -43,6 +43,68 @@ void main() {
       expect(membership.points, 42);
       expect(membership.totalSpent, isNull);
     });
+
+    test('parses rich membership fields and tiers progression', () {
+      final membership = LumiMembership.fromJson({
+        'tier': 'Silver',
+        'tierLabel': 'Hạng Bạc',
+        'points': 1500,
+        'totalSpent': 1500000,
+        'conversionRate': 1000,
+        'discountPercent': 5,
+        'nextTier': 'Gold',
+        'nextTierLabel': 'Hạng Vàng',
+        'pointsToNextTier': 3500,
+        'spentToNextTier': 3500000,
+        'progress': 0.125,
+        'currentTierBenefits': [
+          'Giảm 5% cho tất cả dịch vụ spa & mỹ phẩm',
+          'Voucher sinh nhật 100.000 đ'
+        ],
+        'allTiers': [
+          {
+            'id': 'member',
+            'name': 'Member',
+            'label': 'Thành viên',
+            'minPoints': 0,
+            'maxPoints': 999,
+            'minSpent': 0,
+            'discountPercent': 0,
+            'color': '#C5A880',
+            'badge': 'Bronze',
+            'benefits': ['Tích luỹ 1 điểm / 1.000 đ']
+          },
+          {
+            'id': 'silver',
+            'name': 'Silver',
+            'label': 'Hạng Bạc',
+            'minPoints': 1000,
+            'maxPoints': 4999,
+            'minSpent': 1000000,
+            'discountPercent': 5,
+            'color': '#94A3B8',
+            'badge': 'Silver',
+            'benefits': ['Giảm 5%']
+          }
+        ]
+      });
+
+      expect(membership.tier, 'Silver');
+      expect(membership.tierLabel, 'Hạng Bạc');
+      expect(membership.points, 1500);
+      expect(membership.totalSpent, 1500000);
+      expect(membership.conversionRate, 1000);
+      expect(membership.discountPercent, 5);
+      expect(membership.nextTier, 'Gold');
+      expect(membership.nextTierLabel, 'Hạng Vàng');
+      expect(membership.pointsToNextTier, 3500);
+      expect(membership.spentToNextTier, 3500000);
+      expect(membership.progress, 0.125);
+      expect(membership.currentTierBenefits.length, 2);
+      expect(membership.allTiers.length, 2);
+      expect(membership.allTiers.first.name, 'Member');
+      expect(membership.allTiers.last.discountPercent, 5);
+    });
   });
 
   group('LumiAddressItem Tests', () {

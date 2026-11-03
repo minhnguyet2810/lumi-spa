@@ -10,11 +10,13 @@ class AdminBookingDetailDialog extends StatelessWidget {
     required this.booking,
     required this.onApprove,
     required this.onReject,
+    this.onComplete,
   });
 
   final BookingItem booking;
   final VoidCallback onApprove;
   final VoidCallback onReject;
+  final VoidCallback? onComplete;
 
   @override
   Widget build(BuildContext context) {
@@ -114,6 +116,31 @@ class AdminBookingDetailDialog extends StatelessWidget {
                     ),
                   ],
                 ),
+              ] else if (booking.status == 'approved' || booking.status == 'confirmed') ...[
+                if (onComplete != null)
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        onComplete!();
+                      },
+                      icon: const Icon(Icons.check_circle_outline_rounded, size: 18),
+                      label: Text(
+                        'HOÀN TẤT LIỆU TRÌNH & TÍCH ĐIỂM',
+                        style: GoogleFonts.beVietnamPro(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: const Color(0xFF16A34A),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+                  ),
               ],
             ],
           ),

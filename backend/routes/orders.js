@@ -4,6 +4,7 @@ const db = require('../firebase');
 const { requireAuth } = require('../auth');
 const mailService = require('../services/mail_service');
 const pushService = require('../services/push_service');
+const { awardPointsInTransaction, sendPointsNotification } = require('../services/membership_service');
 
 const router = express.Router();
 router.use(requireAuth);
@@ -367,6 +368,7 @@ router.patch('/:id/complete', async (req, res) => {
     const ref = db.collection('orders').doc(req.params.id);
 
     let updatedOrder;
+    let pointsResult = null;
     await db.runTransaction(async tx => {
       const order = await tx.get(ref);
 
@@ -380,14 +382,34 @@ router.patch('/:id/complete', async (req, res) => {
         throw new Error('CANNOT_COMPLETE');
       }
 
+      if (order.data().pointsAwarded !== true) {
+        const orderTotal = Number(order.data().total) || 0;
+        pointsResult = await awardPointsInTransaction(tx, db, {
+          userId: req.user.uid,
+          amount: orderTotal,
+          sourceId: req.params.id,
+          sourceType: 'order',
+        });
+      }
+
+      const earnedPoints = pointsResult?.pointsAwarded ?? (order.data().earnedPoints || 0);
+
       tx.update(ref, {
         status: 'completed',
         completedAt: FieldValue.serverTimestamp(),
         updatedAt: FieldValue.serverTimestamp(),
         completedBy: req.user.uid,
+        pointsAwarded: true,
+        earnedPoints,
       });
 
-      updatedOrder = { id: order.id, ...order.data(), status: 'completed' };
+      updatedOrder = {
+        id: order.id,
+        ...order.data(),
+        status: 'completed',
+        pointsAwarded: true,
+        earnedPoints,
+      };
     });
 
     try {
@@ -411,6 +433,19 @@ router.patch('/:id/complete', async (req, res) => {
             status: 'completed',
           },
         });
+
+        if (pointsResult && pointsResult.pointsAwarded > 0) {
+          await sendPointsNotification(db, {
+            userId: req.user.uid,
+            pointsAwarded: pointsResult.pointsAwarded,
+            newPoints: pointsResult.newPoints,
+            newTier: pointsResult.newTier,
+            newTierLabel: pointsResult.newTierLabel,
+            upgraded: pointsResult.upgraded,
+            sourceId: req.params.id,
+            sourceType: 'order',
+          });
+        }
       }
     } catch (e) {
       console.error('Notify complete order error:', e.message);

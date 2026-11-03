@@ -200,6 +200,37 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
     }
   }
 
+  Future<void> _handleComplete(BookingItem booking) async {
+    try {
+      await AdminBookingRepository.instance.completeBooking(booking);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '✅ Đã hoàn tất liệu trình và tích điểm cho khách hàng.',
+              style: GoogleFonts.beVietnamPro(),
+            ),
+            backgroundColor: const Color(0xFF16A34A),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '❌ Lỗi khi hoàn tất liệu trình: $e',
+              style: GoogleFonts.beVietnamPro(),
+            ),
+            backgroundColor: Colors.red.shade700,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
+
   void _showDetail(BookingItem booking) {
     showDialog(
       context: context,
@@ -212,6 +243,9 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
         onReject: () {
           Navigator.of(context).pop();
           _handleReject(booking);
+        },
+        onComplete: () {
+          _handleComplete(booking);
         },
       ),
     );

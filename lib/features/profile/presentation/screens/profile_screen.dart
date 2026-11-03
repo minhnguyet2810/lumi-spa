@@ -509,24 +509,42 @@ class _ProfileScreenState extends State<ProfileScreen> {
     ],
   );
 
-  Widget _tierPill(String? tier) => tier == null || tier.trim().isEmpty
-      ? const SizedBox.shrink()
-      : Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-          decoration: BoxDecoration(
-            color: LumiAdaptive.color(LumiStyle.blushSurface, surface: true),
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Text(
-            LumiAdaptive.text(tier),
-            style: LumiAdaptive.style(
-              LumiStyle.body(
-                size: 14,
-                color: LumiAdaptive.color(LumiStyle.rose, surface: true),
-              ).copyWith(fontWeight: FontWeight.w700),
-            ),
-          ),
-        );
+  Widget _tierPill(String? tier) {
+    if (tier == null || tier.trim().isEmpty) return const SizedBox.shrink();
+    final lower = tier.toLowerCase();
+    Color bg;
+    Color fg;
+    if (lower.contains('diamond') || lower.contains('kim cương')) {
+      bg = const Color(0xFFE0F2FE);
+      fg = const Color(0xFF0369A1);
+    } else if (lower.contains('gold') || lower.contains('vàng')) {
+      bg = const Color(0xFFFEF3C7);
+      fg = const Color(0xFFB45309);
+    } else if (lower.contains('silver') || lower.contains('bạc')) {
+      bg = const Color(0xFFF1F5F9);
+      fg = const Color(0xFF475569);
+    } else {
+      bg = LumiStyle.blushSurface;
+      fg = LumiStyle.rose;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: LumiAdaptive.color(bg, surface: true),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        LumiAdaptive.text(tier),
+        style: LumiAdaptive.style(
+          LumiStyle.body(
+            size: 14,
+            color: LumiAdaptive.color(fg, surface: true),
+          ).copyWith(fontWeight: FontWeight.w700),
+        ),
+      ),
+    );
+  }
 
   Widget _card({
     required Widget child,

@@ -23,12 +23,13 @@ class LumiCheckoutScreen extends StatefulWidget {
 }
 
 class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
-  static const rose = Color(0xFFB56F86);
-  static const ink = Color(0xFF503B42);
-  static const muted = Color(0xFF78676B);
-  static const cream = Color(0xFFFFFAF8);
-  static const blush = Color(0xFFF4E4E8);
-  static const blue = Color(0xFFDDECEF);
+  static const rose = Color(0xFFA5553E); // Brand Terracotta Brown
+  static const ink = Color(0xFF403735); // Deep Warm Brown
+  static const muted = Color(0xFF756863); // Warm Muted Gray
+  static const cream = Color(0xFFFFF8EF); // Warm Cream / Ivory
+  static const blush = Color(0xFFFBE7DC); // Soft Warm Peach
+  static const blue = Color(0xFFEAF3F7); // Soft Blue-Gray
+  static const gold = Color(0xFFD97706); // Warm Amber Gold for VIP
 
   static const bankName = 'Vietinbank';
   static const bankAccount = '104882453416';
@@ -55,6 +56,9 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
   LumiCoupon? _appliedCoupon;
   String? _couponError;
 
+  LumiMembership? _membership;
+  List<LumiCoupon> _availableCoupons = LumiCouponStore.availableCoupons;
+
   Future<void> _chooseAddress() async {
     final picked = await Navigator.of(context).push<LumiAddressItem>(
       MaterialPageRoute<LumiAddressItem>(
@@ -78,6 +82,7 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
   void initState() {
     super.initState();
     _loadSavedCustomerInfo();
+    _loadMembershipAndCoupons();
   }
 
   @override
@@ -88,6 +93,32 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
     _noteController.dispose();
     _couponController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadMembershipAndCoupons() async {
+    if (FirebaseAuth.instance.currentUser != null) {
+      try {
+        final membership = await LumiAccountRepository.fetchMembership();
+        if (mounted) {
+          setState(() {
+            _membership = membership;
+          });
+        }
+      } catch (e) {
+        debugPrint('Fetch membership error: $e');
+      }
+    }
+
+    try {
+      final coupons = await LumiCouponStore.fetchAvailableCoupons();
+      if (mounted && coupons.isNotEmpty) {
+        setState(() {
+          _availableCoupons = coupons;
+        });
+      }
+    } catch (e) {
+      debugPrint('Fetch coupons error: $e');
+    }
   }
 
   Future<void> _loadSavedCustomerInfo() async {
@@ -130,7 +161,27 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
     return subtotal >= 500000 ? 0 : 30000;
   }
 
-  int get discountAmount {
+  /// Tỷ lệ giảm giá theo Hạng thành viên (Bạc: 5%, Vàng: 10%, Kim Cương: 15%)
+  int get memberDiscountPercent {
+    final discount = _membership?.discountPercent;
+    if (discount != null && discount > 0) return discount;
+    return LumiMembershipDiscount.getDiscountPercent(_membership?.tier);
+  }
+
+  /// Thành viên Vàng và Kim Cương được đặc quyền miễn phí giao hàng toàn quốc
+  bool get isGoldOrAbove {
+    final t = (_membership?.tier ?? '').toLowerCase().trim();
+    return t == 'gold' || t == 'vàng' || t == 'diamond' || t == 'kim cương';
+  }
+
+  /// Số tiền giảm giá từ Hạng thành viên (áp dụng trực tiếp trên tổng đơn hàng)
+  int get memberDiscountAmount {
+    if (memberDiscountPercent <= 0) return 0;
+    return ((subtotal * memberDiscountPercent) / 100).round();
+  }
+
+  /// Số tiền giảm giá từ Coupon voucher
+  int get couponDiscountAmount {
     if (_appliedCoupon == null) return 0;
     return _appliedCoupon!.calculateDiscount(
       subtotal: subtotal.toInt(),
@@ -138,15 +189,18 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
     );
   }
 
+  /// Tổng số tiền giảm giá kết hợp (Ưu đãi thành viên + Voucher)
+  int get totalDiscountAmount => memberDiscountAmount + couponDiscountAmount;
+
   num get shippingFee {
-    if (_appliedCoupon?.isFreeShipping == true) {
+    if (isGoldOrAbove || _appliedCoupon?.isFreeShipping == true || subtotal >= 500000) {
       return 0;
     }
     return initialShippingFee;
   }
 
   num get grandTotal {
-    final net = subtotal - discountAmount;
+    final net = subtotal - totalDiscountAmount;
     final base = net > 0 ? net : 0;
     return base + shippingFee;
   }
@@ -163,6 +217,12 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
     if (coupon == null) {
       setState(() {
         _couponError = 'Mã giảm giá không tồn tại';
+      });
+      return;
+    }
+    if (coupon.isExhausted) {
+      setState(() {
+        _couponError = 'Mã giảm giá đã hết lượt sử dụng';
       });
       return;
     }
@@ -185,7 +245,7 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
         content: Text(
           LumiAdaptive.text('Áp dụng mã ${coupon.code} thành công!'),
         ),
-        backgroundColor: const Color(0xFF16A34A),
+        backgroundColor: LumiAdaptive.color(rose),
         duration: const Duration(seconds: 2),
       ),
     );
@@ -375,21 +435,43 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
     );
   }
 
-  Widget _priceRow(String title, num value, {bool isTotal = false}) {
+  Widget _priceRow(String title, num value, {bool isTotal = false, String? subtitle}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            LumiAdaptive.text(title),
-            style: LumiAdaptive.style(
-              GoogleFonts.beVietnamPro(
-                color: LumiAdaptive.color(isTotal ? ink : muted),
-                fontSize: isTotal ? 16 : 14,
-                fontWeight: isTotal ? FontWeight.w700 : FontWeight.w400,
+          Row(
+            children: [
+              Text(
+                LumiAdaptive.text(title),
+                style: LumiAdaptive.style(
+                  GoogleFonts.beVietnamPro(
+                    color: LumiAdaptive.color(isTotal ? ink : muted),
+                    fontSize: isTotal ? 16 : 14,
+                    fontWeight: isTotal ? FontWeight.w700 : FontWeight.w400,
+                  ),
+                ),
               ),
-            ),
+              if (subtitle != null) ...[
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: LumiAdaptive.color(blush),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    LumiAdaptive.text(subtitle),
+                    style: GoogleFonts.beVietnamPro(
+                      color: LumiAdaptive.color(rose),
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            ],
           ),
           Text(
             LumiAdaptive.text(value == 0 ? 'Miễn phí' : _money(value)),
@@ -647,7 +729,9 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
           'note': customerNote,
           'paymentMethod': _paymentMethod,
           if (_appliedCoupon != null) 'couponCode': _appliedCoupon!.code,
-          if (discountAmount > 0) 'discount': discountAmount,
+          if (couponDiscountAmount > 0) 'couponDiscount': couponDiscountAmount,
+          if (memberDiscountAmount > 0) 'memberDiscount': memberDiscountAmount,
+          if (totalDiscountAmount > 0) 'discount': totalDiscountAmount,
         },
       );
       final receipt = Map<String, dynamic>.from(response['data'] as Map);
@@ -667,11 +751,19 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
         _isSubmitting = false;
       });
 
+      String errorMsg = 'Không thể tạo đơn hàng. Vui lòng thử lại.';
+      if (error is LumiApiException) {
+        errorMsg = error.message;
+      } else if (error.toString().contains('COUPON_EXHAUSTED')) {
+        errorMsg = 'Mã giảm giá đã hết lượt sử dụng.';
+      }
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            LumiAdaptive.text('Không thể tạo đơn hàng. Vui lòng thử lại.'),
+            LumiAdaptive.text(errorMsg),
           ),
+          backgroundColor: Colors.redAccent,
         ),
       );
 
@@ -699,7 +791,7 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
       items: items,
       paymentMethod: paymentMethodLabel,
       couponCode: _appliedCoupon?.code,
-      discount: discountAmount,
+      discount: totalDiscountAmount,
     );
 
     LumiShopCatalog.clearCart();
@@ -721,6 +813,100 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
     );
   }
 
+  Widget _membershipPrivilegeBanner() {
+    if (memberDiscountPercent <= 0) return const SizedBox.shrink();
+
+    final tierName = _membership?.tierLabel ?? 'Thành viên';
+    final freeshipText = isGoldOrAbove ? ' & Miễn phí ship toàn quốc' : '';
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 22),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFFDF8),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFF1D8B8), width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: gold.withValues(alpha: .06),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(9),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFEF3C7),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(
+              Icons.workspace_premium_rounded,
+              color: gold,
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      tierName,
+                      style: GoogleFonts.beVietnamPro(
+                        color: const Color(0xFF92400E),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFDE68A),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        '-$memberDiscountPercent%',
+                        style: GoogleFonts.beVietnamPro(
+                          color: const Color(0xFF78350F),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  'Tự động giảm $memberDiscountPercent% trực tiếp trên hóa đơn$freeshipText.',
+                  style: GoogleFonts.beVietnamPro(
+                    color: const Color(0xFF78350F),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            '- ${_money(memberDiscountAmount)}',
+            style: GoogleFonts.beVietnamPro(
+              color: gold,
+              fontSize: 14,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showCouponSheet() {
     showModalBottomSheet<void>(
       context: context,
@@ -729,7 +915,7 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
       builder: (bottomSheetContext) {
         return Container(
           constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(bottomSheetContext).size.height * 0.75,
+            maxHeight: MediaQuery.of(bottomSheetContext).size.height * 0.78,
           ),
           decoration: BoxDecoration(
             color: LumiAdaptive.color(cream, surface: true),
@@ -768,22 +954,23 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.close),
+                      icon: Icon(Icons.close, color: LumiAdaptive.color(muted)),
                       onPressed: () => Navigator.pop(bottomSheetContext),
                     ),
                   ],
                 ),
               ),
-              const Divider(height: 1),
+              Divider(height: 1, color: LumiAdaptive.color(blush)),
               Expanded(
                 child: ListView.separated(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: LumiCouponStore.availableCoupons.length,
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+                  itemCount: _availableCoupons.length,
                   separatorBuilder: (_, _) => const SizedBox(height: 12),
                   itemBuilder: (context, index) {
-                    final coupon = LumiCouponStore.availableCoupons[index];
+                    final coupon = _availableCoupons[index];
                     final isApplied = _appliedCoupon?.code == coupon.code;
-                    final isEligible = subtotal >= coupon.minOrder;
+                    final isExhausted = coupon.isExhausted;
+                    final isEligible = subtotal >= coupon.minOrder && !isExhausted;
                     final discountEst = coupon.calculateDiscount(
                       subtotal: subtotal.toInt(),
                       shippingFee: initialShippingFee.toInt(),
@@ -816,20 +1003,30 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
                               vertical: 8,
                             ),
                             decoration: BoxDecoration(
-                              color: LumiAdaptive.color(blush, surface: true),
+                              color: LumiAdaptive.color(
+                                isExhausted ? const Color(0xFFF1F5F9) : blush,
+                                surface: true,
+                              ),
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(Icons.confirmation_number_outlined,
-                                    color: LumiAdaptive.color(rose), size: 22),
+                                Icon(
+                                  Icons.confirmation_number_outlined,
+                                  color: LumiAdaptive.color(
+                                    isExhausted ? const Color(0xFF94A3B8) : rose,
+                                  ),
+                                  size: 22,
+                                ),
                                 const SizedBox(height: 4),
                                 Text(
                                   coupon.badgeText,
                                   style: GoogleFonts.beVietnamPro(
-                                    color: LumiAdaptive.color(rose),
-                                    fontSize: 11,
+                                    color: LumiAdaptive.color(
+                                      isExhausted ? const Color(0xFF94A3B8) : rose,
+                                    ),
+                                    fontSize: 10.5,
                                     fontWeight: FontWeight.w700,
                                   ),
                                 ),
@@ -849,23 +1046,54 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
                                         vertical: 2,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: const Color(0xFF16A34A).withValues(alpha: 0.1),
+                                        color: isExhausted
+                                            ? const Color(0xFFF1F5F9)
+                                            : LumiAdaptive.color(blush),
                                         borderRadius: BorderRadius.circular(6),
                                         border: Border.all(
-                                          color: const Color(0xFF16A34A).withValues(alpha: 0.3),
+                                          color: isExhausted
+                                              ? const Color(0xFFE2E8F0)
+                                              : LumiAdaptive.color(rose.withValues(alpha: 0.3)),
                                         ),
                                       ),
                                       child: Text(
                                         coupon.code,
-                                        style: const TextStyle(
-                                          color: Color(0xFF16A34A),
+                                        style: TextStyle(
+                                          color: isExhausted
+                                              ? const Color(0xFF94A3B8)
+                                              : LumiAdaptive.color(rose),
                                           fontSize: 12,
                                           fontWeight: FontWeight.w800,
                                         ),
                                       ),
                                     ),
+                                    const SizedBox(width: 6),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 6,
+                                        vertical: 1.5,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: isExhausted
+                                            ? const Color(0xFFFEE2E2)
+                                            : const Color(0xFFFEF3C7),
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: Text(
+                                        isExhausted
+                                            ? LumiAdaptive.text('Hết lượt')
+                                            : LumiAdaptive.text('Còn ${coupon.remainingUses} lượt'),
+                                        style: GoogleFonts.beVietnamPro(
+                                          color: isExhausted
+                                              ? const Color(0xFFDC2626)
+                                              : const Color(0xFFB45309),
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ),
                                     const Spacer(),
-                                    if (discountEst > 0)
+                                    if (discountEst > 0 && !isExhausted)
                                       Text(
                                         '- ${_money(discountEst)}',
                                         style: TextStyle(
@@ -883,7 +1111,9 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
                                     GoogleFonts.beVietnamPro(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w700,
-                                      color: LumiAdaptive.color(ink),
+                                      color: LumiAdaptive.color(
+                                        isExhausted ? const Color(0xFF94A3B8) : ink,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -893,7 +1123,9 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
                                   style: LumiAdaptive.style(
                                     GoogleFonts.beVietnamPro(
                                       fontSize: 12,
-                                      color: LumiAdaptive.color(muted),
+                                      color: LumiAdaptive.color(
+                                        isExhausted ? const Color(0xFFCBD5E1) : muted,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -903,7 +1135,7 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
                                     LumiAdaptive.text('Đơn tối thiểu: ${_money(coupon.minOrder)}'),
                                     style: TextStyle(
                                       fontSize: 11,
-                                      color: isEligible
+                                      color: isEligible || isExhausted
                                           ? LumiAdaptive.color(muted)
                                           : Colors.redAccent,
                                       fontWeight: isEligible ? FontWeight.normal : FontWeight.w600,
@@ -916,17 +1148,23 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
                           const SizedBox(width: 10),
                           FilledButton(
                             style: FilledButton.styleFrom(
-                              backgroundColor: isApplied
-                                  ? const Color(0xFF16A34A)
-                                  : (isEligible
-                                      ? LumiAdaptive.color(rose)
-                                      : LumiAdaptive.color(muted.withValues(alpha: 0.4))),
+                              backgroundColor: isExhausted
+                                  ? const Color(0xFFF1F5F9)
+                                  : (isApplied
+                                      ? LumiAdaptive.color(rose.withValues(alpha: 0.15))
+                                      : (isEligible
+                                          ? LumiAdaptive.color(rose)
+                                          : LumiAdaptive.color(muted.withValues(alpha: 0.2)))),
+                              foregroundColor: isExhausted
+                                  ? const Color(0xFF94A3B8)
+                                  : (isApplied ? LumiAdaptive.color(rose) : Colors.white),
                               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
+                              elevation: 0,
                             ),
-                            onPressed: !isEligible
+                            onPressed: (!isEligible && !isApplied)
                                 ? null
                                 : () {
                                     if (isApplied) {
@@ -937,7 +1175,11 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
                                     Navigator.pop(bottomSheetContext);
                                   },
                             child: Text(
-                              LumiAdaptive.text(isApplied ? 'Đã dùng' : 'Dùng'),
+                              LumiAdaptive.text(
+                                isExhausted
+                                    ? 'Hết'
+                                    : (isApplied ? 'Đã dùng' : 'Dùng'),
+                              ),
                               style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                             ),
                           ),
@@ -981,21 +1223,28 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: const Color(0xFFF0FDF4),
+              color: LumiAdaptive.color(const Color(0xFFFFF9F5), surface: true),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFF86EFAC)),
+              border: Border.all(color: LumiAdaptive.color(blush), width: 1.4),
+              boxShadow: [
+                BoxShadow(
+                  color: rose.withValues(alpha: .04),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
             child: Row(
               children: [
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFDCFCE7),
+                    color: LumiAdaptive.color(blush, surface: true),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(
-                    Icons.check_circle_rounded,
-                    color: Color(0xFF16A34A),
+                  child: Icon(
+                    Icons.confirmation_number_rounded,
+                    color: LumiAdaptive.color(rose),
                     size: 22,
                   ),
                 ),
@@ -1008,8 +1257,8 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
                         children: [
                           Text(
                             _appliedCoupon!.code,
-                            style: const TextStyle(
-                              color: Color(0xFF15803D),
+                            style: GoogleFonts.beVietnamPro(
+                              color: LumiAdaptive.color(rose),
                               fontSize: 14,
                               fontWeight: FontWeight.w800,
                             ),
@@ -1018,13 +1267,13 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFBBF7D0),
+                              color: LumiAdaptive.color(blush),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
                               LumiAdaptive.text(_appliedCoupon!.badgeText),
-                              style: const TextStyle(
-                                color: Color(0xFF14532D),
+                              style: GoogleFonts.beVietnamPro(
+                                color: LumiAdaptive.color(rose),
                                 fontSize: 10,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -1034,9 +1283,9 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '${LumiAdaptive.text(_appliedCoupon!.title)} (-${_money(discountAmount)})',
-                        style: const TextStyle(
-                          color: Color(0xFF166534),
+                        '${LumiAdaptive.text(_appliedCoupon!.title)} (-${_money(couponDiscountAmount)})',
+                        style: GoogleFonts.beVietnamPro(
+                          color: LumiAdaptive.color(ink),
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
                         ),
@@ -1046,61 +1295,76 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
                 ),
                 IconButton(
                   tooltip: LumiAdaptive.text('Gỡ bỏ'),
-                  icon: const Icon(Icons.close, color: Color(0xFF15803D), size: 20),
+                  icon: Icon(Icons.close, color: LumiAdaptive.color(muted), size: 20),
                   onPressed: _removeCoupon,
                 ),
               ],
             ),
           )
         else
-          Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: _couponController,
-                  textCapitalization: TextCapitalization.characters,
-                  decoration: InputDecoration(
-                    hintText: LumiAdaptive.text('Nhập mã voucher (VD: LUMISPA10)'),
-                    hintStyle: TextStyle(
-                      color: LumiAdaptive.color(muted.withValues(alpha: .6)),
-                      fontSize: 13,
+          SizedBox(
+            height: 48,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _couponController,
+                    textCapitalization: TextCapitalization.characters,
+                    style: GoogleFonts.beVietnamPro(
+                      color: LumiAdaptive.color(ink),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
                     ),
-                    prefixIcon: Icon(Icons.confirmation_number_outlined,
-                        color: LumiAdaptive.color(rose), size: 20),
-                    filled: true,
-                    fillColor: LumiAdaptive.color(Colors.white, surface: true),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: BorderSide(color: LumiAdaptive.color(blush)),
+                    decoration: InputDecoration(
+                      hintText: LumiAdaptive.text('Nhập mã voucher (VD: LUMISPA10)'),
+                      hintStyle: GoogleFonts.beVietnamPro(
+                        color: LumiAdaptive.color(muted.withValues(alpha: .6)),
+                        fontSize: 13,
+                      ),
+                      prefixIcon: Icon(
+                        Icons.confirmation_number_outlined,
+                        color: LumiAdaptive.color(rose),
+                        size: 20,
+                      ),
+                      filled: true,
+                      fillColor: LumiAdaptive.color(Colors.white, surface: true),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 0),
+                      isDense: true,
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide(color: LumiAdaptive.color(blush)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide(color: LumiAdaptive.color(rose), width: 1.5),
+                      ),
                     ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: BorderSide(color: LumiAdaptive.color(rose), width: 1.5),
-                    ),
+                    onSubmitted: _applyCoupon,
                   ),
-                  onSubmitted: _applyCoupon,
                 ),
-              ),
-              const SizedBox(width: 10),
-              SizedBox(
-                height: 48,
-                child: FilledButton(
+                const SizedBox(width: 10),
+                FilledButton(
                   style: FilledButton.styleFrom(
                     backgroundColor: LumiAdaptive.color(rose),
+                    foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
                     ),
-                    padding: const EdgeInsets.symmetric(horizontal: 18),
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    elevation: 0,
                   ),
                   onPressed: () => _applyCoupon(_couponController.text),
                   child: Text(
                     LumiAdaptive.text('Áp dụng'),
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                    style: GoogleFonts.beVietnamPro(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13,
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         if (_couponError != null) ...[
           const SizedBox(height: 6),
@@ -1440,6 +1704,7 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
                   ),
                   _bankTransferInfo(),
                   const SizedBox(height: 26),
+                  _membershipPrivilegeBanner(),
                   _couponSection(),
                   const SizedBox(height: 26),
                   _sectionTitle(
@@ -1457,27 +1722,72 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
                     child: Column(
                       children: [
                         _priceRow('Tạm tính', subtotal),
-                        if (discountAmount > 0)
+                        if (memberDiscountAmount > 0)
                           Padding(
                             padding: const EdgeInsets.symmetric(vertical: 5),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text(
-                                  '${LumiAdaptive.text('Giảm giá')} (${_appliedCoupon?.code ?? ''})',
-                                  style: LumiAdaptive.style(
-                                    GoogleFonts.beVietnamPro(
-                                      color: const Color(0xFF16A34A),
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w600,
+                                Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.workspace_premium_rounded,
+                                      size: 18,
+                                      color: Color(0xFFD97706),
                                     ),
-                                  ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      '${LumiAdaptive.text('Ưu đãi')} ${_membership?.tierLabel ?? 'Thành viên'} (-$memberDiscountPercent%)',
+                                      style: GoogleFonts.beVietnamPro(
+                                        color: const Color(0xFFD97706),
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                                 Text(
-                                  '- ${_money(discountAmount)}',
+                                  '- ${_money(memberDiscountAmount)}',
+                                  style: GoogleFonts.beVietnamPro(
+                                    color: const Color(0xFFD97706),
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        if (couponDiscountAmount > 0)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 5),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.confirmation_number_outlined,
+                                      size: 16,
+                                      color: LumiAdaptive.color(rose),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      '${LumiAdaptive.text('Giảm giá')} (${_appliedCoupon?.code ?? ''})',
+                                      style: LumiAdaptive.style(
+                                        GoogleFonts.beVietnamPro(
+                                          color: LumiAdaptive.color(rose),
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Text(
+                                  '- ${_money(couponDiscountAmount)}',
                                   style: LumiAdaptive.style(
                                     GoogleFonts.beVietnamPro(
-                                      color: const Color(0xFF16A34A),
+                                      color: LumiAdaptive.color(rose),
                                       fontSize: 14,
                                       fontWeight: FontWeight.w700,
                                     ),
@@ -1486,10 +1796,16 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
                               ],
                             ),
                           ),
-                        _priceRow('Phí giao hàng', shippingFee),
-                        const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 7),
-                          child: Divider(),
+                        _priceRow(
+                          'Phí giao hàng',
+                          shippingFee,
+                          subtitle: isGoldOrAbove
+                              ? 'Freeship VIP'
+                              : (_appliedCoupon?.isFreeShipping == true ? 'Freeship' : null),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 7),
+                          child: Divider(color: LumiAdaptive.color(blush)),
                         ),
                         _priceRow('Tổng cộng', grandTotal, isTotal: true),
                       ],

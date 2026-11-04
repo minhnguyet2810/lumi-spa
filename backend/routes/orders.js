@@ -4,7 +4,11 @@ const db = require('../firebase');
 const { requireAuth } = require('../auth');
 const mailService = require('../services/mail_service');
 const pushService = require('../services/push_service');
-const { awardPointsInTransaction, sendPointsNotification } = require('../services/membership_service');
+const {
+  awardPointsInTransaction,
+  sendPointsNotification,
+  getTierByPoints,
+} = require('../services/membership_service');
 
 const router = express.Router();
 router.use(requireAuth);
@@ -73,6 +77,7 @@ const COUPONS = {
     maxDiscount: 100000,
     isFreeShipping: false,
     badgeText: 'GIẢM 10%',
+    usageLimit: 50,
   },
   'LUMISPA20': {
     code: 'LUMISPA20',
@@ -83,6 +88,7 @@ const COUPONS = {
     maxDiscount: 200000,
     isFreeShipping: false,
     badgeText: 'GIẢM 20%',
+    usageLimit: 30,
   },
   'FREESHIP': {
     code: 'FREESHIP',
@@ -91,6 +97,7 @@ const COUPONS = {
     minOrder: 0,
     isFreeShipping: true,
     badgeText: 'FREESHIP',
+    usageLimit: 100,
   },
   'LUMI50K': {
     code: 'LUMI50K',
@@ -100,6 +107,7 @@ const COUPONS = {
     fixedDiscount: 50000,
     isFreeShipping: false,
     badgeText: '-50.000 đ',
+    usageLimit: 25,
   },
   'LUMIVIP': {
     code: 'LUMIVIP',
@@ -109,6 +117,7 @@ const COUPONS = {
     fixedDiscount: 100000,
     isFreeShipping: false,
     badgeText: '-100.000 đ',
+    usageLimit: 10,
   },
   'LUMIWELCOME': {
     code: 'LUMIWELCOME',
@@ -119,6 +128,7 @@ const COUPONS = {
     maxDiscount: 80000,
     isFreeShipping: false,
     badgeText: 'BẠN MỚI',
+    usageLimit: 50,
   },
 };
 
@@ -143,8 +153,38 @@ router.get('/', async (req, res) => {
 });
 
 // GET /api/orders/coupons
-router.get('/coupons', (req, res) => {
-  return res.json({ success: true, data: Object.values(COUPONS) });
+router.get('/coupons', async (req, res) => {
+  try {
+    const usageMap = {};
+    if (db.hasCredentials) {
+      const snapshot = await db.collection('coupon_usage').get();
+      snapshot.forEach(doc => {
+        usageMap[doc.id] = Number(doc.data().usedCount) || 0;
+      });
+    }
+
+    const couponsList = Object.values(COUPONS).map(c => {
+      const usedCount = usageMap[c.code] || 0;
+      const remainingUses = Math.max(0, c.usageLimit - usedCount);
+      return {
+        ...c,
+        usedCount,
+        remainingUses,
+        isExhausted: remainingUses <= 0,
+      };
+    });
+
+    return res.json({ success: true, data: couponsList });
+  } catch (error) {
+    console.error('Coupons error:', error);
+    const couponsList = Object.values(COUPONS).map(c => ({
+      ...c,
+      usedCount: 0,
+      remainingUses: c.usageLimit,
+      isExhausted: false,
+    }));
+    return res.json({ success: true, data: couponsList });
+  }
 });
 
 // GET /api/orders/:id
@@ -265,29 +305,69 @@ router.post('/', async (req, res) => {
         });
       }
 
-      // Shipping policy & coupon discount calculation
-      let shippingFee = subtotal >= 500000 ? 0 : 30000;
-      let discount = 0;
-      let appliedCoupon = null;
+      // Membership & Tier Discount calculation
+      let memberTier = 'Member';
+      let memberTierLabel = 'Thành viên';
+      let memberDiscountPercent = 0;
+      let isGoldOrAbove = false;
 
-      if (typeof couponCode === 'string' && couponCode.trim()) {
-        const normCode = couponCode.trim().toUpperCase();
-        const coupon = COUPONS[normCode];
-        if (coupon && subtotal >= coupon.minOrder) {
-          appliedCoupon = coupon;
-          if (coupon.isFreeShipping) {
-            discount = shippingFee;
-            shippingFee = 0;
-          } else if (coupon.fixedDiscount) {
-            discount = Math.min(coupon.fixedDiscount, subtotal);
-          } else if (coupon.percentDiscount) {
-            const calc = Math.round(subtotal * coupon.percentDiscount);
-            discount = coupon.maxDiscount ? Math.min(calc, coupon.maxDiscount) : calc;
+      if (req.user.uid) {
+        const memberRef = db.collection('memberships').doc(req.user.uid);
+        const memberDoc = await tx.get(memberRef);
+        if (memberDoc.exists) {
+          const mData = memberDoc.data();
+          const mPoints = Number(mData.points) || 0;
+          const tierObj = getTierByPoints(mPoints);
+          memberTier = tierObj.name;
+          memberTierLabel = tierObj.label;
+          memberDiscountPercent = tierObj.discountPercent || 0;
+          if (tierObj.id === 'gold' || tierObj.id === 'diamond') {
+            isGoldOrAbove = true;
           }
         }
       }
 
-      const total = Math.max(0, subtotal - discount) + shippingFee;
+      const memberDiscount = memberDiscountPercent > 0
+        ? Math.round((subtotal * memberDiscountPercent) / 100)
+        : 0;
+
+      // Shipping policy: Gold & Diamond members or subtotal >= 500k get Free shipping
+      let shippingFee = (subtotal >= 500000 || isGoldOrAbove) ? 0 : 30000;
+      let couponDiscount = 0;
+      let appliedCoupon = null;
+      let couponUsageRef = null;
+
+      if (typeof couponCode === 'string' && couponCode.trim()) {
+        const normCode = couponCode.trim().toUpperCase();
+        const coupon = COUPONS[normCode];
+        if (!coupon) {
+          throw new Error('INVALID_COUPON');
+        }
+        if (subtotal < coupon.minOrder) {
+          throw new Error('COUPON_MIN_ORDER_NOT_MET');
+        }
+
+        couponUsageRef = db.collection('coupon_usage').doc(normCode);
+        const couponDoc = await tx.get(couponUsageRef);
+        const usedCount = couponDoc.exists ? (Number(couponDoc.data().usedCount) || 0) : 0;
+        if (usedCount >= coupon.usageLimit) {
+          throw new Error('COUPON_EXHAUSTED');
+        }
+
+        appliedCoupon = coupon;
+        if (coupon.isFreeShipping) {
+          couponDiscount = shippingFee;
+          shippingFee = 0;
+        } else if (coupon.fixedDiscount) {
+          couponDiscount = Math.min(coupon.fixedDiscount, subtotal);
+        } else if (coupon.percentDiscount) {
+          const calc = Math.round(subtotal * coupon.percentDiscount);
+          couponDiscount = coupon.maxDiscount ? Math.min(calc, coupon.maxDiscount) : calc;
+        }
+      }
+
+      const totalDiscount = memberDiscount + couponDiscount;
+      const total = Math.max(0, subtotal - totalDiscount) + shippingFee;
 
       for (let i = 0; i < docs.length; i++) {
         const product = docs[i].data();
@@ -296,6 +376,15 @@ router.post('/', async (req, res) => {
             stock: FieldValue.increment(-quantities.get(productIds[i])),
           });
         }
+      }
+
+      if (couponUsageRef && appliedCoupon) {
+        tx.set(couponUsageRef, {
+          code: appliedCoupon.code,
+          usedCount: FieldValue.increment(1),
+          usageLimit: appliedCoupon.usageLimit,
+          lastUsedAt: FieldValue.serverTimestamp(),
+        }, { merge: true });
       }
 
       tx.create(orderRef, {
@@ -311,8 +400,13 @@ router.post('/', async (req, res) => {
         phone: phone.trim(),
         subtotal,
         shippingFee,
-        discount,
+        discount: totalDiscount,
+        memberDiscount,
+        memberTier,
+        memberTierLabel,
+        memberDiscountPercent,
         couponCode: appliedCoupon ? appliedCoupon.code : null,
+        couponDiscount,
         total,
         paymentMethod: paymentLabel,
         paymentStatus: 'unpaid',
@@ -326,8 +420,13 @@ router.post('/', async (req, res) => {
         total,
         subtotal,
         shippingFee,
-        discount,
+        discount: totalDiscount,
+        memberDiscount,
+        memberTier,
+        memberTierLabel,
+        memberDiscountPercent,
         couponCode: appliedCoupon ? appliedCoupon.code : null,
+        couponDiscount,
         items: orderItems,
       };
     });
@@ -386,6 +485,9 @@ router.post('/', async (req, res) => {
       PRODUCT_UNAVAILABLE: [409, 'Sản phẩm không còn khả dụng.'],
       OUT_OF_STOCK: [409, 'Sản phẩm không đủ tồn kho.'],
       INVALID_PRICE: [422, 'Giá sản phẩm chưa hợp lệ.'],
+      COUPON_EXHAUSTED: [409, 'Mã giảm giá đã hết lượt sử dụng.'],
+      COUPON_MIN_ORDER_NOT_MET: [400, 'Đơn hàng chưa đạt giá trị tối thiểu để dùng mã giảm giá.'],
+      INVALID_COUPON: [400, 'Mã giảm giá không hợp lệ.'],
     };
 
     if (known[error.message]) {

@@ -62,6 +62,61 @@ void main() {
       expect(coupon.calculateDiscount(subtotal: 200000, shippingFee: 30000), 30000);
       expect(coupon.calculateDiscount(subtotal: 800000, shippingFee: 0), 80000);
     });
+
+    test('Coupon usage limit and exhaustion check', () {
+      const activeCoupon = LumiCoupon(
+        code: 'TESTLIMIT',
+        title: 'Voucher giới hạn',
+        description: 'Thử nghiệm',
+        badgeText: 'TEST',
+        usageLimit: 10,
+        usedCount: 8,
+      );
+      expect(activeCoupon.remainingUses, 2);
+      expect(activeCoupon.isExhausted, isFalse);
+
+      const exhaustedCoupon = LumiCoupon(
+        code: 'TESTFULL',
+        title: 'Voucher hết lượt',
+        description: 'Đã dùng hết',
+        badgeText: 'TEST',
+        usageLimit: 10,
+        usedCount: 10,
+        fixedDiscount: 50000,
+      );
+      expect(exhaustedCoupon.remainingUses, 0);
+      expect(exhaustedCoupon.isExhausted, isTrue);
+      // Exhausted voucher returns 0 discount
+      expect(exhaustedCoupon.calculateDiscount(subtotal: 300000, shippingFee: 30000), 0);
+    });
+
+    test('LumiMembershipDiscount calculations for Bạc (5%), Vàng (10%), Kim Cương (15%)', () {
+      expect(LumiMembershipDiscount.getDiscountPercent('Member'), 0);
+      expect(LumiMembershipDiscount.getDiscountPercent('Thành viên'), 0);
+      expect(LumiMembershipDiscount.getDiscountPercent('Silver'), 5);
+      expect(LumiMembershipDiscount.getDiscountPercent('Bạc'), 5);
+      expect(LumiMembershipDiscount.getDiscountPercent('Hạng Bạc'), 5);
+      expect(LumiMembershipDiscount.getDiscountPercent('Gold'), 10);
+      expect(LumiMembershipDiscount.getDiscountPercent('Vàng'), 10);
+      expect(LumiMembershipDiscount.getDiscountPercent('Hạng Vàng'), 10);
+      expect(LumiMembershipDiscount.getDiscountPercent('Diamond'), 15);
+      expect(LumiMembershipDiscount.getDiscountPercent('Kim Cương'), 15);
+      expect(LumiMembershipDiscount.getDiscountPercent('Hạng Kim Cương'), 15);
+
+      // Order 500.000 đ:
+      // Silver (5%) -> 25.000 đ
+      final subtotal = 500000;
+      final silverDiscount = ((subtotal * LumiMembershipDiscount.getDiscountPercent('Silver')) / 100).round();
+      expect(silverDiscount, 25000);
+
+      // Gold (10%) -> 50.000 đ
+      final goldDiscount = ((subtotal * LumiMembershipDiscount.getDiscountPercent('Gold')) / 100).round();
+      expect(goldDiscount, 50000);
+
+      // Diamond (15%) -> 75.000 đ
+      final diamondDiscount = ((subtotal * LumiMembershipDiscount.getDiscountPercent('Diamond')) / 100).round();
+      expect(diamondDiscount, 75000);
+    });
   });
 
   group('LumiOrderStore Format Tests', () {

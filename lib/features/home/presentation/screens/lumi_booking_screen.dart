@@ -1,3 +1,4 @@
+import '../../../../core/data/lumi_order_store.dart';
 import '../../../../core/widgets/lumi_catalog_image.dart';
 import '../../../../core/theme/lumi_adaptive.dart';
 
@@ -71,7 +72,7 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
   String get _price {
     final n = _rawPrice;
     if (n <= 0) return 'Liên hệ';
-    return '${n.toInt().toString().replaceAllMapped(RegExp(r'\B(?=(\d{3})+(?!\d))'), (m) => '.')} đ';
+    return LumiOrderStore.formatCurrency(n);
   }
 
   String _dateText(DateTime d) {

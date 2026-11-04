@@ -1,3 +1,4 @@
+import '../../../../core/data/lumi_order_store.dart';
 import '../../../../core/widgets/lumi_catalog_image.dart';
 import '../../../../core/theme/lumi_adaptive.dart';
 
@@ -90,7 +91,7 @@ class _LumiSpaCatalogState extends State<LumiSpaCatalog> {
     if (value == null) return 'Liên hệ tư vấn';
     final n = num.tryParse(value.toString());
     if (n == null || n <= 0) return 'Liên hệ tư vấn';
-    return '${n.toInt().toString().replaceAllMapped(RegExp(r'\B(?=(\d{3})+(?!\d))'), (m) => '.')} đ';
+    return LumiOrderStore.formatCurrency(n);
   }
 
   Widget heading(String text, {String? detail}) => Padding(

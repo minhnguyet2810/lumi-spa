@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../../../core/data/lumi_order_store.dart';
 
 class BookingItem {
   final String id;
@@ -213,11 +214,7 @@ class BookingItem {
     if (price <= 0) {
       return 'Liên hệ tư vấn';
     }
-    final p = price.toInt().toString().replaceAllMapped(
-      RegExp(r'\B(?=(\d{3})+(?!\d))'),
-      (match) => '.',
-    );
-    return '$p đ';
+    return LumiOrderStore.formatCurrency(price);
   }
 
   String get formattedDate {

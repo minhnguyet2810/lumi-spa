@@ -1,3 +1,4 @@
+import '../../../../core/data/lumi_order_store.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -14,13 +15,7 @@ class AdminOrderDetailDialog extends StatelessWidget {
   final AdminOrderItem order;
   final void Function(String newStatus, {String? reason}) onUpdateStatus;
 
-  String _formatVND(num amount) {
-    final p = amount.toInt().toString().replaceAllMapped(
-      RegExp(r'\B(?=(\d{3})+(?!\d))'),
-      (match) => '.',
-    );
-    return '$p đ';
-  }
+  String _formatVND(num amount) => LumiOrderStore.formatCurrency(amount);
 
   @override
   Widget build(BuildContext context) {

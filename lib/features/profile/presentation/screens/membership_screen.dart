@@ -1,3 +1,4 @@
+import '../../../../core/data/lumi_order_store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -75,17 +76,7 @@ class _MembershipScreenState extends State<MembershipScreen> {
     }
   }
 
-  String _formatCurrency(num amount) {
-    final value = amount.toInt();
-    final parts = <String>[];
-    String s = value.toString();
-    while (s.length > 3) {
-      parts.insert(0, s.substring(s.length - 3));
-      s = s.substring(0, s.length - 3);
-    }
-    parts.insert(0, s);
-    return '${parts.join('.')} đ';
-  }
+  String _formatCurrency(num amount) => LumiOrderStore.formatCurrency(amount);
 
   String _formatNumber(int number) {
     final parts = <String>[];

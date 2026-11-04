@@ -1,3 +1,4 @@
+import '../../../../core/widgets/lumi_catalog_image.dart';
 import 'lumi_order_ui.dart';
 import '../../../../core/theme/lumi_adaptive.dart';
 
@@ -186,17 +187,15 @@ class _LumiOrderDetailScreenState extends State<LumiOrderDetailScreen> {
       ),
       child: Row(
         children: [
-          Container(
-            width: 52,
-            height: 52,
-            decoration: BoxDecoration(
-              color: LumiAdaptive.color(blue, surface: true),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(
-              Icons.spa_outlined,
-              color: LumiAdaptive.color(rose),
-              size: 27,
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: SizedBox(
+              width: 52,
+              height: 52,
+              child: LumiCatalogImage(
+                item: item,
+                fit: BoxFit.cover,
+              ),
             ),
           ),
           const SizedBox(width: 12),

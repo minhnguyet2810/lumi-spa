@@ -298,48 +298,59 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                       size: 18,
                     ),
                   ),
-                  const SizedBox(width: 10),
-                  Text(
-                    LumiAdaptive.text('Bộ lọc & Sắp xếp'),
-                    style: LumiAdaptive.style(
-                      GoogleFonts.beVietnamPro(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 14,
-                        color: LumiAdaptive.color(ink),
-                      ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Flexible(
+                          child: Text(
+                            LumiAdaptive.text('Bộ lọc & Sắp xếp'),
+                            style: LumiAdaptive.style(
+                              GoogleFonts.beVietnamPro(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 13.5,
+                                color: LumiAdaptive.color(ink),
+                              ),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        if (isFiltered) ...[
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 1.5,
+                            ),
+                            decoration: BoxDecoration(
+                              color: LumiAdaptive.color(rose, surface: true),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              '$activeFilterCount',
+                              style: LumiAdaptive.style(
+                                const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                   ),
                   if (isFiltered) ...[
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: LumiAdaptive.color(rose, surface: true),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        LumiAdaptive.text('Đang lọc ($activeFilterCount)'),
-                        style: LumiAdaptive.style(
-                          TextStyle(
-                            color: LumiAdaptive.color(Colors.white),
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                  const Spacer(),
-                  if (isFiltered) ...[
+                    const SizedBox(width: 4),
                     TextButton(
                       style: LumiAdaptive.style(
                         TextButton.styleFrom(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
+                            horizontal: 6,
+                            vertical: 2,
                           ),
                           minimumSize: Size.zero,
                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -358,21 +369,21 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                         style: LumiAdaptive.style(
                           GoogleFonts.beVietnamPro(
                             fontWeight: FontWeight.w600,
-                            fontSize: 14,
+                            fontSize: 13,
                             color: LumiAdaptive.color(rose),
                           ),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 4),
                   ],
+                  const SizedBox(width: 4),
                   AnimatedRotation(
                     turns: _isFilterExpanded ? 0.5 : 0.0,
                     duration: const Duration(milliseconds: 250),
                     child: Icon(
                       Icons.keyboard_arrow_down_rounded,
                       color: LumiAdaptive.color(ink),
-                      size: 24,
+                      size: 22,
                     ),
                   ),
                 ],
@@ -579,14 +590,13 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                     });
                   },
                 ),
-                Row(
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
                   children: [
                     _priceChip('Tất cả', 0, 1000000),
-                    const SizedBox(width: 6),
                     _priceChip('< 350k', 0, 350000),
-                    const SizedBox(width: 6),
                     _priceChip('350k–500k', 350000, 500000),
-                    const SizedBox(width: 6),
                     _priceChip('> 500k', 500000, 1000000),
                   ],
                 ),
@@ -984,6 +994,18 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                                       : Image.network(
                                           _imageUrl(line.product)!,
                                           fit: BoxFit.cover,
+                                          loadingBuilder: (context, child, progress) => progress == null
+                                              ? child
+                                              : ColoredBox(
+                                                  color: LumiAdaptive.color(blush, surface: true),
+                                                  child: const Center(
+                                                    child: SizedBox(
+                                                      width: 16,
+                                                      height: 16,
+                                                      child: CircularProgressIndicator(strokeWidth: 2),
+                                                    ),
+                                                  ),
+                                                ),
                                           errorBuilder: (_, _, _) {
                                             return Icon(
                                               Icons.spa_outlined,

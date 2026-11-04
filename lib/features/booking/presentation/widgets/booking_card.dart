@@ -1,3 +1,4 @@
+import '../../../../core/widgets/lumi_catalog_image.dart';
 import '../../../../core/theme/lumi_adaptive.dart';
 
 import 'package:flutter/material.dart';
@@ -53,20 +54,19 @@ class BookingCard extends StatelessWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: LumiAdaptive.color(
-                        blush.withValues(alpha: 0.4),
-                        surface: true,
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: SizedBox(
+                      width: 44,
+                      height: 44,
+                      child: LumiCatalogImage(
+                        item: {
+                          'id': booking.serviceId,
+                          'name': booking.serviceName,
+                          'category': booking.categoryId,
+                        },
+                        fit: BoxFit.cover,
                       ),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(
-                      Icons.spa_outlined,
-                      color: LumiAdaptive.color(rose),
-                      size: 24,
                     ),
                   ),
                   const SizedBox(width: 12),

@@ -1,3 +1,4 @@
+import '../data/lumi_catalog_repository.dart';
 import 'package:flutter/material.dart';
 
 import '../theme/lumi_adaptive.dart';
@@ -40,6 +41,11 @@ abstract final class LumiImageSources {
       'photoUrl',
     ]) {
       collect(item[key]);
+    }
+    if (urls.isEmpty) {
+      final enriched = LumiCatalogRepository.withDemoImage(item);
+      collect(enriched['imageUrl']);
+      collect(enriched['imageUrls']);
     }
     return urls;
   }

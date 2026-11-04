@@ -57,7 +57,7 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
   String? _couponError;
 
   LumiMembership? _membership;
-  List<LumiCoupon> _availableCoupons = LumiCouponStore.availableCoupons;
+  List<LumiCoupon> _availableCoupons = LumiCouponStore.featuredCoupons;
 
   Future<void> _chooseAddress() async {
     final picked = await Navigator.of(context).push<LumiAddressItem>(
@@ -113,7 +113,7 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
       final coupons = await LumiCouponStore.fetchAvailableCoupons();
       if (mounted && coupons.isNotEmpty) {
         setState(() {
-          _availableCoupons = coupons;
+          _availableCoupons = coupons.take(3).toList();
         });
       }
     } catch (e) {
@@ -265,6 +265,19 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
     return '${digits.replaceAllMapped(RegExp(r'\B(?=(\d{3})+(?!\d))'), (match) => '.')} đ';
   }
 
+  String _shortMoney(num value) {
+    final amount = value.toInt();
+    if (amount <= 0) return '0đ';
+    if (amount >= 1000000) {
+      final tr = amount / 1000000.0;
+      return tr == tr.roundToDouble() ? '${tr.toInt()}tr' : '${tr.toStringAsFixed(1)}tr';
+    }
+    if (amount >= 1000) {
+      return '${(amount / 1000).round()}k';
+    }
+    return '$amountđ';
+  }
+
   String _productName(LumiCartItem item) {
     return item.product['name']?.toString() ?? 'Sản phẩm LUMI';
   }
@@ -376,6 +389,18 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
                   : Image.network(
                       imageUrl,
                       fit: BoxFit.cover,
+                      loadingBuilder: (context, child, progress) => progress == null
+                          ? child
+                          : ColoredBox(
+                              color: LumiAdaptive.color(blue, surface: true),
+                              child: const Center(
+                                child: SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                ),
+                              ),
+                            ),
                       errorBuilder: (_, _, _) {
                         return ColoredBox(
                           color: LumiAdaptive.color(blue),
@@ -962,229 +987,321 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
               ),
               Divider(height: 1, color: LumiAdaptive.color(blush)),
               Expanded(
-                child: ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
-                  itemCount: _availableCoupons.length,
-                  separatorBuilder: (_, _) => const SizedBox(height: 12),
-                  itemBuilder: (context, index) {
-                    final coupon = _availableCoupons[index];
-                    final isApplied = _appliedCoupon?.code == coupon.code;
-                    final isExhausted = coupon.isExhausted;
-                    final isEligible = subtotal >= coupon.minOrder && !isExhausted;
-                    final discountEst = coupon.calculateDiscount(
-                      subtotal: subtotal.toInt(),
-                      shippingFee: initialShippingFee.toInt(),
-                    );
+                child: Builder(
+                  builder: (context) {
+                    final displayedCoupons = _availableCoupons.take(3).toList();
+                    return ListView.separated(
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+                      itemCount: displayedCoupons.length,
+                      separatorBuilder: (_, _) => const SizedBox(height: 12),
+                      itemBuilder: (context, index) {
+                        final coupon = displayedCoupons[index];
+                        final isApplied = _appliedCoupon?.code == coupon.code;
+                        final isExhausted = coupon.isExhausted;
+                        final isEligible = subtotal >= coupon.minOrder && !isExhausted;
 
-                    return Container(
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: LumiAdaptive.color(Colors.white, surface: true),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: isApplied
-                              ? LumiAdaptive.color(rose)
-                              : LumiAdaptive.color(blush),
-                          width: isApplied ? 1.8 : 1.0,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: rose.withValues(alpha: .04),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 8,
+                        return Container(
+                          decoration: BoxDecoration(
+                            color: LumiAdaptive.color(Colors.white, surface: true),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: isApplied
+                                  ? LumiAdaptive.color(rose)
+                                  : LumiAdaptive.color(blush),
+                              width: isApplied ? 1.6 : 1.0,
                             ),
-                            decoration: BoxDecoration(
-                              color: LumiAdaptive.color(
-                                isExhausted ? const Color(0xFFF1F5F9) : blush,
-                                surface: true,
+                            boxShadow: [
+                              BoxShadow(
+                                color: rose.withValues(alpha: .04),
+                                blurRadius: 6,
+                                offset: const Offset(0, 2),
                               ),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.confirmation_number_outlined,
-                                  color: LumiAdaptive.color(
-                                    isExhausted ? const Color(0xFF94A3B8) : rose,
-                                  ),
-                                  size: 22,
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  coupon.badgeText,
-                                  style: GoogleFonts.beVietnamPro(
-                                    color: LumiAdaptive.color(
-                                      isExhausted ? const Color(0xFF94A3B8) : rose,
-                                    ),
-                                    fontSize: 10.5,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ],
-                            ),
+                            ],
                           ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(9),
+                            child: Stack(
                               children: [
-                                Row(
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                        vertical: 2,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: isExhausted
-                                            ? const Color(0xFFF1F5F9)
-                                            : LumiAdaptive.color(blush),
-                                        borderRadius: BorderRadius.circular(6),
-                                        border: Border.all(
-                                          color: isExhausted
-                                              ? const Color(0xFFE2E8F0)
-                                              : LumiAdaptive.color(rose.withValues(alpha: 0.3)),
-                                        ),
-                                      ),
-                                      child: Text(
-                                        coupon.code,
-                                        style: TextStyle(
+                                IntrinsicHeight(
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                                    children: [
+                                      // 1. CỘT TRÁI (TICKET STUB - PHONG CÁCH SHOPEE)
+                                      Container(
+                                        width: 84,
+                                        decoration: BoxDecoration(
                                           color: isExhausted
                                               ? const Color(0xFF94A3B8)
                                               : LumiAdaptive.color(rose),
-                                          fontSize: 12,
+                                        ),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 6,
+                                          vertical: 10,
+                                        ),
+                                        child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Icon(
+                                              coupon.isFreeShipping
+                                                  ? Icons.local_shipping_outlined
+                                                  : (coupon.isUserRedeemed
+                                                      ? Icons.card_giftcard_rounded
+                                                      : Icons.spa_outlined),
+                                              color: Colors.white,
+                                              size: 26,
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              coupon.isFreeShipping
+                                                  ? 'VẬN CHUYỂN'
+                                                  : (coupon.isUserRedeemed
+                                                      ? 'ĐỔI ĐIỂM'
+                                                      : 'LUMI SPA'),
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.w800,
+                                                letterSpacing: 0.4,
+                                              ),
+                                              textAlign: TextAlign.center,
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+
+                                      // ĐƯỜNG PHÂN CÁCH VÉ
+                                      Container(
+                                        width: 1,
+                                        color: const Color(0xFFF1E4E1),
+                                      ),
+
+                                      // 2. KHU VỰC THÔNG TIN CHÍNH (NGẮN GỌN, CHUẨN SHOPEE)
+                                      Expanded(
+                                        child: Padding(
+                                          padding: const EdgeInsets.fromLTRB(10, 8, 4, 8),
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              // Dòng 1: Tiêu đề giảm giá in đậm ngắn gọn
+                                              Text(
+                                                coupon.shopeeTitle,
+                                                style: LumiAdaptive.style(
+                                                  GoogleFonts.beVietnamPro(
+                                                    fontSize: 13,
+                                                    fontWeight: FontWeight.w700,
+                                                    color: isExhausted
+                                                        ? const Color(0xFF94A3B8)
+                                                        : LumiAdaptive.color(ink),
+                                                    height: 1.25,
+                                                  ),
+                                                ),
+                                                maxLines: 2,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                              const SizedBox(height: 3),
+                                              // Dòng 2: Đơn tối thiểu
+                                              Text(
+                                                coupon.minOrder > 0
+                                                    ? 'Đơn tối thiểu ${_shortMoney(coupon.minOrder)}'
+                                                    : 'Đơn tối thiểu 0đ',
+                                                style: LumiAdaptive.style(
+                                                  GoogleFonts.beVietnamPro(
+                                                    fontSize: 11,
+                                                    color: (!isEligible && !isExhausted)
+                                                        ? Colors.redAccent
+                                                        : LumiAdaptive.color(muted),
+                                                    fontWeight: (!isEligible && !isExhausted)
+                                                        ? FontWeight.w600
+                                                        : FontWeight.normal,
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(height: 4),
+                                              // Dòng 3: Tag mã voucher & số lượt
+                                              Wrap(
+                                                spacing: 4,
+                                                runSpacing: 2,
+                                                crossAxisAlignment: WrapCrossAlignment.center,
+                                                children: [
+                                                  Container(
+                                                    padding: const EdgeInsets.symmetric(
+                                                      horizontal: 5,
+                                                      vertical: 1.5,
+                                                    ),
+                                                    decoration: BoxDecoration(
+                                                      color: LumiAdaptive.color(
+                                                        rose.withValues(alpha: 0.08),
+                                                      ),
+                                                      borderRadius: BorderRadius.circular(4),
+                                                      border: Border.all(
+                                                        color: LumiAdaptive.color(
+                                                          rose.withValues(alpha: 0.3),
+                                                        ),
+                                                        width: 0.8,
+                                                      ),
+                                                    ),
+                                                    child: Text(
+                                                      coupon.code,
+                                                      style: TextStyle(
+                                                        color: LumiAdaptive.color(rose),
+                                                        fontSize: 9.5,
+                                                        fontWeight: FontWeight.w800,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  if (!isExhausted && coupon.remainingUses > 0)
+                                                    Container(
+                                                      padding: const EdgeInsets.symmetric(
+                                                        horizontal: 5,
+                                                        vertical: 1.5,
+                                                      ),
+                                                      decoration: BoxDecoration(
+                                                        color: const Color(0xFFFEF3C7),
+                                                        borderRadius: BorderRadius.circular(4),
+                                                      ),
+                                                      child: Text(
+                                                        'Còn ${coupon.remainingUses} lượt',
+                                                        style: const TextStyle(
+                                                          color: Color(0xFFB45309),
+                                                          fontSize: 9,
+                                                          fontWeight: FontWeight.w600,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                ],
+                                              ),
+                                              const SizedBox(height: 3),
+                                              // Dòng 4: Hiệu lực
+                                              Row(
+                                                children: [
+                                                  Icon(
+                                                    Icons.access_time_rounded,
+                                                    size: 10,
+                                                    color: LumiAdaptive.color(muted),
+                                                  ),
+                                                  const SizedBox(width: 3),
+                                                  Text(
+                                                    'Có hiệu lực • HSD: 30 ngày',
+                                                    style: LumiAdaptive.style(
+                                                      GoogleFonts.beVietnamPro(
+                                                        fontSize: 9.5,
+                                                        color: LumiAdaptive.color(muted),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+
+                                      // 3. NÚT HÀNH ĐỘNG BÊN PHẢI (CHUẨN SHOPEE [ Dùng ])
+                                      Container(
+                                        alignment: Alignment.center,
+                                        padding: const EdgeInsets.only(right: 10, left: 2),
+                                        child: isExhausted
+                                            ? Text(
+                                                'Hết lượt',
+                                                style: TextStyle(
+                                                  color: const Color(0xFF94A3B8),
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              )
+                                            : OutlinedButton(
+                                                style: OutlinedButton.styleFrom(
+                                                  backgroundColor: isApplied
+                                                      ? LumiAdaptive.color(rose)
+                                                      : Colors.white,
+                                                  side: BorderSide(
+                                                    color: (!isEligible && !isApplied)
+                                                        ? const Color(0xFFCBD5E1)
+                                                        : LumiAdaptive.color(rose),
+                                                    width: 1.2,
+                                                  ),
+                                                  foregroundColor: isApplied
+                                                      ? Colors.white
+                                                      : ((!isEligible)
+                                                          ? const Color(0xFF94A3B8)
+                                                          : LumiAdaptive.color(rose)),
+                                                  padding: const EdgeInsets.symmetric(
+                                                    horizontal: 10,
+                                                    vertical: 4,
+                                                  ),
+                                                  minimumSize: const Size(56, 30),
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius: BorderRadius.circular(6),
+                                                  ),
+                                                  elevation: 0,
+                                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                                ),
+                                                onPressed: (!isEligible && !isApplied)
+                                                    ? () {
+                                                        ScaffoldMessenger.of(context).showSnackBar(
+                                                          SnackBar(
+                                                            content: Text(
+                                                              'Đơn hàng chưa đạt giá trị tối thiểu ${_money(coupon.minOrder)}',
+                                                            ),
+                                                            duration: const Duration(seconds: 2),
+                                                          ),
+                                                        );
+                                                      }
+                                                    : () {
+                                                        if (isApplied) {
+                                                          _removeCoupon();
+                                                        } else {
+                                                          _applyCoupon(coupon.code);
+                                                        }
+                                                        Navigator.pop(bottomSheetContext);
+                                                      },
+                                                child: Text(
+                                                  isApplied ? 'Đã dùng' : 'Dùng',
+                                                  style: const TextStyle(
+                                                    fontSize: 11.5,
+                                                    fontWeight: FontWeight.w700,
+                                                  ),
+                                                ),
+                                              ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                // BADGE "Mới!" GÓC TRÊN BÊN PHẢI GIỐNG SHOPEE
+                                if (index == 0 || coupon.code == 'FREESHIP')
+                                  Positioned(
+                                    top: 0,
+                                    right: 0,
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 6,
+                                        vertical: 2,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: LumiAdaptive.color(rose),
+                                        borderRadius: const BorderRadius.only(
+                                          topRight: Radius.circular(9),
+                                          bottomLeft: Radius.circular(6),
+                                        ),
+                                      ),
+                                      child: const Text(
+                                        'Mới!',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 8.5,
                                           fontWeight: FontWeight.w800,
                                         ),
                                       ),
                                     ),
-                                    const SizedBox(width: 6),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 6,
-                                        vertical: 1.5,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: isExhausted
-                                            ? const Color(0xFFFEE2E2)
-                                            : const Color(0xFFFEF3C7),
-                                        borderRadius: BorderRadius.circular(4),
-                                      ),
-                                      child: Text(
-                                        isExhausted
-                                            ? LumiAdaptive.text('Hết lượt')
-                                            : LumiAdaptive.text('Còn ${coupon.remainingUses} lượt'),
-                                        style: GoogleFonts.beVietnamPro(
-                                          color: isExhausted
-                                              ? const Color(0xFFDC2626)
-                                              : const Color(0xFFB45309),
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.w700,
-                                        ),
-                                      ),
-                                    ),
-                                    const Spacer(),
-                                    if (discountEst > 0 && !isExhausted)
-                                      Text(
-                                        '- ${_money(discountEst)}',
-                                        style: TextStyle(
-                                          color: LumiAdaptive.color(rose),
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w700,
-                                        ),
-                                      ),
-                                  ],
-                                ),
-                                const SizedBox(height: 6),
-                                Text(
-                                  LumiAdaptive.text(coupon.title),
-                                  style: LumiAdaptive.style(
-                                    GoogleFonts.beVietnamPro(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w700,
-                                      color: LumiAdaptive.color(
-                                        isExhausted ? const Color(0xFF94A3B8) : ink,
-                                      ),
-                                    ),
                                   ),
-                                ),
-                                const SizedBox(height: 3),
-                                Text(
-                                  LumiAdaptive.text(coupon.description),
-                                  style: LumiAdaptive.style(
-                                    GoogleFonts.beVietnamPro(
-                                      fontSize: 12,
-                                      color: LumiAdaptive.color(
-                                        isExhausted ? const Color(0xFFCBD5E1) : muted,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                if (coupon.minOrder > 0) ...[
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    LumiAdaptive.text('Đơn tối thiểu: ${_money(coupon.minOrder)}'),
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      color: isEligible || isExhausted
-                                          ? LumiAdaptive.color(muted)
-                                          : Colors.redAccent,
-                                      fontWeight: isEligible ? FontWeight.normal : FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
                               ],
                             ),
                           ),
-                          const SizedBox(width: 10),
-                          FilledButton(
-                            style: FilledButton.styleFrom(
-                              backgroundColor: isExhausted
-                                  ? const Color(0xFFF1F5F9)
-                                  : (isApplied
-                                      ? LumiAdaptive.color(rose.withValues(alpha: 0.15))
-                                      : (isEligible
-                                          ? LumiAdaptive.color(rose)
-                                          : LumiAdaptive.color(muted.withValues(alpha: 0.2)))),
-                              foregroundColor: isExhausted
-                                  ? const Color(0xFF94A3B8)
-                                  : (isApplied ? LumiAdaptive.color(rose) : Colors.white),
-                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              elevation: 0,
-                            ),
-                            onPressed: (!isEligible && !isApplied)
-                                ? null
-                                : () {
-                                    if (isApplied) {
-                                      _removeCoupon();
-                                    } else {
-                                      _applyCoupon(coupon.code);
-                                    }
-                                    Navigator.pop(bottomSheetContext);
-                                  },
-                            child: Text(
-                              LumiAdaptive.text(
-                                isExhausted
-                                    ? 'Hết'
-                                    : (isApplied ? 'Đã dùng' : 'Dùng'),
-                              ),
-                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                        ],
-                      ),
+                        );
+                      },
                     );
                   },
                 ),

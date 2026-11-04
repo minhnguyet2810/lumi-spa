@@ -123,6 +123,7 @@ class _AdminUserDetailDialogState extends State<AdminUserDetailDialog> {
                         user.photoUrl != null && user.photoUrl!.isNotEmpty
                         ? NetworkImage(user.photoUrl!)
                         : null,
+                  onBackgroundImageError: (error, stackTrace) {},
                     child: user.photoUrl == null || user.photoUrl!.isEmpty
                         ? Text(
                             user.initials,

@@ -67,6 +67,36 @@ class LumiCoupon {
       isUserRedeemed: json['isUserRedeemed'] == true,
     );
   }
+
+  /// Tiêu đề ngắn gọn, chuẩn phong cách Shopee (VD: "Miễn phí vận chuyển", "Giảm 10% Giảm tối đa 100k", "Giảm 50k Giảm trực tiếp")
+  String get shopeeTitle {
+    if (isFreeShipping) {
+      return 'Miễn phí vận chuyển';
+    }
+    if (percentDiscount != null) {
+      final pct = (percentDiscount! * 100).toInt();
+      if (maxDiscount != null && maxDiscount! > 0) {
+        return 'Giảm $pct% Giảm tối đa ${_shortAmount(maxDiscount!)}';
+      }
+      return 'Giảm $pct% đơn hàng';
+    }
+    if (fixedDiscount != null && fixedDiscount! > 0) {
+      return 'Giảm ${_shortAmount(fixedDiscount!)} Giảm trực tiếp';
+    }
+    return title;
+  }
+
+  static String _shortAmount(int amount) {
+    if (amount <= 0) return '0đ';
+    if (amount >= 1000000) {
+      final tr = amount / 1000000.0;
+      return tr == tr.roundToDouble() ? '${tr.toInt()}tr' : '${tr.toStringAsFixed(1)}tr';
+    }
+    if (amount >= 1000) {
+      return '${(amount / 1000).round()}k';
+    }
+    return '$amountđ';
+  }
 }
 
 /// Helper tính mức chiết khấu theo Hạng thành viên LUMI
@@ -82,8 +112,18 @@ abstract final class LumiMembershipDiscount {
 }
 
 abstract final class LumiCouponStore {
-  /// Danh sách các mã giảm giá có thể quy đổi / áp dụng trong app LUMI (kèm giới hạn lượt dùng)
+  /// Danh sách các mã giảm giá có thể quy đổi / áp dụng trong app LUMI (top 3 mã nổi bật ưu tiên)
   static const List<LumiCoupon> availableCoupons = [
+    LumiCoupon(
+      code: 'FREESHIP',
+      title: 'Miễn phí giao hàng toàn quốc',
+      description: 'Miễn phí vận chuyển 30.000 đ cho toàn bộ đơn hàng.',
+      minOrder: 0,
+      isFreeShipping: true,
+      badgeText: 'FREESHIP',
+      usageLimit: 100,
+      usedCount: 0,
+    ),
     LumiCoupon(
       code: 'LUMISPA10',
       title: 'Giảm 10% đơn hàng',
@@ -96,6 +136,16 @@ abstract final class LumiCouponStore {
       usedCount: 0,
     ),
     LumiCoupon(
+      code: 'LUMI50K',
+      title: 'Giảm trực tiếp 50.000 đ',
+      description: 'Áp dụng cho đơn hàng từ 300.000 đ trở lên.',
+      minOrder: 300000,
+      fixedDiscount: 50000,
+      badgeText: '-50.000 đ',
+      usageLimit: 25,
+      usedCount: 0,
+    ),
+    LumiCoupon(
       code: 'LUMISPA20',
       title: 'Giảm 20% cho đơn từ 500k',
       description: 'Áp dụng cho đơn hàng từ 500.000 đ, giảm tối đa 200.000 đ.',
@@ -104,26 +154,6 @@ abstract final class LumiCouponStore {
       maxDiscount: 200000,
       badgeText: 'GIẢM 20%',
       usageLimit: 30,
-      usedCount: 0,
-    ),
-    LumiCoupon(
-      code: 'FREESHIP',
-      title: 'Miễn phí giao hàng toàn quốc',
-      description: 'Miễn phí vận chuyển 30.000 đ cho toàn bộ đơn hàng.',
-      minOrder: 0,
-      isFreeShipping: true,
-      badgeText: 'FREESHIP',
-      usageLimit: 100,
-      usedCount: 0,
-    ),
-    LumiCoupon(
-      code: 'LUMI50K',
-      title: 'Giảm trực tiếp 50.000 đ',
-      description: 'Áp dụng cho đơn hàng từ 300.000 đ trở lên.',
-      minOrder: 300000,
-      fixedDiscount: 50000,
-      badgeText: '-50.000 đ',
-      usageLimit: 25,
       usedCount: 0,
     ),
     LumiCoupon(
@@ -148,6 +178,9 @@ abstract final class LumiCouponStore {
       usedCount: 0,
     ),
   ];
+
+  /// Giới hạn tối đa 3 mã ưu đãi hiển thị trong voucher sheet
+  static List<LumiCoupon> get featuredCoupons => availableCoupons.take(3).toList();
 
   static List<LumiCoupon> _cachedCoupons = availableCoupons;
   static List<LumiCoupon> get currentCoupons => _cachedCoupons;

@@ -2119,18 +2119,12 @@ class _LumiFirebaseBannerCarouselState
     );
   }
 
-  Widget _imageUnavailable() => ColoredBox(
-    color: LumiAdaptive.color(Color(0xFFE8F2F6), surface: true),
-    child: Align(
-      alignment: Alignment.centerRight,
-      child: Padding(
-        padding: EdgeInsets.all(24),
-        child: Icon(
-          Icons.broken_image_outlined,
-          color: LumiAdaptive.color(Color(0xFF557C90)),
-          size: 36,
-        ),
-      ),
+  Widget _imageUnavailable() => Image.asset(
+    'assets/images/welcome_spa_1.png',
+    fit: BoxFit.cover,
+    alignment: Alignment.centerRight,
+    errorBuilder: (context, error, stackTrace) => ColoredBox(
+      color: LumiAdaptive.color(const Color(0xFFFBE7DC), surface: true),
     ),
   );
 }

@@ -174,6 +174,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     foregroundImage: user?.photoURL == null
                         ? null
                         : NetworkImage(user!.photoURL!),
+                    onForegroundImageError: (error, stackTrace) {},
                     child: user?.photoURL == null
                         ? Icon(
                             Icons.person_outline_rounded,

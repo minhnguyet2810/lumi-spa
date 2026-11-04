@@ -164,7 +164,10 @@ router.get('/coupons', async (req, res) => {
       });
     }
 
-    const systemCoupons = Object.values(COUPONS).map(c => {
+    // Giới hạn hiển thị tối đa 3 mã ưu đãi nổi bật chuẩn phong cách e-commerce
+    const FEATURED_SYSTEM_COUPON_CODES = ['FREESHIP', 'LUMISPA10', 'LUMI50K'];
+    const systemCoupons = FEATURED_SYSTEM_COUPON_CODES.map(code => {
+      const c = COUPONS[code];
       const usedCount = usageMap[c.code] || 0;
       const remainingUses = Math.max(0, c.usageLimit - usedCount);
       return {
@@ -204,17 +207,22 @@ router.get('/coupons', async (req, res) => {
       });
     }
 
-    return res.json({ success: true, data: [...userVouchers, ...systemCoupons] });
+    const allCoupons = [...userVouchers, ...systemCoupons].slice(0, 3);
+    return res.json({ success: true, data: allCoupons });
   } catch (error) {
     console.error('Coupons error:', error);
-    const systemCoupons = Object.values(COUPONS).map(c => ({
-      ...c,
-      usedCount: 0,
-      remainingUses: c.usageLimit,
-      isExhausted: false,
-      isUserRedeemed: false,
-    }));
-    return res.json({ success: true, data: systemCoupons });
+    const FEATURED_SYSTEM_COUPON_CODES = ['FREESHIP', 'LUMISPA10', 'LUMI50K'];
+    const systemCoupons = FEATURED_SYSTEM_COUPON_CODES.map(code => {
+      const c = COUPONS[code];
+      return {
+        ...c,
+        usedCount: 0,
+        remainingUses: c.usageLimit,
+        isExhausted: false,
+        isUserRedeemed: false,
+      };
+    });
+    return res.json({ success: true, data: systemCoupons.slice(0, 3) });
   }
 });
 

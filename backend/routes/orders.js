@@ -4,6 +4,7 @@ const db = require('../firebase');
 const { requireAuth } = require('../auth');
 const mailService = require('../services/mail_service');
 const pushService = require('../services/push_service');
+const { formatOrderId } = pushService;
 const {
   awardPointsInTransaction,
   sendPointsNotification,
@@ -163,7 +164,7 @@ router.get('/coupons', async (req, res) => {
       });
     }
 
-    const couponsList = Object.values(COUPONS).map(c => {
+    const systemCoupons = Object.values(COUPONS).map(c => {
       const usedCount = usageMap[c.code] || 0;
       const remainingUses = Math.max(0, c.usageLimit - usedCount);
       return {
@@ -171,19 +172,49 @@ router.get('/coupons', async (req, res) => {
         usedCount,
         remainingUses,
         isExhausted: remainingUses <= 0,
+        isUserRedeemed: false,
       };
     });
 
-    return res.json({ success: true, data: couponsList });
+    let userVouchers = [];
+    if (db.hasCredentials && req.user && req.user.uid) {
+      const uvSnap = await db.collection('user_vouchers')
+        .where('userId', '==', req.user.uid)
+        .where('isUsed', '==', false)
+        .get();
+
+      userVouchers = uvSnap.docs.map(doc => {
+        const d = doc.data();
+        return {
+          code: d.code,
+          title: d.title,
+          description: d.description || 'Voucher đổi từ điểm tích luỹ LUMI',
+          minOrder: d.minOrder || 0,
+          fixedDiscount: d.discountValue || 0,
+          percentDiscount: d.percentDiscount || null,
+          maxDiscount: d.maxDiscount || null,
+          isFreeShipping: d.isFreeShipping === true,
+          badgeText: d.badgeText || 'ĐỔI TỪ ĐIỂM',
+          usageLimit: 1,
+          usedCount: 0,
+          remainingUses: 1,
+          isExhausted: false,
+          isUserRedeemed: true,
+        };
+      });
+    }
+
+    return res.json({ success: true, data: [...userVouchers, ...systemCoupons] });
   } catch (error) {
     console.error('Coupons error:', error);
-    const couponsList = Object.values(COUPONS).map(c => ({
+    const systemCoupons = Object.values(COUPONS).map(c => ({
       ...c,
       usedCount: 0,
       remainingUses: c.usageLimit,
       isExhausted: false,
+      isUserRedeemed: false,
     }));
-    return res.json({ success: true, data: couponsList });
+    return res.json({ success: true, data: systemCoupons });
   }
 });
 
@@ -259,6 +290,24 @@ router.post('/', async (req, res) => {
     const orderNumber = Math.floor(100000 + Math.random() * 900000);
     const customOrderId = `LUMI-${orderNumber}`;
     const orderRef = db.collection('orders').doc(customOrderId);
+
+        // Kiểm tra trước nếu mã là voucher đổi điểm của người dùng
+    let userVoucherDocId = null;
+    const normCouponCode = (typeof couponCode === 'string' && couponCode.trim())
+      ? couponCode.trim().toUpperCase()
+      : null;
+
+    if (normCouponCode && req.user.uid && db.hasCredentials) {
+      const uvSnap = await db.collection('user_vouchers')
+        .where('userId', '==', req.user.uid)
+        .where('code', '==', normCouponCode)
+        .where('isUsed', '==', false)
+        .limit(1)
+        .get();
+      if (!uvSnap.empty) {
+        userVoucherDocId = uvSnap.docs[0].id;
+      }
+    }
 
     const result = await db.runTransaction(async tx => {
       const docs = await tx.getAll(...productRefs);
@@ -337,32 +386,58 @@ router.post('/', async (req, res) => {
       let appliedCoupon = null;
       let couponUsageRef = null;
 
-      if (typeof couponCode === 'string' && couponCode.trim()) {
-        const normCode = couponCode.trim().toUpperCase();
-        const coupon = COUPONS[normCode];
-        if (!coupon) {
-          throw new Error('INVALID_COUPON');
-        }
-        if (subtotal < coupon.minOrder) {
-          throw new Error('COUPON_MIN_ORDER_NOT_MET');
-        }
+      let userVoucherRef = null;
+      if (normCouponCode) {
+        if (userVoucherDocId) {
+          userVoucherRef = db.collection('user_vouchers').doc(userVoucherDocId);
+          const uvDoc = await tx.get(userVoucherRef);
+          if (!uvDoc.exists || uvDoc.data().isUsed) {
+            throw new Error('COUPON_EXHAUSTED');
+          }
+          const uvd = uvDoc.data();
+          if (subtotal < (uvd.minOrder || 0)) {
+            throw new Error('COUPON_MIN_ORDER_NOT_MET');
+          }
+          appliedCoupon = {
+            code: uvd.code,
+            title: uvd.title,
+            isUserRedeemed: true,
+          };
+          if (uvd.isFreeShipping) {
+            couponDiscount = shippingFee;
+            shippingFee = 0;
+          } else if (uvd.discountValue) {
+            couponDiscount = Math.min(uvd.discountValue, subtotal);
+          } else if (uvd.percentDiscount) {
+            const calc = Math.round(subtotal * uvd.percentDiscount);
+            couponDiscount = uvd.maxDiscount ? Math.min(calc, uvd.maxDiscount) : calc;
+          }
+        } else {
+          const coupon = COUPONS[normCouponCode];
+          if (!coupon) {
+            throw new Error('INVALID_COUPON');
+          }
+          if (subtotal < coupon.minOrder) {
+            throw new Error('COUPON_MIN_ORDER_NOT_MET');
+          }
 
-        couponUsageRef = db.collection('coupon_usage').doc(normCode);
-        const couponDoc = await tx.get(couponUsageRef);
-        const usedCount = couponDoc.exists ? (Number(couponDoc.data().usedCount) || 0) : 0;
-        if (usedCount >= coupon.usageLimit) {
-          throw new Error('COUPON_EXHAUSTED');
-        }
+          couponUsageRef = db.collection('coupon_usage').doc(normCouponCode);
+          const couponDoc = await tx.get(couponUsageRef);
+          const usedCount = couponDoc.exists ? (Number(couponDoc.data().usedCount) || 0) : 0;
+          if (usedCount >= coupon.usageLimit) {
+            throw new Error('COUPON_EXHAUSTED');
+          }
 
-        appliedCoupon = coupon;
-        if (coupon.isFreeShipping) {
-          couponDiscount = shippingFee;
-          shippingFee = 0;
-        } else if (coupon.fixedDiscount) {
-          couponDiscount = Math.min(coupon.fixedDiscount, subtotal);
-        } else if (coupon.percentDiscount) {
-          const calc = Math.round(subtotal * coupon.percentDiscount);
-          couponDiscount = coupon.maxDiscount ? Math.min(calc, coupon.maxDiscount) : calc;
+          appliedCoupon = coupon;
+          if (coupon.isFreeShipping) {
+            couponDiscount = shippingFee;
+            shippingFee = 0;
+          } else if (coupon.fixedDiscount) {
+            couponDiscount = Math.min(coupon.fixedDiscount, subtotal);
+          } else if (coupon.percentDiscount) {
+            const calc = Math.round(subtotal * coupon.percentDiscount);
+            couponDiscount = coupon.maxDiscount ? Math.min(calc, coupon.maxDiscount) : calc;
+          }
         }
       }
 
@@ -378,7 +453,13 @@ router.post('/', async (req, res) => {
         }
       }
 
-      if (couponUsageRef && appliedCoupon) {
+      if (userVoucherRef) {
+        tx.update(userVoucherRef, {
+          isUsed: true,
+          usedAt: FieldValue.serverTimestamp(),
+          usedOrder: orderRef.id,
+        });
+      } else if (couponUsageRef && appliedCoupon) {
         tx.set(couponUsageRef, {
           code: appliedCoupon.code,
           usedCount: FieldValue.increment(1),
@@ -458,7 +539,7 @@ router.post('/', async (req, res) => {
           await db.collection('notifications').add({
             userId: req.user.uid,
             title: 'Đặt hàng thành công 🛍️',
-            message: 'Đơn hàng #' + result.id + ' trị giá ' + result.total.toLocaleString('vi-VN') + ' đ đã được tiếp nhận.',
+            message: 'Đơn hàng ' + formatOrderId(result.id) + ' trị giá ' + result.total.toLocaleString('vi-VN') + ' đ đã được tiếp nhận.',
             type: 'order',
             isRead: false,
             createdAt: FieldValue.serverTimestamp(),
@@ -585,7 +666,7 @@ router.patch('/:id/complete', async (req, res) => {
         pointsResult = await awardPointsInTransaction(tx, db, {
           userId: req.user.uid,
           amount: orderTotal,
-          sourceId: req.params.id,
+          sourceId: formatOrderId(req.params.id),
           sourceType: 'order',
         });
       }
@@ -615,7 +696,7 @@ router.patch('/:id/complete', async (req, res) => {
         await db.collection('notifications').add({
           userId: req.user.uid,
           title: 'Đơn hàng hoàn tất 🎉',
-          message: 'Bạn đã xác nhận nhận hàng thành công cho đơn #' + req.params.id + '. Cảm ơn bạn đã đồng hành cùng LUMI SPA!',
+          message: 'Bạn đã xác nhận nhận hàng thành công cho đơn ' + formatOrderId(req.params.id) + '. Cảm ơn bạn đã đồng hành cùng LUMI SPA!',
           type: 'order',
           isRead: false,
           createdAt: FieldValue.serverTimestamp(),
@@ -624,7 +705,7 @@ router.patch('/:id/complete', async (req, res) => {
         await pushService.sendPushToUser({
           userId: req.user.uid,
           title: 'Đơn hàng hoàn tất 🎉',
-          body: 'Cảm ơn bạn đã xác nhận nhận hàng cho đơn #' + req.params.id + '!',
+          body: 'Cảm ơn bạn đã xác nhận nhận hàng cho đơn ' + formatOrderId(req.params.id) + '!',
           data: {
             type: 'order',
             orderId: req.params.id,

@@ -12,6 +12,7 @@ class LumiCoupon {
   final String badgeText;
   final int usageLimit;
   final int usedCount;
+  final bool isUserRedeemed;
 
   const LumiCoupon({
     required this.code,
@@ -25,6 +26,7 @@ class LumiCoupon {
     required this.badgeText,
     this.usageLimit = 50,
     this.usedCount = 0,
+    this.isUserRedeemed = false,
   });
 
   int get remainingUses => usageLimit > usedCount ? usageLimit - usedCount : 0;
@@ -62,6 +64,7 @@ class LumiCoupon {
       badgeText: json['badgeText']?.toString() ?? 'ƯU ĐÃI',
       usageLimit: (json['usageLimit'] as num?)?.toInt() ?? 50,
       usedCount: (json['usedCount'] as num?)?.toInt() ?? 0,
+      isUserRedeemed: json['isUserRedeemed'] == true,
     );
   }
 }

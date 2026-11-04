@@ -1,4 +1,5 @@
 import '../network/lumi_api_client.dart';
+import 'lumi_order_store.dart';
 
 class LumiAccountProfile {
   const LumiAccountProfile({
@@ -193,19 +194,139 @@ class LumiNotificationItem {
   final bool isRead;
   final String type;
 
-  factory LumiNotificationItem.fromJson(Map<String, dynamic> json) =>
-      LumiNotificationItem(
-        id: json['id']?.toString() ?? '',
-        title: json['title']?.toString() ?? 'Thông báo từ LUMI',
-        message:
-            json['message']?.toString() ??
-            json['body']?.toString() ??
-            json['description']?.toString() ??
-            '',
-        createdAt: DateTime.tryParse(json['createdAt']?.toString() ?? ''),
-        isRead: json['isRead'] == true,
-        type: (json['type'] ?? json['category'] ?? 'system').toString(),
-      );
+  factory LumiNotificationItem.fromJson(Map<String, dynamic> json) {
+    final rawMessage =
+        json['message']?.toString() ??
+        json['body']?.toString() ??
+        json['description']?.toString() ??
+        '';
+    // Chuẩn hoá mã đơn hàng dạng #tP1Gacy3vsBAM7qBnnR3 thành LUMI - XXXXX
+    final formattedMessage = rawMessage.replaceAllMapped(
+      RegExp(r'#([A-Za-z0-9_-]{6,})'),
+      (match) {
+        final code = match.group(1) ?? '';
+        return LumiOrderStore.formatOrderId(code);
+      },
+    );
+
+    return LumiNotificationItem(
+      id: json['id']?.toString() ?? '',
+      title: json['title']?.toString() ?? 'Thông báo từ LUMI',
+      message: formattedMessage,
+      createdAt: DateTime.tryParse(json['createdAt']?.toString() ?? ''),
+      isRead: json['isRead'] == true,
+      type: (json['type'] ?? json['category'] ?? 'system').toString(),
+    );
+  }
+}
+
+class LumiRewardItem {
+  final String id;
+  final String type; // 'voucher' | 'gift' | 'spa'
+  final String title;
+  final String description;
+  final int pointsRequired;
+  final String badgeText;
+  final int stock;
+  final int redeemedCount;
+  final int remainingStock;
+  final bool isOutOfStock;
+  final String? icon;
+  final int? discountValue;
+  final double? percentDiscount;
+  final int? maxDiscount;
+  final bool isFreeShipping;
+  final int minOrder;
+
+  const LumiRewardItem({
+    required this.id,
+    required this.type,
+    required this.title,
+    required this.description,
+    required this.pointsRequired,
+    required this.badgeText,
+    required this.stock,
+    this.redeemedCount = 0,
+    this.remainingStock = 0,
+    this.isOutOfStock = false,
+    this.icon,
+    this.discountValue,
+    this.percentDiscount,
+    this.maxDiscount,
+    this.isFreeShipping = false,
+    this.minOrder = 0,
+  });
+
+  factory LumiRewardItem.fromJson(Map<String, dynamic> json) {
+    return LumiRewardItem(
+      id: json['id']?.toString() ?? '',
+      type: json['type']?.toString() ?? 'voucher',
+      title: json['title']?.toString() ?? '',
+      description: json['description']?.toString() ?? '',
+      pointsRequired: (json['pointsRequired'] as num?)?.toInt() ?? 0,
+      badgeText: json['badgeText']?.toString() ?? 'ƯU ĐÃI',
+      stock: (json['stock'] as num?)?.toInt() ?? 0,
+      redeemedCount: (json['redeemedCount'] as num?)?.toInt() ?? 0,
+      remainingStock: (json['remainingStock'] as num?)?.toInt() ?? 0,
+      isOutOfStock: json['isOutOfStock'] == true,
+      icon: json['icon']?.toString(),
+      discountValue: (json['discountValue'] as num?)?.toInt(),
+      percentDiscount: (json['percentDiscount'] as num?)?.toDouble(),
+      maxDiscount: (json['maxDiscount'] as num?)?.toInt(),
+      isFreeShipping: json['isFreeShipping'] == true,
+      minOrder: (json['minOrder'] as num?)?.toInt() ?? 0,
+    );
+  }
+}
+
+class LumiRedemptionResult {
+  final bool success;
+  final String message;
+  final String? code;
+  final String? rewardType;
+  final int? newPoints;
+
+  const LumiRedemptionResult({
+    required this.success,
+    required this.message,
+    this.code,
+    this.rewardType,
+    this.newPoints,
+  });
+
+  factory LumiRedemptionResult.fromJson(Map<String, dynamic> json) {
+    final data = json['data'] as Map<String, dynamic>?;
+    return LumiRedemptionResult(
+      success: json['success'] == true,
+      message: json['message']?.toString() ?? '',
+      code: data?['code']?.toString(),
+      rewardType: data?['type']?.toString(),
+      newPoints: (data?['newPoints'] as num?)?.toInt(),
+    );
+  }
+}
+
+class LumiMyRewardsData {
+  final List<Map<String, dynamic>> vouchers;
+  final List<Map<String, dynamic>> gifts;
+
+  const LumiMyRewardsData({
+    this.vouchers = const [],
+    this.gifts = const [],
+  });
+
+  factory LumiMyRewardsData.fromJson(Map<String, dynamic> json) {
+    final vList = json['vouchers'] as List<dynamic>?;
+    final gList = json['gifts'] as List<dynamic>?;
+    return LumiMyRewardsData(
+      vouchers: vList != null
+          ? vList.whereType<Map<String, dynamic>>().toList()
+          : const [],
+      gifts: gList != null
+          ? gList.whereType<Map<String, dynamic>>().toList()
+          : const [],
+    );
+  }
 }
 
 /// Dữ liệu địa chỉ giao nhận (chuẩn Shopee: Họ tên, SĐT, địa chỉ chi tiết, Tỉnh/Thành, Quận/Huyện, Phường/Xã, Nhãn, Mặc định)
@@ -339,6 +460,31 @@ abstract final class LumiAccountRepository {
       return fetchMembership();
     }
     return LumiMembership.fromJson(data);
+  }
+
+  static Future<List<LumiRewardItem>> fetchRewardCatalog() async {
+    final payload = await _api.get('/api/membership/rewards');
+    final data = payload['data'];
+    if (data is! List) return const [];
+    return data
+        .whereType<Map<String, dynamic>>()
+        .map(LumiRewardItem.fromJson)
+        .toList();
+  }
+
+  static Future<LumiMyRewardsData> fetchMyRewards() async {
+    final payload = await _api.get('/api/membership/my-rewards');
+    final data = payload['data'];
+    if (data is! Map<String, dynamic>) return const LumiMyRewardsData();
+    return LumiMyRewardsData.fromJson(data);
+  }
+
+  static Future<LumiRedemptionResult> redeemReward(String rewardId) async {
+    final payload = await _api.post(
+      '/api/membership/redeem',
+      body: {'rewardId': rewardId},
+    );
+    return LumiRedemptionResult.fromJson(payload);
   }
 
   static Future<List<LumiNotificationItem>> fetchNotifications() async {

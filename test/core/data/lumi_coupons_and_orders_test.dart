@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:lumi_spa/core/data/lumi_account_repository.dart';
 import 'package:lumi_spa/core/data/lumi_coupons.dart';
 import 'package:lumi_spa/core/data/lumi_order_store.dart';
 import 'package:lumi_spa/core/theme/lumi_adaptive.dart';
@@ -163,6 +164,66 @@ void main() {
 
       // Reset back to vi
       await AppPreferences.instance.setLanguage('vi');
+    });
+  });
+
+  group('LumiRewardItem & Notification Order Formatting Tests', () {
+    test('LumiNotificationItem fromJson formats raw order ID hash to LUMI - XXXXX', () {
+      final notif1 = LumiNotificationItem.fromJson({
+        'id': 'notif_1',
+        'title': 'Đơn hàng hoàn tất 🎉',
+        'message': 'Bạn đã xác nhận nhận hàng thành công cho đơn #tP1Gacy3vsBAM7qBnnR3. Cảm ơn bạn!',
+        'type': 'order',
+      });
+      expect(notif1.message, contains('LUMI - TP1GAC'));
+      expect(notif1.message, isNot(contains('tP1Gacy3vsBAM7qBnnR3')));
+
+      final notif2 = LumiNotificationItem.fromJson({
+        'id': 'notif_2',
+        'title': 'Tích điểm thành công ✨',
+        'message': 'Bạn nhận được +410 điểm từ đơn hàng #tP1Gacy3vsBAM7qBnnR3 (Quy đổi 1.000 VNĐ = 1 điểm).',
+        'type': 'order',
+      });
+      expect(notif2.message, contains('LUMI - TP1GAC'));
+    });
+
+    test('LumiRewardItem parses reward info and calculates stock correctly', () {
+      final reward = LumiRewardItem.fromJson({
+        'id': 'voucher_50k',
+        'type': 'voucher',
+        'title': 'Voucher giảm 50.000 đ',
+        'description': 'Áp dụng cho đơn từ 250.000 đ',
+        'pointsRequired': 500,
+        'badgeText': '-50.000 đ',
+        'stock': 35,
+        'redeemedCount': 5,
+        'remainingStock': 30,
+        'isOutOfStock': false,
+        'discountValue': 50000,
+        'minOrder': 250000,
+      });
+
+      expect(reward.id, 'voucher_50k');
+      expect(reward.type, 'voucher');
+      expect(reward.pointsRequired, 500);
+      expect(reward.stock, 35);
+      expect(reward.remainingStock, 30);
+      expect(reward.isOutOfStock, isFalse);
+      expect(reward.discountValue, 50000);
+    });
+
+    test('LumiCoupon parses isUserRedeemed correctly', () {
+      final coupon = LumiCoupon.fromJson({
+        'code': 'LUMI50K-1234',
+        'title': 'Voucher đổi từ điểm',
+        'description': 'Giảm 50.000 đ',
+        'fixedDiscount': 50000,
+        'badgeText': 'ĐỔI TỪ ĐIỂM',
+        'isUserRedeemed': true,
+      });
+
+      expect(coupon.code, 'LUMI50K-1234');
+      expect(coupon.isUserRedeemed, isTrue);
     });
   });
 }

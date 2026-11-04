@@ -1,3 +1,4 @@
+const { formatOrderId } = require('./services/push_service');
 const mailService = require('./services/mail_service');
 const pushService = require('./services/push_service');
 process.on('unhandledRejection', (reason) => {
@@ -547,9 +548,9 @@ async function handleAdminOrderStatus(req, res) {
         await db.collection('notifications').add({
           userId: effectiveUserId,
           title: status === 'cancelled' ? 'Đơn hàng đã bị hủy ⚠️' : 'Cập nhật đơn hàng 🛍️',
-          message: 'Đơn hàng #' + id + ' ' + text + '.',
+          message: 'Đơn hàng ' + formatOrderId(id) + ' ' + text + '.',
           type: 'order',
-          orderId: id,
+          orderId: formatOrderId(id),
           isRead: false,
           createdAt: FieldValue.serverTimestamp(),
         });

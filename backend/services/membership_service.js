@@ -1,3 +1,21 @@
+function formatOrderId(raw) {
+  if (!raw) return 'LUMI - 000000';
+  const str = String(raw).trim();
+  if (!str) return 'LUMI - 000000';
+  if (/^LUMI\s*-\s*[A-Za-z0-9]+$/i.test(str)) {
+    return str.replace(/^LUMI\s*-\s*([A-Za-z0-9]+)$/i, (_, code) => `LUMI - ${code.toUpperCase()}`);
+  }
+  if (str.toUpperCase().startsWith('LUMI-')) {
+    return `LUMI - ${str.substring(5).trim().toUpperCase()}`;
+  }
+  if (str.toUpperCase().startsWith('LUMI -')) {
+    return `LUMI - ${str.substring(6).trim().toUpperCase()}`;
+  }
+  const clean = str.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+  const short = clean.length > 6 ? clean.substring(0, 6) : clean.padEnd(6, '0');
+  return `LUMI - ${short}`;
+}
+
 const { FieldValue } = require('firebase-admin/firestore');
 const pushService = require('./push_service');
 
@@ -96,7 +114,11 @@ function calculateMembershipDetails(rawPoints, rawTotalSpent) {
   const points = Number.isFinite(rawPoints) && rawPoints >= 0 ? Math.floor(rawPoints) : 0;
   const totalSpent = Number.isFinite(rawTotalSpent) && rawTotalSpent >= 0 ? Math.floor(rawTotalSpent) : 0;
 
-  const currentTier = getTierByPoints(points);
+  // Điểm tích luỹ tính hạng: căn cứ theo tổng chi tiêu hoàn tất hoặc điểm hiện có
+  const tierPoints = totalSpent > 0 ? Math.floor(totalSpent / CONVERSION_RATE) : points;
+  const effectivePoints = Math.max(tierPoints, points);
+
+  const currentTier = getTierByPoints(effectivePoints);
   const currentIndex = TIERS.findIndex(t => t.id === currentTier.id);
 
   let nextTier = null;
@@ -106,10 +128,11 @@ function calculateMembershipDetails(rawPoints, rawTotalSpent) {
 
   if (currentIndex < TIERS.length - 1) {
     nextTier = TIERS[currentIndex + 1];
-    pointsToNextTier = Math.max(0, nextTier.minPoints - points);
+    const effectivePoints = Math.max(totalSpent > 0 ? Math.floor(totalSpent / CONVERSION_RATE) : points, points);
+    pointsToNextTier = Math.max(0, nextTier.minPoints - effectivePoints);
     spentToNextTier = pointsToNextTier * CONVERSION_RATE;
     const tierRange = nextTier.minPoints - currentTier.minPoints;
-    const currentProgress = points - currentTier.minPoints;
+    const currentProgress = effectivePoints - currentTier.minPoints;
     progress = tierRange > 0 ? Math.min(1.0, Math.max(0.0, currentProgress / tierRange)) : 0;
   }
 
@@ -207,14 +230,16 @@ async function awardPointsInTransaction(tx, db, { userId, amount, sourceId, sour
 async function sendPointsNotification(db, { userId, pointsAwarded, newPoints, newTier, newTierLabel, upgraded, sourceId, sourceType }) {
   if (!userId || !db.hasCredentials || pointsAwarded <= 0) return;
 
-  const sourceName = sourceType === 'booking' ? 'liệu trình spa' : 'đơn hàng';
+  const isOrder = sourceType !== 'booking';
+  const sourceName = isOrder ? 'đơn hàng' : 'liệu trình spa';
+  const formattedSourceId = isOrder && sourceId ? formatOrderId(sourceId) : sourceId;
 
   try {
     // 1. Thông báo tích điểm
     await db.collection('notifications').add({
       userId,
       title: 'Tích điểm thành công ✨',
-      message: `Bạn nhận được +${pointsAwarded.toLocaleString('vi-VN')} điểm từ ${sourceName} #${sourceId || ''} (Quy đổi 1.000 VNĐ = 1 điểm). Tổng điểm hiện tại: ${newPoints.toLocaleString('vi-VN')} điểm.`,
+      message: `Bạn nhận được +${pointsAwarded.toLocaleString('vi-VN')} điểm từ ${sourceName} #${formattedSourceId || ''} (Quy đổi 1.000 VNĐ = 1 điểm). Tổng điểm hiện tại: ${newPoints.toLocaleString('vi-VN')} điểm.`,
       type: 'points',
       isRead: false,
       createdAt: FieldValue.serverTimestamp(),
@@ -223,7 +248,7 @@ async function sendPointsNotification(db, { userId, pointsAwarded, newPoints, ne
     await pushService.sendPushToUser({
       userId,
       title: 'Tích điểm thành công ✨',
-      body: `+${pointsAwarded.toLocaleString('vi-VN')} điểm vừa được cộng vào tài khoản thành viên LUMI của bạn!`,
+      body: `+${pointsAwarded.toLocaleString('vi-VN')} điểm vừa được cộng từ ${sourceName} #${formattedSourceId || ''}! `,
       data: {
         type: 'points',
         points: String(newPoints),
@@ -257,6 +282,7 @@ async function sendPointsNotification(db, { userId, pointsAwarded, newPoints, ne
 }
 
 module.exports = {
+  formatOrderId,
   CONVERSION_RATE,
   TIERS,
   getTierByPoints,

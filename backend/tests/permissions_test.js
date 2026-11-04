@@ -65,7 +65,7 @@ const adminPaths = [
   ['get','/api/admin-bookings'], ['post','/api/admin-bookings/x/status'], ['patch','/api/admin-bookings/x/status'],
   ['patch','/api/admin/bookings/x/confirm'], ['patch','/api/admin/bookings/x/reject'],
   ['get','/api/admin-orders'], ['get','/api/admin-orders/x'], ['post','/api/admin-orders/x/status'], ['patch','/api/admin-orders/x/status'],
-  ['post','/api/orders/x/notify-status'], ['get','/api/admin-users'], ['post','/api/admin-dev/clear-test-data'],
+  ['post','/api/orders/x/notify-status'], ['get','/api/admin-users'], ['patch','/api/admin-users/x/address'], ['post','/api/admin-users/x/address'], ['post','/api/admin-dev/clear-test-data'],
 ];
 test('every admin route and alias rejects missing/forged/customer/non-boolean admin tokens', async () => {
   const h = harness();

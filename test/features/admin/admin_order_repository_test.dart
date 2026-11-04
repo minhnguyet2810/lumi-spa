@@ -89,6 +89,39 @@ void main() {
       expect(found['customerName'], equals('Trần Thị B'));
       expect(found['total'], equals('350.000 đ'));
     });
+
+    test('LumiOrderStore formatCurrency standardizes amounts with dots and zeros', () {
+      expect(LumiOrderStore.formatCurrency(350000), equals('350.000 đ'));
+      expect(LumiOrderStore.formatCurrency('350000'), equals('350.000 đ'));
+      expect(LumiOrderStore.formatCurrency('350000 đ'), equals('350.000 đ'));
+      expect(LumiOrderStore.formatCurrency('350.000 đ'), equals('350.000 đ'));
+      expect(LumiOrderStore.formatCurrency(1250000), equals('1.250.000 đ'));
+      expect(LumiOrderStore.formatCurrency(0), equals('0 đ'));
+      expect(LumiOrderStore.formatCurrency(null), equals('0 đ'));
+    });
+
+    test('LumiOrderStore formats exact datetime instead of Hôm nay', () {
+      final dt = DateTime(2026, 11, 4, 16, 30);
+      expect(LumiOrderStore.formatDateTime(dt), equals('16:30 04/11/2026'));
+      expect(LumiOrderStore.formatDateTime(null), isNotEmpty);
+      expect(LumiOrderStore.formatDateTime('Hôm nay'), isNot(equals('Hôm nay')));
+    });
+
+    test('AdminOrderItem status helper getters operate accurately', () {
+      const pending = AdminOrderItem(id: '1', customerName: 'A', customerEmail: '', phone: '', shippingAddress: '', total: 0, status: 'pending');
+      const confirmed = AdminOrderItem(id: '2', customerName: 'B', customerEmail: '', phone: '', shippingAddress: '', total: 0, status: 'confirmed');
+      const approved = AdminOrderItem(id: '3', customerName: 'C', customerEmail: '', phone: '', shippingAddress: '', total: 0, status: 'approved');
+      const shipping = AdminOrderItem(id: '4', customerName: 'D', customerEmail: '', phone: '', shippingAddress: '', total: 0, status: 'shipping');
+      const completed = AdminOrderItem(id: '5', customerName: 'E', customerEmail: '', phone: '', shippingAddress: '', total: 0, status: 'completed');
+      const cancelled = AdminOrderItem(id: '6', customerName: 'F', customerEmail: '', phone: '', shippingAddress: '', total: 0, status: 'cancelled');
+
+      expect(pending.isPending, isTrue);
+      expect(confirmed.isConfirmed, isTrue);
+      expect(approved.isConfirmed, isTrue);
+      expect(shipping.isShipping, isTrue);
+      expect(completed.isCompleted, isTrue);
+      expect(cancelled.isCancelled, isTrue);
+    });
   });
 }
 

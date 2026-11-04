@@ -531,8 +531,10 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
     late num orderTotal;
     final now = DateTime.now();
 
+    final hour = now.hour.toString().padLeft(2, '0');
+    final minute = now.minute.toString().padLeft(2, '0');
     final formattedDate =
-        '${now.day.toString().padLeft(2, '0')}/'
+        '$hour:$minute ${now.day.toString().padLeft(2, '0')}/'
         '${now.month.toString().padLeft(2, '0')}/'
         '${now.year}';
 

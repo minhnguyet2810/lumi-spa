@@ -260,7 +260,7 @@ class AdminOrderCard extends StatelessWidget {
                 const Spacer(),
 
                 // Khi status == pending: Duyệt và Hủy
-                if (order.status == 'pending') ...[
+                if (order.isPending) ...[
                   TextButton.icon(
                     onPressed: onCancel,
                     icon: const Icon(Icons.close, size: 15, color: Colors.red),
@@ -287,9 +287,8 @@ class AdminOrderCard extends StatelessWidget {
                   ),
                 ],
 
-                // Khi status == confirmed: Giao hàng
-                if (order.status == 'confirmed' ||
-                    order.status == 'processing') ...[
+                // Khi status == confirmed / approved: Giao hàng
+                if (order.isConfirmed) ...[
                   FilledButton.icon(
                     onPressed: () => onUpdateStatus('shipping'),
                     icon: const Icon(Icons.local_shipping_outlined, size: 15),
@@ -302,8 +301,7 @@ class AdminOrderCard extends StatelessWidget {
                 ],
 
                 // Khi status == shipping: Đang giao hàng (Chỉ khách hàng mới có thể nhấn hoàn thành)
-                if (order.status == 'shipping' ||
-                    order.status == 'delivering') ...[
+                if (order.isShipping) ...[
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 10,

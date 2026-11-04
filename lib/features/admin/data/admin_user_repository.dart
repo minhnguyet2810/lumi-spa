@@ -114,4 +114,41 @@ class AdminUserRepository {
       'message': 'Không thể kết nối Backend để dọn dẹp.',
     };
   }
+
+  /// 4. Lưu / Cập nhật địa chỉ người dùng
+  Future<bool> updateUserAddress({
+    required String userId,
+    required String address,
+  }) async {
+    final cleanAddress = address.trim();
+    // 1. Cập nhật Firestore trực tiếp
+    try {
+      await _usersCol.doc(userId).set({
+        'address': cleanAddress,
+        'shippingAddress': cleanAddress,
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+    } catch (_) {}
+
+    // 2. Cập nhật qua Backend API
+    try {
+      final uri = Uri.parse(
+        '${ApiConfig.baseUrl}/api/admin-users/${Uri.encodeComponent(userId)}/address',
+      );
+      final res = await http
+          .patch(
+            uri,
+            headers: await _authHeaders(),
+            body: jsonEncode({'address': cleanAddress}),
+          )
+          .timeout(const Duration(seconds: 8));
+      if (res.statusCode == 200) {
+        final data = jsonDecode(utf8.decode(res.bodyBytes));
+        return data['success'] == true;
+      }
+    } catch (e) {
+      debugPrint('⚠️ [AdminUserRepository] Lỗi API cập nhật địa chỉ: $e');
+    }
+    return true;
+  }
 }

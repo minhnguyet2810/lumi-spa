@@ -3,12 +3,36 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/theme/lumi_style.dart';
+import '../../data/admin_user_repository.dart';
 import '../../data/models/admin_user_item.dart';
 
-class AdminUserDetailDialog extends StatelessWidget {
+class AdminUserDetailDialog extends StatefulWidget {
   const AdminUserDetailDialog({super.key, required this.user});
 
   final AdminUserItem user;
+
+  @override
+  State<AdminUserDetailDialog> createState() => _AdminUserDetailDialogState();
+}
+
+class _AdminUserDetailDialogState extends State<AdminUserDetailDialog> {
+  late String _address;
+  late TextEditingController _addressController;
+  bool _isEditingAddress = false;
+  bool _isSavingAddress = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _address = widget.user.address;
+    _addressController = TextEditingController(text: _address);
+  }
+
+  @override
+  void dispose() {
+    _addressController.dispose();
+    super.dispose();
+  }
 
   void _copy(BuildContext context, String text, String label) {
     Clipboard.setData(ClipboardData(text: text));
@@ -20,14 +44,69 @@ class AdminUserDetailDialog extends StatelessWidget {
     );
   }
 
+  Future<void> _handleSaveAddress() async {
+    final newAddress = _addressController.text.trim();
+    if (newAddress.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Vui lòng nhập địa chỉ hợp lệ.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isSavingAddress = true);
+    try {
+      final success = await AdminUserRepository.instance.updateUserAddress(
+        userId: widget.user.id,
+        address: newAddress,
+      );
+      if (!mounted) return;
+      if (success) {
+        setState(() {
+          _address = newAddress;
+          _isEditingAddress = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('✅ Đã lưu địa chỉ người dùng thành công!'),
+            backgroundColor: Color(0xFF16A34A),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Không thể lưu địa chỉ. Vui lòng thử lại.'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Lỗi: $e'),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isSavingAddress = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final user = widget.user;
     return Dialog(
       backgroundColor: LumiStyle.ivory,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 540),
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(28),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -146,6 +225,108 @@ class AdminUserDetailDialog extends StatelessWidget {
                     : null,
               ),
               const SizedBox(height: 8),
+
+              // Địa chỉ người dùng (kèm nút lưu/chỉnh sửa)
+              if (!_isEditingAddress) ...[
+                _buildInfoRow(
+                  icon: Icons.location_on_outlined,
+                  label: 'Địa chỉ nhận hàng',
+                  value: _address.isNotEmpty ? _address : 'Chưa cập nhật địa chỉ',
+                  onCopy: _address.isNotEmpty
+                      ? () => _copy(context, _address, 'Địa chỉ')
+                      : null,
+                  trailingAction: TextButton.icon(
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      visualDensity: VisualDensity.compact,
+                    ),
+                    icon: const Icon(Icons.edit_outlined, size: 14),
+                    label: const Text('Sửa'),
+                    onPressed: () {
+                      _addressController.text = _address;
+                      setState(() => _isEditingAddress = true);
+                    },
+                  ),
+                ),
+              ] else ...[
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: LumiStyle.rose.withValues(alpha: 0.5)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.home_outlined, size: 16, color: LumiStyle.rose),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Cập nhật địa chỉ người dùng',
+                            style: GoogleFonts.beVietnamPro(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: LumiStyle.plum,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: _addressController,
+                        maxLines: 2,
+                        decoration: InputDecoration(
+                          hintText: 'Nhập số nhà, tên đường, phường/xã, quận/huyện, tỉnh/thành...',
+                          hintStyle: GoogleFonts.beVietnamPro(fontSize: 12, color: LumiStyle.muted),
+                          filled: true,
+                          fillColor: const Color(0xFFFAF7F5),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: const BorderSide(color: LumiStyle.line),
+                          ),
+                          contentPadding: const EdgeInsets.all(10),
+                        ),
+                        style: GoogleFonts.beVietnamPro(fontSize: 13),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          TextButton(
+                            onPressed: _isSavingAddress
+                                ? null
+                                : () => setState(() => _isEditingAddress = false),
+                            child: const Text('Hủy'),
+                          ),
+                          const SizedBox(width: 8),
+                          FilledButton.icon(
+                            onPressed: _isSavingAddress ? null : _handleSaveAddress,
+                            icon: _isSavingAddress
+                                ? const SizedBox(
+                                    width: 14,
+                                    height: 14,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : const Icon(Icons.check, size: 14),
+                            label: const Text('Lưu địa chỉ'),
+                            style: FilledButton.styleFrom(
+                              backgroundColor: LumiStyle.rose,
+                              visualDensity: VisualDensity.compact,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+
+              const SizedBox(height: 8),
               _buildInfoRow(
                 icon: Icons.calendar_today_outlined,
                 label: 'Ngày tham gia',
@@ -213,10 +394,15 @@ class AdminUserDetailDialog extends StatelessWidget {
     required String label,
     required String value,
     VoidCallback? onCopy,
+    Widget? trailingAction,
   }) {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 16, color: LumiStyle.muted),
+        Padding(
+          padding: const EdgeInsets.only(top: 2),
+          child: Icon(icon, size: 16, color: LumiStyle.muted),
+        ),
         const SizedBox(width: 10),
         SizedBox(
           width: 100,
@@ -235,6 +421,7 @@ class AdminUserDetailDialog extends StatelessWidget {
             ),
           ),
         ),
+        ?trailingAction,
         if (onCopy != null)
           IconButton(
             tooltip: 'Sao chép',

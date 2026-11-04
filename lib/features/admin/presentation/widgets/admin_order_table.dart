@@ -210,7 +210,7 @@ class AdminOrderTable extends StatelessWidget {
                         ),
 
                         // Nút Duyệt nếu đang Pending
-                        if (order.status == 'pending') ...[
+                        if (order.isPending) ...[
                           const SizedBox(width: 4),
                           FilledButton.icon(
                             onPressed: () => onApprove(order),
@@ -237,9 +237,8 @@ class AdminOrderTable extends StatelessWidget {
                           ),
                         ],
 
-                        // Nút Giao hàng nếu Confirmed
-                        if (order.status == 'confirmed' ||
-                            order.status == 'processing') ...[
+                        // Nút Giao hàng nếu Confirmed / Approved
+                        if (order.isConfirmed) ...[
                           const SizedBox(width: 4),
                           FilledButton.icon(
                             onPressed: () => onUpdateStatus(order, 'shipping'),
@@ -270,8 +269,7 @@ class AdminOrderTable extends StatelessWidget {
                         ],
 
                         // Đang Shipping: Chờ khách nhận
-                        if (order.status == 'shipping' ||
-                            order.status == 'delivering') ...[
+                        if (order.isShipping) ...[
                           const SizedBox(width: 4),
                           Container(
                             padding: const EdgeInsets.symmetric(

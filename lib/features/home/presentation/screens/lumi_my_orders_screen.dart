@@ -66,6 +66,7 @@ class _LumiMyOrdersScreenState extends State<LumiMyOrdersScreen> {
             for (final doc in snapshot.docs) {
               LumiOrderStore.syncOrderFromFirestore(doc.data(), doc.id);
             }
+            LumiOrderStore.sortOrders();
             setState(() {});
           },
           onError: (Object error) {
@@ -105,7 +106,10 @@ class _LumiMyOrdersScreenState extends State<LumiMyOrdersScreen> {
       return orders;
     }
 
-    return orders.where((order) => order['status'] == selectedStatus).toList();
+    return orders.where((order) {
+      final s = order['status'] ?? '';
+      return s.toLowerCase() == selectedStatus.toLowerCase();
+    }).toList();
   }
 
   Widget _emptyState(String message) {
@@ -288,7 +292,7 @@ class _LumiMyOrdersScreenState extends State<LumiMyOrdersScreen> {
             ),
             const SizedBox(height: 5),
             Text(
-              order['total'] ?? '',
+              LumiOrderStore.formatCurrency(order['total']),
               style: GoogleFonts.beVietnamPro(
                 fontSize: 28,
                 fontWeight: FontWeight.w700,

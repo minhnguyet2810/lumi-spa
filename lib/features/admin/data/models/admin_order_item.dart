@@ -37,7 +37,9 @@ class AdminOrderItem {
   final String? cancelReason;
 
   String get displayTotal {
-    if (formattedTotal != null && formattedTotal!.isNotEmpty) {
+    if (formattedTotal != null &&
+        formattedTotal!.isNotEmpty &&
+        formattedTotal!.contains('.')) {
       return formattedTotal!;
     }
     final p = total.toInt().toString().replaceAllMapped(
@@ -46,6 +48,19 @@ class AdminOrderItem {
     );
     return '$p đ';
   }
+
+  bool get isPending => status.toLowerCase() == 'pending';
+  bool get isConfirmed =>
+      status.toLowerCase() == 'confirmed' ||
+      status.toLowerCase() == 'processing' ||
+      status.toLowerCase() == 'approved';
+  bool get isShipping =>
+      status.toLowerCase() == 'shipping' ||
+      status.toLowerCase() == 'delivering';
+  bool get isCompleted => status.toLowerCase() == 'completed';
+  bool get isCancelled =>
+      status.toLowerCase() == 'cancelled' ||
+      status.toLowerCase() == 'rejected';
 
   String get statusLabel {
     switch (status.toLowerCase()) {

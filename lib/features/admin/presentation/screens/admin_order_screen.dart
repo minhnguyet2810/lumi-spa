@@ -136,6 +136,13 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
           ),
           backgroundColor: Colors.green.shade800,
           behavior: SnackBarBehavior.floating,
+          action: SnackBarAction(
+            label: 'XEM ĐÃ DUYỆT',
+            textColor: Colors.white,
+            onPressed: () {
+              if (mounted) setState(() => _selectedFilter = 2);
+            },
+          ),
         ),
       );
       if (_fallbackApiOrders != null) {
@@ -205,6 +212,7 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
     String newStatus, {
     String? reason,
   }) async {
+    final prevFilter = _selectedFilter;
     try {
       await AdminOrderRepository.instance.updateOrderStatus(
         order: order,
@@ -214,13 +222,34 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
       if (!mounted) {
         return;
       }
+
+      // Khi chuyển sang Đang giao (shipping) từ tab Đã duyệt (tab 2):
+      // Tự động chuyển view sang tab 3 (Đang giao) để admin lập tức thấy đơn tại tab tương ứng,
+      // không cần phải qua tab "Tất cả" tìm kiếm!
+      if (newStatus == 'shipping' && _selectedFilter == 2) {
+        setState(() => _selectedFilter = 3);
+      }
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            '✅ Đã chuyển trạng thái đơn #${order.id} sang "$newStatus"',
+            newStatus == 'shipping'
+                ? '🚚 Đã chuyển đơn #${order.id} sang "Đang giao hàng"!'
+                : '✅ Đã chuyển trạng thái đơn #${order.id} sang "$newStatus"',
           ),
-          backgroundColor: Colors.green.shade800,
+          backgroundColor: newStatus == 'shipping'
+              ? const Color(0xFF2563EB)
+              : Colors.green.shade800,
           behavior: SnackBarBehavior.floating,
+          action: (newStatus == 'shipping' && prevFilter == 2)
+              ? SnackBarAction(
+                  label: 'QUAY LẠI ĐÃ DUYỆT',
+                  textColor: Colors.white,
+                  onPressed: () {
+                    if (mounted) setState(() => _selectedFilter = 2);
+                  },
+                )
+              : null,
         ),
       );
       if (_fallbackApiOrders != null) {
@@ -262,43 +291,21 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
 
     switch (_selectedFilter) {
       case 0: // Chờ duyệt
-        result = result
-            .where((o) => o.status.toLowerCase() == 'pending')
-            .toList();
+        result = result.where((o) => o.isPending).toList();
         break;
       case 1: // Tất cả
         break;
       case 2: // Đã duyệt
-        result = result
-            .where(
-              (o) =>
-                  o.status.toLowerCase() == 'confirmed' ||
-                  o.status.toLowerCase() == 'processing',
-            )
-            .toList();
+        result = result.where((o) => o.isConfirmed).toList();
         break;
       case 3: // Đang giao
-        result = result
-            .where(
-              (o) =>
-                  o.status.toLowerCase() == 'shipping' ||
-                  o.status.toLowerCase() == 'delivering',
-            )
-            .toList();
+        result = result.where((o) => o.isShipping).toList();
         break;
-      case 4: // Đã giao
-        result = result
-            .where((o) => o.status.toLowerCase() == 'completed')
-            .toList();
+      case 4: // Hoàn thành
+        result = result.where((o) => o.isCompleted).toList();
         break;
       case 5: // Đã hủy
-        result = result
-            .where(
-              (o) =>
-                  o.status.toLowerCase() == 'cancelled' ||
-                  o.status.toLowerCase() == 'rejected',
-            )
-            .toList();
+        result = result.where((o) => o.isCancelled).toList();
         break;
     }
 
@@ -312,6 +319,13 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
             o.itemsSummary.toLowerCase().contains(query);
       }).toList();
     }
+
+    // Luôn sắp xếp đơn hàng theo ngày giờ từ gần đến xa (mới nhất lên đầu)
+    result.sort((a, b) {
+      final dateA = a.createdAt ?? DateTime(0);
+      final dateB = b.createdAt ?? DateTime(0);
+      return dateB.compareTo(dateA);
+    });
 
     return result;
   }
@@ -492,23 +506,11 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
 
         final filteredOrders = _filterOrders(allOrders);
 
-        final pendingCount = allOrders
-            .where((o) => o.status.toLowerCase() == 'pending')
-            .length;
-        final confirmedCount = allOrders
-            .where(
-              (o) =>
-                  o.status.toLowerCase() == 'confirmed' ||
-                  o.status.toLowerCase() == 'processing',
-            )
-            .length;
-        final shippingCount = allOrders
-            .where(
-              (o) =>
-                  o.status.toLowerCase() == 'shipping' ||
-                  o.status.toLowerCase() == 'delivering',
-            )
-            .length;
+        final pendingCount = allOrders.where((o) => o.isPending).length;
+        final confirmedCount = allOrders.where((o) => o.isConfirmed).length;
+        final shippingCount = allOrders.where((o) => o.isShipping).length;
+        final completedCount = allOrders.where((o) => o.isCompleted).length;
+        final cancelledCount = allOrders.where((o) => o.isCancelled).length;
 
         return LayoutBuilder(
           builder: (context, constraints) {
@@ -663,28 +665,8 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
                               _buildFilterChip(1, 'Tất cả', allOrders.length),
                               _buildFilterChip(2, 'Đã duyệt', confirmedCount),
                               _buildFilterChip(3, 'Đang giao', shippingCount),
-                              _buildFilterChip(
-                                4,
-                                'Hoàn thành',
-                                allOrders
-                                    .where(
-                                      (o) =>
-                                          o.status.toLowerCase() == 'completed',
-                                    )
-                                    .length,
-                              ),
-                              _buildFilterChip(
-                                5,
-                                'Đã hủy',
-                                allOrders
-                                    .where(
-                                      (o) =>
-                                          o.status.toLowerCase() ==
-                                              'cancelled' ||
-                                          o.status.toLowerCase() == 'rejected',
-                                    )
-                                    .length,
-                              ),
+                              _buildFilterChip(4, 'Hoàn thành', completedCount),
+                              _buildFilterChip(5, 'Đã hủy', cancelledCount),
                             ],
                           ),
                         ),

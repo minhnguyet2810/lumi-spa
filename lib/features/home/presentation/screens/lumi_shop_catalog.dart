@@ -253,7 +253,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 250),
       curve: Curves.easeInOut,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: EdgeInsets.fromLTRB(16, 12, 16, _isFilterExpanded ? 16 : 12),
       decoration: BoxDecoration(
         color: LumiAdaptive.color(const Color(0xFFFBF4F5), surface: true),
         borderRadius: BorderRadius.circular(18),
@@ -666,12 +666,12 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                 // Nút thu gọn bộ lọc
                 SizedBox(
                   width: double.infinity,
-                  height: 40,
+                  height: 44,
                   child: OutlinedButton.icon(
                     onPressed: () => setState(() => _isFilterExpanded = false),
                     icon: Icon(
                       Icons.expand_less_rounded,
-                      size: 18,
+                      size: 20,
                       color: LumiAdaptive.color(rose),
                     ),
                     label: Text(
@@ -690,12 +690,15 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
+                        padding: const EdgeInsets.symmetric(vertical: 10),
                       ),
                     ),
                   ),
                 ),
+                const SizedBox(height: 6),
               ],
             ),
+            clipBehavior: Clip.none,
             crossFadeState: _isFilterExpanded
                 ? CrossFadeState.showSecond
                 : CrossFadeState.showFirst,

@@ -99,6 +99,17 @@ class AdminUserTable extends StatelessWidget {
               ),
               DataColumn(
                 label: Text(
+                  'ĐỊA CHỈ',
+                  style: GoogleFonts.beVietnamPro(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.5,
+                    color: LumiStyle.plum,
+                  ),
+                ),
+              ),
+              DataColumn(
+                label: Text(
                   'VAI TRÒ',
                   style: GoogleFonts.beVietnamPro(
                     fontSize: 11,
@@ -211,6 +222,22 @@ class AdminUserTable extends StatelessWidget {
                       style: GoogleFonts.beVietnamPro(
                         fontSize: 12,
                         color: LumiStyle.plum,
+                      ),
+                    ),
+                  ),
+
+                  // Địa chỉ
+                  DataCell(
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 180),
+                      child: Text(
+                        user.address.isNotEmpty ? user.address : '—',
+                        style: GoogleFonts.beVietnamPro(
+                          fontSize: 12,
+                          color: LumiStyle.plum,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ),

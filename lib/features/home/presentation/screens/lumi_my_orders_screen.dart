@@ -306,6 +306,7 @@ class _LumiMyOrdersScreenState extends State<LumiMyOrdersScreen> {
               Row(
                 children: [
                   Expanded(
+                    flex: 2,
                     child: OutlinedButton(
                       onPressed: () async {
                         await Navigator.of(context).push(
@@ -315,17 +316,42 @@ class _LumiMyOrdersScreenState extends State<LumiMyOrdersScreen> {
                         );
                         if (mounted) setState(() {});
                       },
-                      child: Text(LumiAdaptive.text('Chi tiết')),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          LumiAdaptive.text('Chi tiết'),
+                          maxLines: 1,
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
+                    flex: 3,
                     child: FilledButton.icon(
                       onPressed: () => _confirmReceipt(order),
                       icon: const Icon(Icons.check_circle_outline, size: 18),
-                      label: Text(LumiAdaptive.text('Đã nhận hàng')),
+                      label: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          LumiAdaptive.text('Đã nhận hàng'),
+                          maxLines: 1,
+                          softWrap: false,
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                      ),
                       style: FilledButton.styleFrom(
                         backgroundColor: const Color(0xFF16A34A),
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                     ),
                   ),

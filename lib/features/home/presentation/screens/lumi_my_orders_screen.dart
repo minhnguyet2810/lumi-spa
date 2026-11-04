@@ -272,7 +272,7 @@ class _LumiMyOrdersScreenState extends State<LumiMyOrdersScreen> {
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 Text(
-                  order['id'] ?? '',
+                  LumiOrderStore.formatOrderId(order['displayId'] ?? order['id']),
                   style: GoogleFonts.beVietnamPro(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,

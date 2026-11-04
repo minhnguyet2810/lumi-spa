@@ -63,6 +63,65 @@ function getUnitPrice(product, now) {
   return basePrice;
 }
 
+const COUPONS = {
+  'LUMISPA10': {
+    code: 'LUMISPA10',
+    title: 'Giảm 10% đơn hàng',
+    description: 'Áp dụng cho mọi đơn mua mỹ phẩm, giảm tối đa 100.000 đ.',
+    minOrder: 0,
+    percentDiscount: 0.10,
+    maxDiscount: 100000,
+    isFreeShipping: false,
+    badgeText: 'GIẢM 10%',
+  },
+  'LUMISPA20': {
+    code: 'LUMISPA20',
+    title: 'Giảm 20% cho đơn từ 500k',
+    description: 'Áp dụng cho đơn hàng từ 500.000 đ, giảm tối đa 200.000 đ.',
+    minOrder: 500000,
+    percentDiscount: 0.20,
+    maxDiscount: 200000,
+    isFreeShipping: false,
+    badgeText: 'GIẢM 20%',
+  },
+  'FREESHIP': {
+    code: 'FREESHIP',
+    title: 'Miễn phí giao hàng toàn quốc',
+    description: 'Miễn phí vận chuyển 30.000 đ cho toàn bộ đơn hàng.',
+    minOrder: 0,
+    isFreeShipping: true,
+    badgeText: 'FREESHIP',
+  },
+  'LUMI50K': {
+    code: 'LUMI50K',
+    title: 'Giảm trực tiếp 50.000 đ',
+    description: 'Áp dụng cho đơn hàng từ 300.000 đ trở lên.',
+    minOrder: 300000,
+    fixedDiscount: 50000,
+    isFreeShipping: false,
+    badgeText: '-50.000 đ',
+  },
+  'LUMIVIP': {
+    code: 'LUMIVIP',
+    title: 'Đặc quyền VIP giảm 100.000 đ',
+    description: 'Ưu đãi tri ân khách hàng thân thiết cho đơn từ 600.000 đ.',
+    minOrder: 600000,
+    fixedDiscount: 100000,
+    isFreeShipping: false,
+    badgeText: '-100.000 đ',
+  },
+  'LUMIWELCOME': {
+    code: 'LUMIWELCOME',
+    title: 'Chào đón bạn mới giảm 15%',
+    description: 'Dành tặng khách hàng mới của LUMI SPA, giảm tối đa 80.000 đ.',
+    minOrder: 0,
+    percentDiscount: 0.15,
+    maxDiscount: 80000,
+    isFreeShipping: false,
+    badgeText: 'BẠN MỚI',
+  },
+};
+
 // GET /api/orders
 router.get('/', async (req, res) => {
   try {
@@ -81,6 +140,11 @@ router.get('/', async (req, res) => {
     console.error('Orders list error:', error);
     return fail(res, 500, 'Không thể tải đơn hàng.');
   }
+});
+
+// GET /api/orders/coupons
+router.get('/coupons', (req, res) => {
+  return res.json({ success: true, data: Object.values(COUPONS) });
 });
 
 // GET /api/orders/:id
@@ -105,7 +169,7 @@ router.get('/:id', async (req, res) => {
 // POST /api/orders
 router.post('/', async (req, res) => {
   try {
-    const { items, shippingAddress, phone, customerName = '', note = '', paymentMethod = 'cod' } = req.body || {};
+    const { items, shippingAddress, phone, customerName = '', note = '', paymentMethod = 'cod', couponCode = '' } = req.body || {};
     if (typeof customerName !== 'string' || customerName.trim().length > 100 ||
         typeof note !== 'string' || note.length > 1000 || !['cod', 'bank'].includes(paymentMethod)) {
       return fail(res, 400, 'Thông tin đơn hàng không hợp lệ.');
@@ -152,7 +216,9 @@ router.post('/', async (req, res) => {
 
     const productIds = [...quantities.keys()].sort();
     const productRefs = productIds.map(id => db.collection('products').doc(id));
-    const orderRef = db.collection('orders').doc();
+    const orderNumber = Math.floor(100000 + Math.random() * 900000);
+    const customOrderId = `LUMI-${orderNumber}`;
+    const orderRef = db.collection('orders').doc(customOrderId);
 
     const result = await db.runTransaction(async tx => {
       const docs = await tx.getAll(...productRefs);
@@ -199,9 +265,29 @@ router.post('/', async (req, res) => {
         });
       }
 
-      // Same shipping policy as checkout; calculated from trusted catalogue prices.
-      const shippingFee = subtotal >= 500000 ? 0 : 30000;
-      const total = subtotal + shippingFee;
+      // Shipping policy & coupon discount calculation
+      let shippingFee = subtotal >= 500000 ? 0 : 30000;
+      let discount = 0;
+      let appliedCoupon = null;
+
+      if (typeof couponCode === 'string' && couponCode.trim()) {
+        const normCode = couponCode.trim().toUpperCase();
+        const coupon = COUPONS[normCode];
+        if (coupon && subtotal >= coupon.minOrder) {
+          appliedCoupon = coupon;
+          if (coupon.isFreeShipping) {
+            discount = shippingFee;
+            shippingFee = 0;
+          } else if (coupon.fixedDiscount) {
+            discount = Math.min(coupon.fixedDiscount, subtotal);
+          } else if (coupon.percentDiscount) {
+            const calc = Math.round(subtotal * coupon.percentDiscount);
+            discount = coupon.maxDiscount ? Math.min(calc, coupon.maxDiscount) : calc;
+          }
+        }
+      }
+
+      const total = Math.max(0, subtotal - discount) + shippingFee;
 
       for (let i = 0; i < docs.length; i++) {
         const product = docs[i].data();
@@ -225,6 +311,8 @@ router.post('/', async (req, res) => {
         phone: phone.trim(),
         subtotal,
         shippingFee,
+        discount,
+        couponCode: appliedCoupon ? appliedCoupon.code : null,
         total,
         paymentMethod: paymentLabel,
         paymentStatus: 'unpaid',
@@ -233,7 +321,15 @@ router.post('/', async (req, res) => {
         updatedAt: FieldValue.serverTimestamp(),
       });
 
-      return { id: orderRef.id, total, subtotal, shippingFee, items: orderItems };
+      return {
+        id: orderRef.id,
+        total,
+        subtotal,
+        shippingFee,
+        discount,
+        couponCode: appliedCoupon ? appliedCoupon.code : null,
+        items: orderItems,
+      };
     });
 
     (async () => {

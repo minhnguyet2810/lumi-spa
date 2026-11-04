@@ -110,7 +110,9 @@ class _LumiOrderDetailScreenState extends State<LumiOrderDetailScreen> {
           LumiOrderUi.badge(context, currentStatus),
           const SizedBox(height: 16),
           Text(
-            widget.order['id'] ?? '',
+            LumiOrderStore.formatOrderId(
+              widget.order['displayId'] ?? widget.order['id'],
+            ),
             style: GoogleFonts.beVietnamPro(
               fontSize: 22,
               fontWeight: FontWeight.w700,
@@ -119,7 +121,7 @@ class _LumiOrderDetailScreenState extends State<LumiOrderDetailScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            widget.order['total'] ?? '',
+            LumiOrderStore.formatCurrency(widget.order['total']),
             style: GoogleFonts.beVietnamPro(
               fontSize: 32,
               fontWeight: FontWeight.w700,
@@ -128,6 +130,13 @@ class _LumiOrderDetailScreenState extends State<LumiOrderDetailScreen> {
           ),
           const SizedBox(height: 16),
           _infoRow('Ngày đặt', widget.order['date'] ?? ''),
+          if ((widget.order['couponCode'] ?? '').isNotEmpty)
+            _infoRow('Mã giảm giá', widget.order['couponCode']!),
+          if ((widget.order['discount'] ?? '').isNotEmpty)
+            _infoRow(
+              'Giảm giá',
+              '- ${LumiOrderStore.formatCurrency(widget.order['discount'])}',
+            ),
           _infoRow(
             'Thanh toán',
             widget.order['paymentMethod'] ?? 'Thanh toán khi nhận hàng',

@@ -65,7 +65,7 @@ class AdminOrderCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      '#${order.id}',
+                      order.displayId,
                       style: GoogleFonts.beVietnamPro(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,

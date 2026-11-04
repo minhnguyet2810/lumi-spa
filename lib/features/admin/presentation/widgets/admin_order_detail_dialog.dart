@@ -58,7 +58,7 @@ class AdminOrderDetailDialog extends StatelessWidget {
                         Row(
                           children: [
                             Text(
-                              'Đơn Hàng #${order.id}',
+                              'Đơn Hàng ${order.displayId}',
                               style: GoogleFonts.beVietnamPro(
                                 fontSize: 24,
                                 fontWeight: FontWeight.w700,

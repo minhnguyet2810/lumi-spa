@@ -92,7 +92,7 @@ class AdminOrderTable extends StatelessWidget {
                   // 1. Mã đơn
                   DataCell(
                     Text(
-                      '#${order.id}',
+                      order.displayId,
                       style: GoogleFonts.beVietnamPro(
                         fontWeight: FontWeight.w700,
                         color: LumiStyle.plum,

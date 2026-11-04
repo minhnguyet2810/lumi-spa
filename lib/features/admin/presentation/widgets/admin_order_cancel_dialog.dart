@@ -72,7 +72,7 @@ class _AdminOrderCancelDialogState extends State<AdminOrderCancelDialog> {
                           ),
                         ),
                         Text(
-                          'Mã đơn: #${widget.order.id} · ${widget.order.customerName}',
+                          'Mã đơn: ${widget.order.displayId} · ${widget.order.customerName}',
                           style: GoogleFonts.beVietnamPro(
                             fontSize: 12,
                             color: LumiStyle.muted,

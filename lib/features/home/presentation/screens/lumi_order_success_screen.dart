@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'lumi_my_orders_screen.dart';
+import '../../../../core/data/lumi_order_store.dart';
 
 class LumiOrderSuccessScreen extends StatelessWidget {
   const LumiOrderSuccessScreen({
@@ -118,7 +119,10 @@ class LumiOrderSuccessScreen extends StatelessWidget {
                   ),
                   child: Column(
                     children: [
-                      _infoRow('Mã đơn hàng', orderId),
+                      _infoRow(
+                        'Mã đơn hàng',
+                        LumiOrderStore.formatOrderId(orderId),
+                      ),
                       const Divider(height: 25),
                       _infoRow('Tổng thanh toán', _money(total)),
                       const Divider(height: 25),

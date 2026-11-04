@@ -5,6 +5,35 @@ class LumiOrderStore {
   /// Danh sách đơn hàng cục bộ - khởi tạo rỗng để người dùng chỉ thấy đơn thực tế
   static final List<Map<String, String>> orders = [];
 
+  /// Định dạng mã đơn hàng thống nhất: LUMI - XXXXX (VD: LUMI - 399817, LUMI - CE5NGX)
+  static String formatOrderId(dynamic raw) {
+    if (raw == null) return 'LUMI - 000000';
+    final str = raw.toString().trim();
+    if (str.isEmpty) return 'LUMI - 000000';
+
+    // Đã đúng định dạng chuẩn LUMI - XXXXX
+    if (RegExp(r'^LUMI\s*-\s*[A-Za-z0-9]+$').hasMatch(str)) {
+      return str.replaceAllMapped(
+        RegExp(r'^LUMI\s*-\s*([A-Za-z0-9]+)$'),
+        (m) => 'LUMI - ${m[1]!.toUpperCase()}',
+      );
+    }
+    // Nếu có dạng LUMI-XXXXX
+    if (str.toUpperCase().startsWith('LUMI-')) {
+      final sub = str.substring(5).trim().toUpperCase();
+      return 'LUMI - $sub';
+    }
+    if (str.toUpperCase().startsWith('LUMI -')) {
+      final sub = str.substring(6).trim().toUpperCase();
+      return 'LUMI - $sub';
+    }
+
+    // Nếu là ID Firestore ngẫu nhiên (VD: xomwY6oMQsiBWiNV7QqJ hoặc cE5nGxQd0sjNcJir4Vg1)
+    final clean = str.replaceAll(RegExp(r'[^A-Za-z0-9]'), '').toUpperCase();
+    final short = clean.length > 6 ? clean.substring(0, 6) : clean.padRight(6, '0');
+    return 'LUMI - $short';
+  }
+
   /// Định dạng số tiền chuẩn: phân cách hàng nghìn bằng dấu chấm, đầy đủ số 0 (VD: 350.000 đ)
   static String formatCurrency(dynamic value) {
     if (value == null) return '0 đ';
@@ -133,10 +162,14 @@ class LumiOrderStore {
     final rawCreated = data['createdAt'] ?? data['createdAtMillis'] ?? data['date'];
     final formattedDate = formatDateTime(rawCreated);
     final rawIso = extractIsoDate(rawCreated);
+    final couponCode = data['couponCode']?.toString() ?? '';
+    final discount = data['discount']?.toString() ?? '';
 
     final existingIndex = orders.indexWhere((o) => o['id'] == orderId);
     final map = {
       'id': orderId,
+      'rawId': id,
+      'displayId': formatOrderId(orderId),
       'date': formattedDate,
       'rawCreatedAt': rawIso,
       'total': total,
@@ -147,6 +180,8 @@ class LumiOrderStore {
       'note': note,
       'paymentMethod': paymentMethod,
       'items': items,
+      'couponCode': couponCode,
+      'discount': discount.isNotEmpty ? formatCurrency(discount) : '',
     };
 
     if (existingIndex != -1) {
@@ -169,6 +204,8 @@ class LumiOrderStore {
     required String paymentMethod,
     String status = 'Chờ xác nhận',
     dynamic rawCreatedAt,
+    String? couponCode,
+    dynamic discount,
   }) {
     final existingIndex = orders.indexWhere((o) => o['id'] == id);
     final formattedDate = formatDateTime(rawCreatedAt ?? date);
@@ -177,6 +214,8 @@ class LumiOrderStore {
 
     final map = {
       'id': id,
+      'rawId': id,
+      'displayId': formatOrderId(id),
       'date': formattedDate,
       'rawCreatedAt': rawIso,
       'total': formattedTotal,
@@ -187,6 +226,8 @@ class LumiOrderStore {
       'note': note,
       'paymentMethod': paymentMethod,
       'items': jsonEncode(items),
+      'couponCode': couponCode ?? '',
+      'discount': discount != null && discount.toString().isNotEmpty ? formatCurrency(discount) : '',
     };
 
     if (existingIndex != -1) {

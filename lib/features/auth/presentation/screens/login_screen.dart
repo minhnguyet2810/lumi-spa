@@ -294,11 +294,11 @@ class _LoginScreenState extends State<LoginScreen>
                                   end: Alignment.centerRight,
                                   colors: [
                                     LumiAdaptive.color(
-                                      Color(0xB5362730),
+                                      Color(0xB52E2421),
                                       surface: true,
                                     ),
                                     LumiAdaptive.color(
-                                      Color(0x00362730),
+                                      Color(0x002E2421),
                                       surface: true,
                                     ),
                                   ],

@@ -598,7 +598,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 color: LumiAdaptive.color(Colors.white, surface: true),
                 borderRadius: BorderRadius.circular(18),
                 border: Border.all(
-                  color: LumiAdaptive.color(const Color(0xFFEBDDE0)),
+                  color: LumiAdaptive.color(blush),
                 ),
               ),
               child: Row(
@@ -815,7 +815,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           borderRadius: BorderRadius.circular(19),
                           border: Border.all(
-                            color: LumiAdaptive.color(const Color(0xFFEDDFE2)),
+                            color: LumiAdaptive.color(blush),
                           ),
                         ),
                         child: Column(

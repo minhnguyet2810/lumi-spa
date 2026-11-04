@@ -18,12 +18,12 @@ class LumiOrderSuccessScreen extends StatelessWidget {
   final num total;
   final String paymentMethod;
 
-  static const rose = Color(0xFFB56F86);
-  static const ink = Color(0xFF503B42);
-  static const muted = Color(0xFF78676B);
-  static const cream = Color(0xFFFFFAF8);
-  static const blush = Color(0xFFF4E4E8);
-  static const blue = Color(0xFFDDECEF);
+  static const rose = Color(0xFFA5553E); // Brand Terracotta Brown
+  static const ink = Color(0xFF403735);  // Deep Warm Brown
+  static const muted = Color(0xFF756863);// Warm Muted Gray
+  static const cream = Color(0xFFFFF8EF);// Warm Cream / Ivory
+  static const blush = Color(0xFFFBE7DC);// Soft Warm Peach
+  static const blue = Color(0xFFE1EFF5); // Soft Blue-Gray
 
   String _money(num value) {
     final digits = value.toInt().toString();

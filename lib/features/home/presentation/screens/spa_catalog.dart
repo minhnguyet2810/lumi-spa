@@ -180,7 +180,7 @@ class _LumiSpaCatalogState extends State<LumiSpaCatalog> {
                       end: Alignment.bottomCenter,
                       colors: [
                         Colors.transparent,
-                        LumiAdaptive.color(Color(0xAA35252E), surface: true),
+                        LumiAdaptive.color(Color(0xAA2E2421), surface: true),
                       ],
                     ),
                   ),
@@ -470,7 +470,7 @@ class _LumiSpaCatalogState extends State<LumiSpaCatalog> {
       decoration: BoxDecoration(
         color: LumiAdaptive.color(Colors.white, surface: true),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: LumiAdaptive.color(const Color(0xFFEEDFE3))),
+        border: Border.all(color: LumiAdaptive.color(blush)),
       ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(

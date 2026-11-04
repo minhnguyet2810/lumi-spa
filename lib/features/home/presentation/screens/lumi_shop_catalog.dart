@@ -255,13 +255,13 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
       curve: Curves.easeInOut,
       padding: EdgeInsets.fromLTRB(16, 12, 16, _isFilterExpanded ? 16 : 12),
       decoration: BoxDecoration(
-        color: LumiAdaptive.color(const Color(0xFFFBF4F5), surface: true),
+        color: LumiAdaptive.color(const Color(0xFFFDF8F5), surface: true),
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
           color: LumiAdaptive.color(
             _isFilterExpanded
                 ? rose.withValues(alpha: 0.35)
-                : const Color(0xFFEFE4E6),
+                : blush,
           ),
         ),
         boxShadow: [
@@ -399,7 +399,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
               children: [
                 const SizedBox(height: 12),
                 Divider(
-                  color: LumiAdaptive.color(Color(0xFFEFE4E6), surface: true),
+                  color: LumiAdaptive.color(blush, surface: true),
                   height: 1,
                 ),
                 const SizedBox(height: 14),
@@ -1445,8 +1445,8 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                         begin: Alignment.centerLeft,
                         end: Alignment.centerRight,
                         colors: [
-                          LumiAdaptive.color(Color(0xB0392630), surface: true),
-                          LumiAdaptive.color(Color(0x44392630), surface: true),
+                          LumiAdaptive.color(Color(0xB02E2421), surface: true),
+                          LumiAdaptive.color(Color(0x442E2421), surface: true),
                           Colors.transparent,
                         ],
                       ),

@@ -16,6 +16,7 @@ class ProfileScreen extends StatefulWidget {
     required this.onLogout,
     required this.onAppointments,
     required this.onSupport,
+    this.onOrders,
   });
 
   final bool isLoggedIn;
@@ -24,6 +25,7 @@ class ProfileScreen extends StatefulWidget {
   final VoidCallback onLogout;
   final VoidCallback onAppointments;
   final VoidCallback onSupport;
+  final VoidCallback? onOrders;
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -364,6 +366,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
           'Xem các lịch hẹn của bạn',
           widget.onAppointments,
         ),
+        if (widget.onOrders != null)
+          _setting(
+            Icons.shopping_bag_outlined,
+            'Đơn hàng của tôi',
+            'Quản lý và theo dõi đơn mua sản phẩm',
+            widget.onOrders!,
+          ),
         _setting(
           Icons.support_agent_outlined,
           'Hỗ trợ và liên hệ',

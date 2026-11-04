@@ -194,11 +194,46 @@ async function sendOrderSuccessPush({ userId, orderId, itemCount, totalAmount })
   });
 }
 
+
+/**
+ * Push thông báo trạng thái đơn hàng thay đổi
+ */
+async function sendOrderStatusUpdatedPush({ userId, orderId, status, statusText }) {
+  let title = '🛍️ Cập nhật đơn hàng!';
+  let body = `Đơn hàng #${(orderId || '').slice(-6).toUpperCase()} ${statusText || 'đã được cập nhật.'}`;
+
+  if (status === 'confirmed' || status === 'processing') {
+    title = '📦 Đơn hàng đã được duyệt!';
+    body = `Đơn hàng #${(orderId || '').slice(-6).toUpperCase()} đã được duyệt và đang chuẩn bị đóng gói.`;
+  } else if (status === 'shipping' || status === 'delivering') {
+    title = '🚚 Đơn hàng đang được giao!';
+    body = `Đơn hàng #${(orderId || '').slice(-6).toUpperCase()} đang trên đường vận chuyển đến bạn.`;
+  } else if (status === 'completed') {
+    title = '🎉 Giao hàng thành công!';
+    body = `Đơn hàng #${(orderId || '').slice(-6).toUpperCase()} đã được giao thành công. Cảm ơn bạn!`;
+  } else if (status === 'cancelled' || status === 'rejected') {
+    title = '⚠️ Đơn hàng đã bị hủy';
+    body = `Đơn hàng #${(orderId || '').slice(-6).toUpperCase()} đã bị hủy. Nhấn để xem chi tiết.`;
+  }
+
+  return sendPushToUser({
+    userId,
+    title,
+    body,
+    data: {
+      type: 'order',
+      orderId: orderId || '',
+      status: status || '',
+    },
+  });
+}
+
 module.exports = {
   getUserTokens,
   sendPushToUser,
   sendBookingCreatedPush,
   sendBookingConfirmedPush,
   sendOrderSuccessPush,
+  sendOrderStatusUpdatedPush,
 };
 

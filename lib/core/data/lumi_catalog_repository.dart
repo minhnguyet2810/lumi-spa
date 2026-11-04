@@ -6,10 +6,27 @@ class LumiCatalogRepository {
   static final FirebaseFirestore _db = FirebaseFirestore.instance;
 
   static const Map<String, String> _demoImages = <String, String>{
-    // Spa Services
+    // Spa Services (spa001 to spa020)
     'spa001': 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=900&auto=format&fit=crop',
     'spa002': 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=900&auto=format&fit=crop',
     'spa003': 'https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?w=900&auto=format&fit=crop',
+    'spa004': 'https://images.unsplash.com/photo-1519823551278-64ac92734fb1?w=900&auto=format&fit=crop',
+    'spa005': 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=900&auto=format&fit=crop',
+    'spa006': 'https://images.unsplash.com/photo-1512290903671-17adc81fcd90?w=900&auto=format&fit=crop',
+    'spa007': 'https://images.unsplash.com/photo-1560750588-73207b1ef5b8?w=900&auto=format&fit=crop',
+    'spa008': 'https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?w=900&auto=format&fit=crop',
+    'spa009': 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=900&auto=format&fit=crop',
+    'spa010': 'https://images.unsplash.com/photo-1519824145371-296894a0dc91?w=900&auto=format&fit=crop',
+    'spa011': 'https://images.unsplash.com/photo-1560750588-73207b1ef5b8?w=900&auto=format&fit=crop',
+    'spa012': 'https://images.unsplash.com/photo-1519823551278-64ac92734fb1?w=900&auto=format&fit=crop',
+    'spa013': 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=900&auto=format&fit=crop',
+    'spa014': 'https://images.unsplash.com/photo-1507652313519-d4e9174996dd?w=900&auto=format&fit=crop',
+    'spa015': 'https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=900&auto=format&fit=crop',
+    'spa016': 'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=900&auto=format&fit=crop',
+    'spa017': 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=900&auto=format&fit=crop',
+    'spa018': 'https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?w=900&auto=format&fit=crop',
+    'spa019': 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=900&auto=format&fit=crop',
+    'spa020': 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=900&auto=format&fit=crop',
     'prd001': 'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=900&auto=format&fit=crop',
     'prd002': 'https://images.unsplash.com/photo-1556229010-6c3f2c9ca5f8?w=900&auto=format&fit=crop',
 

@@ -155,10 +155,12 @@ class BookingCard extends StatelessWidget {
     Color fg;
     switch (item.status) {
       case 'confirmed':
+      case 'approved':
         bg = const Color(0xFFE6F4EA);
         fg = const Color(0xFF137333);
         break;
       case 'cancelled':
+      case 'rejected':
         bg = const Color(0xFFFCE8E6);
         fg = const Color(0xFFC5221F);
         break;

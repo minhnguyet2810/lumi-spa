@@ -46,7 +46,7 @@ class AdminUserCard extends StatelessWidget {
                       user.photoUrl != null && user.photoUrl!.isNotEmpty
                       ? NetworkImage(user.photoUrl!)
                       : null,
-                  onBackgroundImageError: (error, stackTrace) {},
+                  onBackgroundImageError: (user.photoUrl != null && user.photoUrl!.trim().isNotEmpty) ? (error, stackTrace) {} : null,
                   child: user.photoUrl == null || user.photoUrl!.isEmpty
                       ? Text(
                           user.initials,

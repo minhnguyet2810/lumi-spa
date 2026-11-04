@@ -159,6 +159,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ? profile!.email
                 : user?.email ?? '';
             final phone = profile?.phone ?? '';
+            final photoUrl = user?.photoURL?.trim();
+            final hasPhoto = photoUrl != null && photoUrl.isNotEmpty;
 
             return Row(
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -171,11 +173,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       const Color(0xFFFFFDFA),
                       surface: true,
                     ),
-                    foregroundImage: user?.photoURL == null
-                        ? null
-                        : NetworkImage(user!.photoURL!),
-                    onForegroundImageError: (error, stackTrace) {},
-                    child: user?.photoURL == null
+                    foregroundImage: hasPhoto ? NetworkImage(photoUrl) : null,
+                    onForegroundImageError: hasPhoto ? (error, stackTrace) {} : null,
+                    child: !hasPhoto
                         ? Icon(
                             Icons.person_outline_rounded,
                             color: LumiAdaptive.color(LumiStyle.rose),

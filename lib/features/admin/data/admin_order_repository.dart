@@ -115,4 +115,48 @@ class AdminOrderRepository {
       body: {'status': newStatus, 'reason': reason ?? ''},
     );
   }
+  /// V2: Duyet don va tru ton kho chi nhanh nguyen tu
+  Future<Map<String, dynamic>> confirmOrderV2({
+    required String orderId,
+    String? branchId,
+    String? note,
+  }) async {
+    return await LumiApiClient.instance.post(
+      '/api/v2/admin/orders/${Uri.encodeComponent(orderId)}/confirm',
+      body: {
+        'branchId': ?branchId,
+        'note': note ?? '',
+      },
+    );
+  }
+
+  /// V2: Chuyen doi trang thai giao hang da chang (packaging -> shipping -> completed)
+  Future<Map<String, dynamic>> transitionOrderV2({
+    required String orderId,
+    required String toStatus,
+    String? note,
+    String? trackingNumber,
+    String? shippingCarrier,
+  }) async {
+    return await LumiApiClient.instance.post(
+      '/api/v2/admin/orders/${Uri.encodeComponent(orderId)}/transition',
+      body: {
+        'toStatus': toStatus,
+        'note': note ?? '',
+        if (trackingNumber != null && trackingNumber.isNotEmpty) 'trackingNumber': trackingNumber,
+        if (shippingCarrier != null && shippingCarrier.isNotEmpty) 'shippingCarrier': shippingCarrier,
+      },
+    );
+  }
+
+  /// V2: Huy don hang va tu dong rollback ton kho
+  Future<Map<String, dynamic>> cancelOrderV2({
+    required String orderId,
+    required String reason,
+  }) async {
+    return await LumiApiClient.instance.post(
+      '/api/v2/admin/orders/${Uri.encodeComponent(orderId)}/cancel',
+      body: {'reason': reason},
+    );
+  }
 }

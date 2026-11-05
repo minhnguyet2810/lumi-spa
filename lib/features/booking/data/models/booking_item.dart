@@ -236,4 +236,6 @@ class BookingItem {
   }
 
   String get formattedDateTime => '$formattedTime · $formattedDate';
+  String get displayPrice => formattedPrice;
+  String get formattedStartAt => formattedDateTime;
 }

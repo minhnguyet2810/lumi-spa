@@ -121,4 +121,98 @@ class AdminBookingRepository {
       '/api/admin/bookings/${Uri.encodeComponent(booking.id)}/complete',
     );
   }
+  /// V2: Lấy ma trận lịch hẹn Timeline & Calendar
+  Future<Map<String, dynamic>> fetchTimelineMatrixV2({
+    String? branchId,
+    String? date,
+    String? roomId,
+    String? technicianId,
+  }) async {
+    final queryParams = <String, String>{};
+    if (branchId != null) queryParams['branchId'] = branchId;
+    if (date != null) queryParams['date'] = date;
+    if (roomId != null) queryParams['roomId'] = roomId;
+    if (technicianId != null) queryParams['technicianId'] = technicianId;
+    final uri = Uri.parse('/api/v2/admin/bookings/timeline').replace(queryParameters: queryParams.isNotEmpty ? queryParams : null);
+    return await LumiApiClient.instance.get(uri.toString());
+  }
+
+  /// V2: Duyệt lịch và khóa slot KTV / phòng
+  Future<Map<String, dynamic>> confirmBookingV2({
+    required String appointmentId,
+    required String technicianId,
+    required String roomId,
+    String? branchId,
+    String? note,
+  }) async {
+    return await LumiApiClient.instance.post(
+      '/api/v2/admin/bookings/${Uri.encodeComponent(appointmentId)}/confirm',
+      body: {
+        'technicianId': technicianId,
+        'roomId': roomId,
+        'branchId': ?branchId,
+        'note': ?note,
+      },
+    );
+  }
+
+  /// V2: Check-in tiếp nhận khách tại chỗ
+  Future<Map<String, dynamic>> checkInBookingV2({
+    required String appointmentId,
+    String? note,
+  }) async {
+    return await LumiApiClient.instance.post(
+      '/api/v2/admin/bookings/${Uri.encodeComponent(appointmentId)}/check-in',
+      body: { 'note': ?note },
+    );
+  }
+
+  /// V2: Ghi nhận hồ sơ bệnh án da & phác đồ điều trị
+  Future<Map<String, dynamic>> updateTreatmentRecordV2({
+    required String appointmentId,
+    String? userId,
+    String? skinConditionBefore,
+    List<String>? treatmentStepsApplied,
+    List<Map<String, dynamic>>? productsUsed,
+    String? skinReactionAfter,
+    String? homecareRecommendations,
+  }) async {
+    return await LumiApiClient.instance.post(
+      '/api/v2/admin/bookings/${Uri.encodeComponent(appointmentId)}/treatment-record',
+      body: {
+        'userId': ?userId,
+        'skinConditionBefore': ?skinConditionBefore,
+        'treatmentStepsApplied': ?treatmentStepsApplied,
+        'productsUsed': ?productsUsed,
+        'skinReactionAfter': ?skinReactionAfter,
+        'homecareRecommendations': ?homecareRecommendations,
+      },
+    );
+  }
+
+  /// V2: Hoàn tất liệu trình, tính hoa hồng KTV và tích điểm khách hàng
+  Future<Map<String, dynamic>> completeBookingV2({
+    required String appointmentId,
+    num? tips,
+    String? paymentMethod,
+  }) async {
+    return await LumiApiClient.instance.post(
+      '/api/v2/admin/bookings/${Uri.encodeComponent(appointmentId)}/complete',
+      body: {
+        'tips': ?tips,
+        'paymentMethod': ?paymentMethod,
+      },
+    );
+  }
+
+  /// V2: Hủy lịch hẹn và giải phóng khóa tài nguyên
+  Future<Map<String, dynamic>> cancelBookingV2({
+    required String appointmentId,
+    required String reason,
+  }) async {
+    return await LumiApiClient.instance.post(
+      '/api/v2/admin/bookings/${Uri.encodeComponent(appointmentId)}/cancel',
+      body: {'reason': reason},
+    );
+  }
 }

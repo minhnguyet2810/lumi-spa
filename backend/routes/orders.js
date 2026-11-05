@@ -172,17 +172,62 @@ router.get('/coupons', async (req, res) => {
     }
 
     const FEATURED_SYSTEM_COUPON_CODES = ['FREESHIP', 'LUMISPA10', 'LUMI50K'];
-    const systemCoupons = Object.values(COUPONS).map(c => {
-      const usedCount = usageMap[c.code] || 0;
-      const remainingUses = Math.max(0, c.usageLimit - usedCount);
-      return {
-        ...c,
-        usedCount,
-        remainingUses,
-        isExhausted: remainingUses <= 0,
-        isUserRedeemed: false,
-      };
-    });
+    let systemCoupons = [];
+
+    if (db.hasCredentials) {
+      try {
+        const couponsSnap = await db.collection('coupons').get();
+        const cDocs = couponsSnap?.docs || (typeof couponsSnap?.forEach === 'function' ? couponsSnap : []);
+        const cDocsArr = Array.isArray(cDocs) ? cDocs : [];
+        if (cDocsArr.length > 0) {
+          const now = new Date();
+          cDocsArr.forEach(doc => {
+            const data = doc.data() || {};
+            // Chỉ hiển thị các voucher đang kích hoạt và còn hạn
+            if (data.isActive !== false) {
+              if (!data.validTo || new Date(data.validTo) >= now) {
+                const code = data.code || doc.id;
+                const usedCount = Math.max(Number(data.usedCount || 0), usageMap[code] || 0);
+                const usageLimit = Number(data.usageLimit || 100);
+                const remainingUses = Math.max(0, usageLimit - usedCount);
+                systemCoupons.push({
+                  code,
+                  title: data.title || '',
+                  description: data.description || '',
+                  minOrder: Number(data.minOrder || 0),
+                  percentDiscount: data.percentDiscount != null ? Number(data.percentDiscount) : null,
+                  fixedDiscount: data.fixedDiscount != null ? Number(data.fixedDiscount) : null,
+                  maxDiscount: data.maxDiscount != null ? Number(data.maxDiscount) : null,
+                  isFreeShipping: Boolean(data.isFreeShipping),
+                  badgeText: data.badgeText || 'ƯU ĐÃI',
+                  usageLimit,
+                  usedCount,
+                  remainingUses,
+                  isExhausted: remainingUses <= 0,
+                  isUserRedeemed: false,
+                });
+              }
+            }
+          });
+        }
+      } catch (err) {
+        console.warn('[Coupons] Error fetching coupons collection:', err.message);
+      }
+    }
+
+    if (systemCoupons.length === 0) {
+      systemCoupons = Object.values(COUPONS).map(c => {
+        const usedCount = usageMap[c.code] || 0;
+        const remainingUses = Math.max(0, c.usageLimit - usedCount);
+        return {
+          ...c,
+          usedCount,
+          remainingUses,
+          isExhausted: remainingUses <= 0,
+          isUserRedeemed: false,
+        };
+      });
+    }
 
     let userVouchers = [];
     if (db.hasCredentials && req.user && req.user.uid) {
@@ -422,6 +467,8 @@ router.post('/', async (req, res) => {
       let couponDiscount = 0;
       let appliedCoupon = null;
       let couponUsageRef = null;
+      let isFromFirestoreCoupon = false;
+      let firestoreCouponRef = null;
 
       let userVoucherRef = null;
       let couponDoc = null;
@@ -451,18 +498,63 @@ router.post('/', async (req, res) => {
             couponDiscount = uvd.maxDiscount ? Math.min(calc, uvd.maxDiscount) : calc;
           }
         } else {
-          const coupon = COUPONS[normCouponCode];
+          // Tra cứu trực tiếp từ collection 'coupons' được Admin cấu hình trên Firestore
+          let coupon = null;
+          if (db.hasCredentials) {
+            try {
+              firestoreCouponRef = db.collection('coupons').doc(normCouponCode);
+              const fsDoc = await tx.get(firestoreCouponRef);
+              if (fsDoc.exists) {
+                const fsData = fsDoc.data() || {};
+                coupon = {
+                  code: fsData.code || fsDoc.id,
+                  title: fsData.title || '',
+                  description: fsData.description || '',
+                  minOrder: Number(fsData.minOrder || 0),
+                  percentDiscount: fsData.percentDiscount != null ? Number(fsData.percentDiscount) : null,
+                  fixedDiscount: fsData.fixedDiscount != null ? Number(fsData.fixedDiscount) : null,
+                  maxDiscount: fsData.maxDiscount != null ? Number(fsData.maxDiscount) : null,
+                  isFreeShipping: Boolean(fsData.isFreeShipping),
+                  badgeText: fsData.badgeText || 'ƯU ĐÃI',
+                  usageLimit: Number(fsData.usageLimit || 100),
+                  usedCount: Number(fsData.usedCount || 0),
+                  validFrom: fsData.validFrom || null,
+                  validTo: fsData.validTo || null,
+                  isActive: fsData.isActive !== false,
+                };
+                isFromFirestoreCoupon = true;
+              }
+            } catch (err) {
+              console.warn('[Orders Checkout] Error reading coupon from Firestore:', err.message);
+            }
+          }
+
+          if (!coupon) {
+            coupon = COUPONS[normCouponCode];
+          }
+
           if (!coupon) {
             throw new Error('INVALID_COUPON');
           }
+
+          if (coupon.isActive === false) {
+            throw new Error('COUPON_INACTIVE');
+          }
+
+          if (coupon.validTo && new Date(coupon.validTo) < new Date()) {
+            throw new Error('COUPON_EXPIRED');
+          }
+
           if (subtotal < coupon.minOrder) {
             throw new Error('COUPON_MIN_ORDER_NOT_MET');
           }
 
           couponUsageRef = db.collection('coupon_usage').doc(normCouponCode);
           couponDoc = await tx.get(couponUsageRef);
-          const usedCount = couponDoc.exists ? (Number(couponDoc.data().usedCount) || 0) : 0;
-          if (usedCount >= coupon.usageLimit) {
+          const legacyUsedCount = couponDoc.exists ? (Number(couponDoc.data().usedCount) || 0) : 0;
+          const currentUsedCount = isFromFirestoreCoupon ? Math.max(coupon.usedCount, legacyUsedCount) : legacyUsedCount;
+
+          if (currentUsedCount >= coupon.usageLimit) {
             throw new Error('COUPON_EXHAUSTED');
           }
 
@@ -497,22 +589,33 @@ router.post('/', async (req, res) => {
           usedAt: FieldValue.serverTimestamp(),
           usedOrder: orderRef.id,
         });
-      } else if (couponUsageRef && appliedCoupon) {
-        const usageData = {
-          code: appliedCoupon.code,
-          usedCount: FieldValue.increment(1),
-          usageLimit: appliedCoupon.usageLimit,
-          lastUsedAt: FieldValue.serverTimestamp(),
-        };
-        if (typeof tx.set === 'function') {
-          tx.set(couponUsageRef, usageData, { merge: true });
-        } else if (couponDoc && couponDoc.exists) {
-          tx.update(couponUsageRef, usageData);
-        } else {
-          tx.create(couponUsageRef, {
-            ...usageData,
-            usedCount: 1,
+      } else if (appliedCoupon) {
+        // Đồng bộ tăng usedCount và số tiền tài trợ trên Firestore collection 'coupons'
+        if (isFromFirestoreCoupon && firestoreCouponRef) {
+          tx.update(firestoreCouponRef, {
+            usedCount: FieldValue.increment(1),
+            discountAmountSponsored: FieldValue.increment(couponDiscount),
+            updatedAt: FieldValue.serverTimestamp(),
           });
+        }
+
+        if (couponUsageRef) {
+          const usageData = {
+            code: appliedCoupon.code,
+            usedCount: FieldValue.increment(1),
+            usageLimit: appliedCoupon.usageLimit,
+            lastUsedAt: FieldValue.serverTimestamp(),
+          };
+          if (typeof tx.set === 'function') {
+            tx.set(couponUsageRef, usageData, { merge: true });
+          } else if (couponDoc && couponDoc.exists) {
+            tx.update(couponUsageRef, usageData);
+          } else {
+            tx.create(couponUsageRef, {
+              ...usageData,
+              usedCount: 1,
+            });
+          }
         }
       }
 
@@ -617,6 +720,8 @@ router.post('/', async (req, res) => {
       COUPON_EXHAUSTED: [409, 'Mã giảm giá đã hết lượt sử dụng.'],
       COUPON_MIN_ORDER_NOT_MET: [400, 'Đơn hàng chưa đạt giá trị tối thiểu để dùng mã giảm giá.'],
       INVALID_COUPON: [400, 'Mã giảm giá không hợp lệ.'],
+      COUPON_INACTIVE: [400, 'Mã giảm giá hiện đang tạm ngưng áp dụng.'],
+      COUPON_EXPIRED: [400, 'Mã giảm giá đã hết hạn sử dụng.'],
     };
 
     if (known[error.message]) {

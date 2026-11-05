@@ -1,3 +1,7 @@
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '.env') });
+require('dotenv').config();
+
 const { formatOrderId } = require('./services/push_service');
 const mailService = require('./services/mail_service');
 const pushService = require('./services/push_service');
@@ -7,8 +11,6 @@ process.on('unhandledRejection', (reason) => {
 process.on('uncaughtException', (err) => {
   console.warn('Uncaught Exception caught:', err && (err.message || err));
 });
-
-require('dotenv').config();
 
 const express = require('express');
 const cors = require('cors');

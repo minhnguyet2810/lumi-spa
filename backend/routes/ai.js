@@ -10,6 +10,7 @@ router.use(express.json({limit:'3mb'}));
 router.get('/status',(req,res)=>res.json({success:true,data:{configured:Boolean(process.env.GEMINI_API_KEY?.trim()),imagesEnabled:process.env.GEMINI_FACE_IMAGES_ENABLED==='true'}}));
 router.post('/chat',async(req,res)=>{
  try {
+  console.log('[AI CHAT] Received chat request from user:', req.user?.uid);
   const input=validate(req.body);
   const key=process.env.GEMINI_API_KEY?.trim();
   if(!key) throw issue(503,'LUMI AI chưa được cấu hình. Vui lòng quay lại sau.');
@@ -21,13 +22,17 @@ router.post('/chat',async(req,res)=>{
   const products=available.map(productData);
   const serviceSnap=await db.collection('services').limit(100).get();
   const services=serviceSnap.docs.filter(d=>d.data().isActive!==false && !forbiddenService.test(`${d.data().name||''} ${d.data().description||''}`)).map(productData);
-  const result=await generate({input,products,services,key,model:process.env.GEMINI_MODEL||'gemini-2.5-flash'});
+  const result=await generate({input,products,services,key,model:process.env.GEMINI_MODEL||'gemini-3.1-flash-lite-preview'});
+  console.log('[AI CHAT] AI generated reply successfully');
   const current=await Promise.all(result.ids.map(id=>db.collection('products').doc(id).get()));
   const recommendations=current.filter(d=>d.exists && d.data().isActive!==false && (d.data().stock==null || Number(d.data().stock)>0)).map(d=>({ ...productData(d),imageUrl: typeof d.data().imageUrl==='string'?d.data().imageUrl:null }));
   const currentServices=await Promise.all((result.serviceIds||[]).map(id=>db.collection('services').doc(id).get()));
   const serviceRecommendations=currentServices.filter(d=>d.exists && d.data().isActive!==false && !forbiddenService.test(`${d.data().name||''} ${d.data().description||''}`)).map(d=>({ ...productData(d),type:'service',durationMinutes:d.data().durationMinutes,categoryId:d.data().categoryId||null,imageUrl:typeof d.data().imageUrl==='string'?d.data().imageUrl:null }));
   res.json({success:true,data:{reply:result.reply,recommendations:[...recommendations.map(p=>({...p,type:'product'})),...serviceRecommendations]}});
- }catch(error){res.status(error.status||503).json({success:false,message:error.status?error.message:'LUMI AI tạm chưa sẵn sàng. Vui lòng thử lại.'});}
+ }catch(error){
+  console.error('[AI CHAT ERROR]', error.status || 503, error.message);
+  res.status(error.status||503).json({success:false,message:error.status?error.message:'LUMI AI tạm chưa sẵn sàng. Vui lòng thử lại.'});
+ }
 });
 router.use((req,res)=>res.status(404).json({success:false,message:'Đường dẫn LUMI AI không tồn tại. Hãy cập nhật backend.'}));
 router.use((error,req,res,next)=>res.status(error.type==='entity.too.large'?413:400).json({success:false,message:'Nội dung quá lớn hoặc không hợp lệ.'}));

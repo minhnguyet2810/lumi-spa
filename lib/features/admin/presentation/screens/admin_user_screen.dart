@@ -7,6 +7,7 @@ import '../../data/models/admin_user_item.dart';
 import '../widgets/admin_user_card.dart';
 import '../widgets/admin_user_detail_dialog.dart';
 import '../widgets/admin_user_table.dart';
+import 'admin_customer_360_screen.dart';
 
 class AdminUserScreen extends StatefulWidget {
   const AdminUserScreen({super.key});
@@ -305,6 +306,94 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         if (isUsingFallback) _buildFallbackNoticeBanner(),
+
+                        // Enterprise Customer 360 Banner
+                        Container(
+                          margin: const EdgeInsets.only(bottom: 16),
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF0D3B35), Color(0xFF08201D)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: const Color(0xFFD4AF37), width: 1.2),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.2),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFD4AF37).withValues(alpha: 0.2),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: const Icon(
+                                  Icons.workspace_premium_rounded,
+                                  color: Color(0xFFD4AF37),
+                                  size: 26,
+                                ),
+                              ),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'CUSTOMER 360 CRM & TIERED LOYALTY (V2)',
+                                      style: GoogleFonts.beVietnamPro(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w800,
+                                        color: const Color(0xFFD4AF37),
+                                        letterSpacing: 0.8,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 3),
+                                    Text(
+                                      'Tra cứu hồ sơ da liễu, hoạt chất dị ứng, điều chỉnh điểm thưởng & thăng hạng VIP đa tầng.',
+                                      style: GoogleFonts.beVietnamPro(
+                                        fontSize: 12,
+                                        color: Colors.white.withValues(alpha: 0.9),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              FilledButton.icon(
+                                onPressed: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const AdminCustomer360Screen(),
+                                  ),
+                                ),
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: const Color(0xFFD4AF37),
+                                  foregroundColor: const Color(0xFF08201D),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                                ),
+                                icon: const Icon(Icons.open_in_new_rounded, size: 16),
+                                label: Text(
+                                  'Mở CRM 360°',
+                                  style: GoogleFonts.beVietnamPro(
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
 
                         // Responsive summary cards
                         _statGrid(

@@ -18,6 +18,7 @@ import 'admin_booking_timeline_screen.dart';
 import 'admin_order_fulfillment_screen.dart';
 import 'admin_order_screen.dart';
 import 'admin_user_screen.dart';
+import 'admin_customer_360_screen.dart';
 
 class AdminPortalHubScreen extends StatefulWidget {
   const AdminPortalHubScreen({super.key});
@@ -399,6 +400,19 @@ class _AdminPortalHubScreenState extends State<AdminPortalHubScreen>
                                   onPressed: () => Navigator.push(
                                     context,
                                     MaterialPageRoute(builder: (_) => const AdminOrderFulfillmentScreen()),
+                                  ),
+                                ),
+                                ActionChip(
+                                  avatar: const Icon(Icons.people_alt_rounded, size: 16, color: Color(0xFF0D3B35)),
+                                  label: Text(
+                                    'Customer 360 (v2)',
+                                    style: GoogleFonts.beVietnamPro(fontSize: 11, fontWeight: FontWeight.w700, color: const Color(0xFF0D3B35)),
+                                  ),
+                                  backgroundColor: Colors.white,
+                                  side: const BorderSide(color: Color(0xFF0D3B35), width: 1.2),
+                                  onPressed: () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (_) => const AdminCustomer360Screen()),
                                   ),
                                 ),
                               ],

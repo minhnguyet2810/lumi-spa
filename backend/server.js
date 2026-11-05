@@ -1,3 +1,4 @@
+const { formatOrderId } = require('./services/push_service');
 const mailService = require('./services/mail_service');
 const pushService = require('./services/push_service');
 process.on('unhandledRejection', (reason) => {
@@ -547,9 +548,9 @@ async function handleAdminOrderStatus(req, res) {
         await db.collection('notifications').add({
           userId: effectiveUserId,
           title: status === 'cancelled' ? 'Đơn hàng đã bị hủy ⚠️' : 'Cập nhật đơn hàng 🛍️',
-          message: 'Đơn hàng #' + id + ' ' + text + '.',
+          message: 'Đơn hàng ' + formatOrderId(id) + ' ' + text + '.',
           type: 'order',
-          orderId: id,
+          orderId: formatOrderId(id),
           isRead: false,
           createdAt: FieldValue.serverTimestamp(),
         });
@@ -620,24 +621,33 @@ app.get('/api/admin-users', async (req, res) => {
         ...serialize(doc.data()),
       }));
 
-      const [bookingsSnap, ordersSnap] = await Promise.all([
+      const [bookingsSnap, ordersSnap, addressesSnap] = await Promise.all([
         db.collection('bookings').get(),
         db.collection('orders').get(),
+        db.collection('addresses').get(),
       ]);
 
       const bookings = bookingsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
       const orders = ordersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      const addresses = addressesSnap.docs.map(d => ({ id: d.id, ...d.data() }));
 
       users = users.map(user => {
         const uid = user.id || user.uid;
         const userBookings = bookings.filter(b => b.userId === uid);
         const userOrders = orders.filter(o => o.userId === uid);
+        userOrders.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+        const userAddresses = addresses.filter(a => a.userId === uid);
+        const defaultAddr = userAddresses.find(a => a.isDefault) || userAddresses[0];
+        const latestOrder = userOrders[0];
+        const effectiveAddress = user.address || user.shippingAddress || defaultAddr?.fullAddress || latestOrder?.shippingAddress || '';
+
         const totalSpent = userOrders
           .filter(o => !['cancelled', 'rejected'].includes((o.status || '').toLowerCase()))
           .reduce((sum, o) => sum + (Number(o.total) || 0), 0);
 
         return {
           ...user,
+          address: effectiveAddress,
           bookingCount: userBookings.length,
           orderCount: userOrders.length,
           totalSpent,
@@ -692,6 +702,63 @@ app.get('/api/admin-users', async (req, res) => {
 
 // POST /api/admin-dev/clear-test-data
 // D?n d?p don h�ng v� l?ch h?n th? nghi?m (reset test state)
+// PATCH & POST /api/admin-users/:id/address
+// Lưu thêm / cập nhật địa chỉ người dùng từ giao diện quản trị
+async function handleAdminUserAddress(req, res) {
+  try {
+    const { id } = req.params;
+    const { address = '' } = req.body || {};
+    if (typeof address !== 'string' || !address.trim()) {
+      return res.status(400).json({ success: false, message: 'Địa chỉ không được để trống.' });
+    }
+    const cleanAddress = address.trim();
+    if (!db.hasCredentials) {
+      return res.status(503).json({ success: false, message: 'Chưa kết nối database.' });
+    }
+
+    // 1. Lưu vào users collection
+    const userRef = db.collection('users').doc(id);
+    await userRef.set({
+      address: cleanAddress,
+      shippingAddress: cleanAddress,
+      updatedAt: FieldValue.serverTimestamp(),
+    }, { merge: true });
+
+    // 2. Lưu / cập nhật vào addresses sub/collection
+    const addrSnap = await db.collection('addresses').where('userId', '==', id).get();
+    if (addrSnap.empty) {
+      await db.collection('addresses').add({
+        userId: id,
+        recipientName: '',
+        phone: '',
+        fullAddress: cleanAddress,
+        label: 'Nhà riêng',
+        isDefault: true,
+        createdAt: FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp(),
+      });
+    } else {
+      const defaultDoc = addrSnap.docs.find(d => d.data().isDefault) || addrSnap.docs[0];
+      await defaultDoc.ref.update({
+        fullAddress: cleanAddress,
+        updatedAt: FieldValue.serverTimestamp(),
+      });
+    }
+
+    return res.json({
+      success: true,
+      message: 'Lưu địa chỉ người dùng thành công!',
+      data: { id, address: cleanAddress },
+    });
+  } catch (err) {
+    console.error('Error updating user address:', err);
+    return res.status(500).json({ success: false, message: 'Lỗi khi lưu địa chỉ: ' + err.message });
+  }
+}
+
+app.patch('/api/admin-users/:id/address', handleAdminUserAddress);
+app.post('/api/admin-users/:id/address', handleAdminUserAddress);
+
 app.post('/api/admin-dev/clear-test-data', async (req, res) => {
   if (process.env.LUMI_ALLOW_TEST_RESET !== 'true') {
     return res.status(403).json({ success: false, message: 'Chức năng dọn dữ liệu thử nghiệm đang tắt.' });

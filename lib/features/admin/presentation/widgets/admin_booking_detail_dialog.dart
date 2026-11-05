@@ -10,11 +10,13 @@ class AdminBookingDetailDialog extends StatelessWidget {
     required this.booking,
     required this.onApprove,
     required this.onReject,
+    this.onComplete,
   });
 
   final BookingItem booking;
   final VoidCallback onApprove;
   final VoidCallback onReject;
+  final VoidCallback? onComplete;
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +38,7 @@ class AdminBookingDetailDialog extends StatelessWidget {
                   Expanded(
                     child: Text(
                       'Chi tiết đơn đặt lịch',
-                      style: GoogleFonts.cormorantGaramond(
+                      style: GoogleFonts.beVietnamPro(
                         fontSize: 24,
                         fontWeight: FontWeight.w700,
                         color: LumiStyle.plum,
@@ -75,7 +77,7 @@ class AdminBookingDetailDialog extends StatelessWidget {
                         icon: const Icon(Icons.close_rounded, size: 16),
                         label: Text(
                           'TỪ CHỐI',
-                          style: GoogleFonts.dmSans(
+                          style: GoogleFonts.beVietnamPro(
                             fontWeight: FontWeight.w700,
                           ),
                         ),
@@ -99,7 +101,7 @@ class AdminBookingDetailDialog extends StatelessWidget {
                         icon: const Icon(Icons.check_rounded, size: 16),
                         label: Text(
                           'DUYỆT ĐƠN',
-                          style: GoogleFonts.dmSans(
+                          style: GoogleFonts.beVietnamPro(
                             fontWeight: FontWeight.w700,
                           ),
                         ),
@@ -114,6 +116,31 @@ class AdminBookingDetailDialog extends StatelessWidget {
                     ),
                   ],
                 ),
+              ] else if (booking.status == 'approved' || booking.status == 'confirmed') ...[
+                if (onComplete != null)
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        onComplete!();
+                      },
+                      icon: const Icon(Icons.check_circle_outline_rounded, size: 18),
+                      label: Text(
+                        'HOÀN TẤT LIỆU TRÌNH & TÍCH ĐIỂM',
+                        style: GoogleFonts.beVietnamPro(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: const Color(0xFF16A34A),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+                  ),
               ],
             ],
           ),
@@ -132,7 +159,7 @@ class AdminBookingDetailDialog extends StatelessWidget {
             width: 110,
             child: Text(
               label,
-              style: GoogleFonts.dmSans(
+              style: GoogleFonts.beVietnamPro(
                 fontSize: 13,
                 color: LumiStyle.muted,
                 fontWeight: FontWeight.w500,
@@ -142,7 +169,7 @@ class AdminBookingDetailDialog extends StatelessWidget {
           Expanded(
             child: Text(
               value,
-              style: GoogleFonts.dmSans(
+              style: GoogleFonts.beVietnamPro(
                 fontSize: 13,
                 color: LumiStyle.plum,
                 fontWeight: FontWeight.w600,

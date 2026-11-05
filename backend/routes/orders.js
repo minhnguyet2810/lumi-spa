@@ -4,6 +4,12 @@ const db = require('../firebase');
 const { requireAuth } = require('../auth');
 const mailService = require('../services/mail_service');
 const pushService = require('../services/push_service');
+const { formatOrderId } = pushService;
+const {
+  awardPointsInTransaction,
+  sendPointsNotification,
+  getTierByPoints,
+} = require('../services/membership_service');
 
 const router = express.Router();
 router.use(requireAuth);
@@ -62,6 +68,71 @@ function getUnitPrice(product, now) {
   return basePrice;
 }
 
+const COUPONS = {
+  'LUMISPA10': {
+    code: 'LUMISPA10',
+    title: 'Giảm 10% đơn hàng',
+    description: 'Áp dụng cho mọi đơn mua mỹ phẩm, giảm tối đa 100.000 đ.',
+    minOrder: 0,
+    percentDiscount: 0.10,
+    maxDiscount: 100000,
+    isFreeShipping: false,
+    badgeText: 'GIẢM 10%',
+    usageLimit: 50,
+  },
+  'LUMISPA20': {
+    code: 'LUMISPA20',
+    title: 'Giảm 20% cho đơn từ 500k',
+    description: 'Áp dụng cho đơn hàng từ 500.000 đ, giảm tối đa 200.000 đ.',
+    minOrder: 500000,
+    percentDiscount: 0.20,
+    maxDiscount: 200000,
+    isFreeShipping: false,
+    badgeText: 'GIẢM 20%',
+    usageLimit: 30,
+  },
+  'FREESHIP': {
+    code: 'FREESHIP',
+    title: 'Miễn phí giao hàng toàn quốc',
+    description: 'Miễn phí vận chuyển 30.000 đ cho toàn bộ đơn hàng.',
+    minOrder: 0,
+    isFreeShipping: true,
+    badgeText: 'FREESHIP',
+    usageLimit: 100,
+  },
+  'LUMI50K': {
+    code: 'LUMI50K',
+    title: 'Giảm trực tiếp 50.000 đ',
+    description: 'Áp dụng cho đơn hàng từ 300.000 đ trở lên.',
+    minOrder: 300000,
+    fixedDiscount: 50000,
+    isFreeShipping: false,
+    badgeText: '-50.000 đ',
+    usageLimit: 25,
+  },
+  'LUMIVIP': {
+    code: 'LUMIVIP',
+    title: 'Đặc quyền VIP giảm 100.000 đ',
+    description: 'Ưu đãi tri ân khách hàng thân thiết cho đơn từ 600.000 đ.',
+    minOrder: 600000,
+    fixedDiscount: 100000,
+    isFreeShipping: false,
+    badgeText: '-100.000 đ',
+    usageLimit: 10,
+  },
+  'LUMIWELCOME': {
+    code: 'LUMIWELCOME',
+    title: 'Chào đón bạn mới giảm 15%',
+    description: 'Dành tặng khách hàng mới của LUMI SPA, giảm tối đa 80.000 đ.',
+    minOrder: 0,
+    percentDiscount: 0.15,
+    maxDiscount: 80000,
+    isFreeShipping: false,
+    badgeText: 'BẠN MỚI',
+    usageLimit: 50,
+  },
+};
+
 // GET /api/orders
 router.get('/', async (req, res) => {
   try {
@@ -79,6 +150,79 @@ router.get('/', async (req, res) => {
   } catch (error) {
     console.error('Orders list error:', error);
     return fail(res, 500, 'Không thể tải đơn hàng.');
+  }
+});
+
+// GET /api/orders/coupons
+router.get('/coupons', async (req, res) => {
+  try {
+    const usageMap = {};
+    if (db.hasCredentials) {
+      const snapshot = await db.collection('coupon_usage').get();
+      snapshot.forEach(doc => {
+        usageMap[doc.id] = Number(doc.data().usedCount) || 0;
+      });
+    }
+
+    // Giới hạn hiển thị tối đa 3 mã ưu đãi nổi bật chuẩn phong cách e-commerce
+    const FEATURED_SYSTEM_COUPON_CODES = ['FREESHIP', 'LUMISPA10', 'LUMI50K'];
+    const systemCoupons = FEATURED_SYSTEM_COUPON_CODES.map(code => {
+      const c = COUPONS[code];
+      const usedCount = usageMap[c.code] || 0;
+      const remainingUses = Math.max(0, c.usageLimit - usedCount);
+      return {
+        ...c,
+        usedCount,
+        remainingUses,
+        isExhausted: remainingUses <= 0,
+        isUserRedeemed: false,
+      };
+    });
+
+    let userVouchers = [];
+    if (db.hasCredentials && req.user && req.user.uid) {
+      const uvSnap = await db.collection('user_vouchers')
+        .where('userId', '==', req.user.uid)
+        .where('isUsed', '==', false)
+        .get();
+
+      userVouchers = uvSnap.docs.map(doc => {
+        const d = doc.data();
+        return {
+          code: d.code,
+          title: d.title,
+          description: d.description || 'Voucher đổi từ điểm tích luỹ LUMI',
+          minOrder: d.minOrder || 0,
+          fixedDiscount: d.discountValue || 0,
+          percentDiscount: d.percentDiscount || null,
+          maxDiscount: d.maxDiscount || null,
+          isFreeShipping: d.isFreeShipping === true,
+          badgeText: d.badgeText || 'ĐỔI TỪ ĐIỂM',
+          usageLimit: 1,
+          usedCount: 0,
+          remainingUses: 1,
+          isExhausted: false,
+          isUserRedeemed: true,
+        };
+      });
+    }
+
+    const allCoupons = [...userVouchers, ...systemCoupons].slice(0, 3);
+    return res.json({ success: true, data: allCoupons });
+  } catch (error) {
+    console.error('Coupons error:', error);
+    const FEATURED_SYSTEM_COUPON_CODES = ['FREESHIP', 'LUMISPA10', 'LUMI50K'];
+    const systemCoupons = FEATURED_SYSTEM_COUPON_CODES.map(code => {
+      const c = COUPONS[code];
+      return {
+        ...c,
+        usedCount: 0,
+        remainingUses: c.usageLimit,
+        isExhausted: false,
+        isUserRedeemed: false,
+      };
+    });
+    return res.json({ success: true, data: systemCoupons.slice(0, 3) });
   }
 });
 
@@ -104,7 +248,7 @@ router.get('/:id', async (req, res) => {
 // POST /api/orders
 router.post('/', async (req, res) => {
   try {
-    const { items, shippingAddress, phone, customerName = '', note = '', paymentMethod = 'cod' } = req.body || {};
+    const { items, shippingAddress, phone, customerName = '', note = '', paymentMethod = 'cod', couponCode = '' } = req.body || {};
     if (typeof customerName !== 'string' || customerName.trim().length > 100 ||
         typeof note !== 'string' || note.length > 1000 || !['cod', 'bank'].includes(paymentMethod)) {
       return fail(res, 400, 'Thông tin đơn hàng không hợp lệ.');
@@ -151,7 +295,27 @@ router.post('/', async (req, res) => {
 
     const productIds = [...quantities.keys()].sort();
     const productRefs = productIds.map(id => db.collection('products').doc(id));
-    const orderRef = db.collection('orders').doc();
+    const orderNumber = Math.floor(100000 + Math.random() * 900000);
+    const customOrderId = `LUMI-${orderNumber}`;
+    const orderRef = db.collection('orders').doc(customOrderId);
+
+        // Kiểm tra trước nếu mã là voucher đổi điểm của người dùng
+    let userVoucherDocId = null;
+    const normCouponCode = (typeof couponCode === 'string' && couponCode.trim())
+      ? couponCode.trim().toUpperCase()
+      : null;
+
+    if (normCouponCode && req.user.uid && db.hasCredentials) {
+      const uvSnap = await db.collection('user_vouchers')
+        .where('userId', '==', req.user.uid)
+        .where('code', '==', normCouponCode)
+        .where('isUsed', '==', false)
+        .limit(1)
+        .get();
+      if (!uvSnap.empty) {
+        userVoucherDocId = uvSnap.docs[0].id;
+      }
+    }
 
     const result = await db.runTransaction(async tx => {
       const docs = await tx.getAll(...productRefs);
@@ -198,9 +362,95 @@ router.post('/', async (req, res) => {
         });
       }
 
-      // Same shipping policy as checkout; calculated from trusted catalogue prices.
-      const shippingFee = subtotal >= 500000 ? 0 : 30000;
-      const total = subtotal + shippingFee;
+      // Membership & Tier Discount calculation
+      let memberTier = 'Member';
+      let memberTierLabel = 'Thành viên';
+      let memberDiscountPercent = 0;
+      let isGoldOrAbove = false;
+
+      if (req.user.uid) {
+        const memberRef = db.collection('memberships').doc(req.user.uid);
+        const memberDoc = await tx.get(memberRef);
+        if (memberDoc.exists) {
+          const mData = memberDoc.data();
+          const mPoints = Number(mData.points) || 0;
+          const tierObj = getTierByPoints(mPoints);
+          memberTier = tierObj.name;
+          memberTierLabel = tierObj.label;
+          memberDiscountPercent = tierObj.discountPercent || 0;
+          if (tierObj.id === 'gold' || tierObj.id === 'diamond') {
+            isGoldOrAbove = true;
+          }
+        }
+      }
+
+      const memberDiscount = memberDiscountPercent > 0
+        ? Math.round((subtotal * memberDiscountPercent) / 100)
+        : 0;
+
+      // Shipping policy: Gold & Diamond members or subtotal >= 500k get Free shipping
+      let shippingFee = (subtotal >= 500000 || isGoldOrAbove) ? 0 : 30000;
+      let couponDiscount = 0;
+      let appliedCoupon = null;
+      let couponUsageRef = null;
+
+      let userVoucherRef = null;
+      if (normCouponCode) {
+        if (userVoucherDocId) {
+          userVoucherRef = db.collection('user_vouchers').doc(userVoucherDocId);
+          const uvDoc = await tx.get(userVoucherRef);
+          if (!uvDoc.exists || uvDoc.data().isUsed) {
+            throw new Error('COUPON_EXHAUSTED');
+          }
+          const uvd = uvDoc.data();
+          if (subtotal < (uvd.minOrder || 0)) {
+            throw new Error('COUPON_MIN_ORDER_NOT_MET');
+          }
+          appliedCoupon = {
+            code: uvd.code,
+            title: uvd.title,
+            isUserRedeemed: true,
+          };
+          if (uvd.isFreeShipping) {
+            couponDiscount = shippingFee;
+            shippingFee = 0;
+          } else if (uvd.discountValue) {
+            couponDiscount = Math.min(uvd.discountValue, subtotal);
+          } else if (uvd.percentDiscount) {
+            const calc = Math.round(subtotal * uvd.percentDiscount);
+            couponDiscount = uvd.maxDiscount ? Math.min(calc, uvd.maxDiscount) : calc;
+          }
+        } else {
+          const coupon = COUPONS[normCouponCode];
+          if (!coupon) {
+            throw new Error('INVALID_COUPON');
+          }
+          if (subtotal < coupon.minOrder) {
+            throw new Error('COUPON_MIN_ORDER_NOT_MET');
+          }
+
+          couponUsageRef = db.collection('coupon_usage').doc(normCouponCode);
+          const couponDoc = await tx.get(couponUsageRef);
+          const usedCount = couponDoc.exists ? (Number(couponDoc.data().usedCount) || 0) : 0;
+          if (usedCount >= coupon.usageLimit) {
+            throw new Error('COUPON_EXHAUSTED');
+          }
+
+          appliedCoupon = coupon;
+          if (coupon.isFreeShipping) {
+            couponDiscount = shippingFee;
+            shippingFee = 0;
+          } else if (coupon.fixedDiscount) {
+            couponDiscount = Math.min(coupon.fixedDiscount, subtotal);
+          } else if (coupon.percentDiscount) {
+            const calc = Math.round(subtotal * coupon.percentDiscount);
+            couponDiscount = coupon.maxDiscount ? Math.min(calc, coupon.maxDiscount) : calc;
+          }
+        }
+      }
+
+      const totalDiscount = memberDiscount + couponDiscount;
+      const total = Math.max(0, subtotal - totalDiscount) + shippingFee;
 
       for (let i = 0; i < docs.length; i++) {
         const product = docs[i].data();
@@ -209,6 +459,21 @@ router.post('/', async (req, res) => {
             stock: FieldValue.increment(-quantities.get(productIds[i])),
           });
         }
+      }
+
+      if (userVoucherRef) {
+        tx.update(userVoucherRef, {
+          isUsed: true,
+          usedAt: FieldValue.serverTimestamp(),
+          usedOrder: orderRef.id,
+        });
+      } else if (couponUsageRef && appliedCoupon) {
+        tx.set(couponUsageRef, {
+          code: appliedCoupon.code,
+          usedCount: FieldValue.increment(1),
+          usageLimit: appliedCoupon.usageLimit,
+          lastUsedAt: FieldValue.serverTimestamp(),
+        }, { merge: true });
       }
 
       tx.create(orderRef, {
@@ -224,6 +489,13 @@ router.post('/', async (req, res) => {
         phone: phone.trim(),
         subtotal,
         shippingFee,
+        discount: totalDiscount,
+        memberDiscount,
+        memberTier,
+        memberTierLabel,
+        memberDiscountPercent,
+        couponCode: appliedCoupon ? appliedCoupon.code : null,
+        couponDiscount,
         total,
         paymentMethod: paymentLabel,
         paymentStatus: 'unpaid',
@@ -232,7 +504,20 @@ router.post('/', async (req, res) => {
         updatedAt: FieldValue.serverTimestamp(),
       });
 
-      return { id: orderRef.id, total, subtotal, shippingFee, items: orderItems };
+      return {
+        id: orderRef.id,
+        total,
+        subtotal,
+        shippingFee,
+        discount: totalDiscount,
+        memberDiscount,
+        memberTier,
+        memberTierLabel,
+        memberDiscountPercent,
+        couponCode: appliedCoupon ? appliedCoupon.code : null,
+        couponDiscount,
+        items: orderItems,
+      };
     });
 
     (async () => {
@@ -262,7 +547,7 @@ router.post('/', async (req, res) => {
           await db.collection('notifications').add({
             userId: req.user.uid,
             title: 'Đặt hàng thành công 🛍️',
-            message: 'Đơn hàng #' + result.id + ' trị giá ' + result.total.toLocaleString('vi-VN') + ' đ đã được tiếp nhận.',
+            message: 'Đơn hàng ' + formatOrderId(result.id) + ' trị giá ' + result.total.toLocaleString('vi-VN') + ' đ đã được tiếp nhận.',
             type: 'order',
             isRead: false,
             createdAt: FieldValue.serverTimestamp(),
@@ -289,6 +574,9 @@ router.post('/', async (req, res) => {
       PRODUCT_UNAVAILABLE: [409, 'Sản phẩm không còn khả dụng.'],
       OUT_OF_STOCK: [409, 'Sản phẩm không đủ tồn kho.'],
       INVALID_PRICE: [422, 'Giá sản phẩm chưa hợp lệ.'],
+      COUPON_EXHAUSTED: [409, 'Mã giảm giá đã hết lượt sử dụng.'],
+      COUPON_MIN_ORDER_NOT_MET: [400, 'Đơn hàng chưa đạt giá trị tối thiểu để dùng mã giảm giá.'],
+      INVALID_COUPON: [400, 'Mã giảm giá không hợp lệ.'],
     };
 
     if (known[error.message]) {
@@ -367,6 +655,7 @@ router.patch('/:id/complete', async (req, res) => {
     const ref = db.collection('orders').doc(req.params.id);
 
     let updatedOrder;
+    let pointsResult = null;
     await db.runTransaction(async tx => {
       const order = await tx.get(ref);
 
@@ -380,14 +669,34 @@ router.patch('/:id/complete', async (req, res) => {
         throw new Error('CANNOT_COMPLETE');
       }
 
+      if (order.data().pointsAwarded !== true) {
+        const orderTotal = Number(order.data().total) || 0;
+        pointsResult = await awardPointsInTransaction(tx, db, {
+          userId: req.user.uid,
+          amount: orderTotal,
+          sourceId: formatOrderId(req.params.id),
+          sourceType: 'order',
+        });
+      }
+
+      const earnedPoints = pointsResult?.pointsAwarded ?? (order.data().earnedPoints || 0);
+
       tx.update(ref, {
         status: 'completed',
         completedAt: FieldValue.serverTimestamp(),
         updatedAt: FieldValue.serverTimestamp(),
         completedBy: req.user.uid,
+        pointsAwarded: true,
+        earnedPoints,
       });
 
-      updatedOrder = { id: order.id, ...order.data(), status: 'completed' };
+      updatedOrder = {
+        id: order.id,
+        ...order.data(),
+        status: 'completed',
+        pointsAwarded: true,
+        earnedPoints,
+      };
     });
 
     try {
@@ -395,7 +704,7 @@ router.patch('/:id/complete', async (req, res) => {
         await db.collection('notifications').add({
           userId: req.user.uid,
           title: 'Đơn hàng hoàn tất 🎉',
-          message: 'Bạn đã xác nhận nhận hàng thành công cho đơn #' + req.params.id + '. Cảm ơn bạn đã đồng hành cùng LUMI SPA!',
+          message: 'Bạn đã xác nhận nhận hàng thành công cho đơn ' + formatOrderId(req.params.id) + '. Cảm ơn bạn đã đồng hành cùng LUMI SPA!',
           type: 'order',
           isRead: false,
           createdAt: FieldValue.serverTimestamp(),
@@ -404,13 +713,26 @@ router.patch('/:id/complete', async (req, res) => {
         await pushService.sendPushToUser({
           userId: req.user.uid,
           title: 'Đơn hàng hoàn tất 🎉',
-          body: 'Cảm ơn bạn đã xác nhận nhận hàng cho đơn #' + req.params.id + '!',
+          body: 'Cảm ơn bạn đã xác nhận nhận hàng cho đơn ' + formatOrderId(req.params.id) + '!',
           data: {
             type: 'order',
             orderId: req.params.id,
             status: 'completed',
           },
         });
+
+        if (pointsResult && pointsResult.pointsAwarded > 0) {
+          await sendPointsNotification(db, {
+            userId: req.user.uid,
+            pointsAwarded: pointsResult.pointsAwarded,
+            newPoints: pointsResult.newPoints,
+            newTier: pointsResult.newTier,
+            newTierLabel: pointsResult.newTierLabel,
+            upgraded: pointsResult.upgraded,
+            sourceId: req.params.id,
+            sourceType: 'order',
+          });
+        }
       }
     } catch (e) {
       console.error('Notify complete order error:', e.message);

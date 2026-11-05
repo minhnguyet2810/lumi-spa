@@ -57,7 +57,7 @@ abstract final class LumiOrderUi {
       ),
       child: Text(
         LumiAdaptive.text(status),
-        style: GoogleFonts.dmSans(
+        style: GoogleFonts.beVietnamPro(
           fontSize: 14,
           height: 1.3,
           fontWeight: FontWeight.w700,
@@ -75,14 +75,14 @@ abstract final class LumiOrderUi {
             final colors = Theme.of(context).colorScheme;
             final left = Text(
               LumiAdaptive.text(label),
-              style: GoogleFonts.dmSans(
+              style: GoogleFonts.beVietnamPro(
                 fontSize: 15,
                 color: colors.onSurfaceVariant,
               ),
             );
             final right = Text(
               LumiAdaptive.text(value.isEmpty ? 'Chưa cập nhật' : value),
-              style: GoogleFonts.dmSans(
+              style: GoogleFonts.beVietnamPro(
                 fontSize: 16,
                 height: 1.5,
                 color: colors.onSurface,
@@ -128,7 +128,7 @@ abstract final class LumiOrderUi {
       Expanded(
         child: Text(
           LumiAdaptive.text(label),
-          style: GoogleFonts.dmSans(
+          style: GoogleFonts.beVietnamPro(
             fontSize: 21,
             fontWeight: FontWeight.w700,
             color: Theme.of(context).colorScheme.onSurface,

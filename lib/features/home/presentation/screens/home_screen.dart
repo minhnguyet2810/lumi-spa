@@ -184,7 +184,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Text(
               LumiAdaptive.text(title),
               style: LumiAdaptive.style(
-                GoogleFonts.dmSans(
+                GoogleFonts.beVietnamPro(
                   fontWeight: FontWeight.w700,
                   fontSize: 14,
                   color: LumiAdaptive.color(_plum),
@@ -195,8 +195,8 @@ class _HomeScreenState extends State<HomeScreen> {
             Text(
               LumiAdaptive.text(message),
               style: LumiAdaptive.style(
-                GoogleFonts.dmSans(
-                  fontSize: 12.5,
+                GoogleFonts.beVietnamPro(
+                  fontSize: 12,
                   color: LumiAdaptive.color(_muted),
                   height: 1.3,
                 ),
@@ -215,7 +215,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Text(
               LumiAdaptive.text('XEM'),
               style: LumiAdaptive.style(
-                GoogleFonts.dmSans(
+                GoogleFonts.beVietnamPro(
                   fontWeight: FontWeight.w700,
                   color: LumiAdaptive.color(_rose),
                   fontSize: 13,
@@ -380,7 +380,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Text(
                       LumiAdaptive.text('TIẾP TỤC KHÁM PHÁ'),
                       style: LumiAdaptive.style(
-                        GoogleFonts.dmSans(
+                        GoogleFonts.beVietnamPro(
                           color: LumiAdaptive.color(_plum),
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
@@ -416,7 +416,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Text(
           LumiAdaptive.text(label),
           style: LumiAdaptive.style(
-            GoogleFonts.dmSans(
+            GoogleFonts.beVietnamPro(
               fontSize: 13,
               fontWeight: FontWeight.w600,
               letterSpacing: 1.2,
@@ -482,7 +482,7 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Text(
             LumiAdaptive.text(title),
             style: LumiAdaptive.style(
-              GoogleFonts.dmSans(
+              GoogleFonts.beVietnamPro(
                 fontSize: 21,
                 fontWeight: FontWeight.w700,
                 color: LumiAdaptive.color(textColor),
@@ -495,7 +495,7 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Text(
             LumiAdaptive.text(action),
             style: LumiAdaptive.style(
-              GoogleFonts.dmSans(
+              GoogleFonts.beVietnamPro(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
                 color: LumiAdaptive.color(rose),
@@ -533,7 +533,7 @@ class _HomeScreenState extends State<HomeScreen> {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: LumiAdaptive.style(
-                GoogleFonts.dmSans(
+                GoogleFonts.beVietnamPro(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
                   color: LumiAdaptive.color(textColor),
@@ -566,7 +566,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Text(
             LumiAdaptive.text(_isLoggedIn ? 'Chào $_memberName' : 'Chào bạn'),
             style: LumiAdaptive.style(
-              GoogleFonts.dmSans(
+              GoogleFonts.beVietnamPro(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
                 color: LumiAdaptive.color(textColor),
@@ -577,7 +577,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Text(
             LumiAdaptive.text('Chăm sóc theo cách của bạn.'),
             style: LumiAdaptive.style(
-              GoogleFonts.dmSans(
+              GoogleFonts.beVietnamPro(
                 fontSize: 15,
                 color: LumiAdaptive.color(textColor.withValues(alpha: .78)),
               ),
@@ -598,7 +598,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 color: LumiAdaptive.color(Colors.white, surface: true),
                 borderRadius: BorderRadius.circular(18),
                 border: Border.all(
-                  color: LumiAdaptive.color(const Color(0xFFEBDDE0)),
+                  color: LumiAdaptive.color(blush),
                 ),
               ),
               child: Row(
@@ -611,7 +611,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: LumiAdaptive.style(
-                        GoogleFonts.dmSans(
+                        GoogleFonts.beVietnamPro(
                           fontSize: 15,
                           color: LumiAdaptive.color(
                             textColor.withValues(alpha: .75),
@@ -727,7 +727,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                               style: LumiAdaptive.style(
-                                GoogleFonts.dmSans(
+                                GoogleFonts.beVietnamPro(
                                   fontSize: 18,
                                   height: 1.2,
                                   fontWeight: FontWeight.w700,
@@ -741,7 +741,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 '${item['durationMinutes'] ?? '—'} phút',
                               ),
                               style: LumiAdaptive.style(
-                                GoogleFonts.dmSans(
+                                GoogleFonts.beVietnamPro(
                                   fontSize: 14,
                                   color: LumiAdaptive.color(textColor),
                                 ),
@@ -751,7 +751,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             Text(
                               LumiAdaptive.text(_priceVnd(item['price'])),
                               style: LumiAdaptive.style(
-                                GoogleFonts.dmSans(
+                                GoogleFonts.beVietnamPro(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w700,
                                   color: LumiAdaptive.color(textColor),
@@ -815,7 +815,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           borderRadius: BorderRadius.circular(19),
                           border: Border.all(
-                            color: LumiAdaptive.color(const Color(0xFFEDDFE2)),
+                            color: LumiAdaptive.color(blush),
                           ),
                         ),
                         child: Column(
@@ -830,7 +830,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                               style: LumiAdaptive.style(
-                                GoogleFonts.dmSans(
+                                GoogleFonts.beVietnamPro(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w700,
                                   color: LumiAdaptive.color(textColor),
@@ -841,7 +841,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             Text(
                               LumiAdaptive.text(_priceVnd(item['price'])),
                               style: LumiAdaptive.style(
-                                GoogleFonts.dmSans(
+                                GoogleFonts.beVietnamPro(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w700,
                                   color: LumiAdaptive.color(rose),
@@ -872,7 +872,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Text(
                   LumiAdaptive.text('Dịch vụ tại LUMI'),
                   style: LumiAdaptive.style(
-                    GoogleFonts.dmSans(
+                    GoogleFonts.beVietnamPro(
                       fontSize: 14,
                       letterSpacing: 1.2,
                       fontWeight: FontWeight.w700,
@@ -884,8 +884,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 Text(
                   LumiAdaptive.text('Đặt lịch chăm sóc'),
                   style: LumiAdaptive.style(
-                    GoogleFonts.dmSans(
-                      fontSize: 29,
+                    GoogleFonts.beVietnamPro(
+                      fontSize: 28,
                       fontWeight: FontWeight.w700,
                       color: LumiAdaptive.color(textColor),
                     ),
@@ -895,7 +895,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Text(
                   LumiAdaptive.text('Chọn liệu trình và thời gian phù hợp.'),
                   style: LumiAdaptive.style(
-                    GoogleFonts.dmSans(
+                    GoogleFonts.beVietnamPro(
                       fontSize: 15,
                       color: LumiAdaptive.color(textColor),
                     ),
@@ -922,7 +922,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Text(
                       LumiAdaptive.text('Đặt lịch ngay'),
                       style: LumiAdaptive.style(
-                        GoogleFonts.dmSans(
+                        GoogleFonts.beVietnamPro(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
                         ),
@@ -950,7 +950,7 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Text(
         LumiAdaptive.text(message),
         style: LumiAdaptive.style(
-          GoogleFonts.dmSans(color: LumiAdaptive.color(_ink), fontSize: 13),
+          GoogleFonts.beVietnamPro(color: LumiAdaptive.color(_ink), fontSize: 13),
         ),
       ),
     ),
@@ -970,7 +970,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Text(
               LumiAdaptive.text(message),
               style: LumiAdaptive.style(
-                GoogleFonts.dmSans(
+                GoogleFonts.beVietnamPro(
                   color: LumiAdaptive.color(_ink),
                   fontSize: 12,
                 ),
@@ -1131,7 +1131,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         LumiAdaptive.text(label),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.dmSans(
+                        style: GoogleFonts.beVietnamPro(
                           fontSize: 11,
                           fontWeight: selected
                               ? FontWeight.w800
@@ -1169,7 +1169,7 @@ class _HomeScreenState extends State<HomeScreen> {
     const accent = Color(0xFFA5553E);
 
     TextStyle type(double size, {bool bold = false, Color color = ink}) =>
-        GoogleFonts.dmSans(
+        GoogleFonts.beVietnamPro(
           fontSize: size,
           height: 1.4,
           fontWeight: bold ? FontWeight.w600 : FontWeight.w400,
@@ -1393,8 +1393,8 @@ class _HomeScreenState extends State<HomeScreen> {
               title: Text(
                 LumiAdaptive.text('LUMI'),
                 style: LumiAdaptive.style(
-                  GoogleFonts.cormorantGaramond(
-                    fontSize: 35,
+                  GoogleFonts.beVietnamPro(
+                    fontSize: 36,
                     fontWeight: FontWeight.w600,
                     color: LumiAdaptive.color(_ink),
                   ),
@@ -1619,8 +1619,8 @@ class _LumiSearchSheetState extends State<_LumiSearchSheet> {
                     child: Text(
                       LumiAdaptive.text('Tìm kiếm'),
                       style: LumiAdaptive.style(
-                        GoogleFonts.dmSans(
-                          fontSize: 23,
+                        GoogleFonts.beVietnamPro(
+                          fontSize: 22,
                           fontWeight: FontWeight.w700,
                           color: LumiAdaptive.color(const Color(0xFF403735)),
                         ),
@@ -1643,7 +1643,7 @@ class _LumiSearchSheetState extends State<_LumiSearchSheet> {
                 textInputAction: TextInputAction.search,
                 onChanged: (value) => setState(() => _query = value.trim()),
                 style: LumiAdaptive.style(
-                  GoogleFonts.dmSans(
+                  GoogleFonts.beVietnamPro(
                     fontSize: 16,
                     color: LumiAdaptive.color(const Color(0xFF403735)),
                   ),
@@ -1707,7 +1707,7 @@ class _LumiSearchSheetState extends State<_LumiSearchSheet> {
                             surface: true,
                           ),
                           labelStyle: LumiAdaptive.style(
-                            GoogleFonts.dmSans(
+                            GoogleFonts.beVietnamPro(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
                               color: LumiAdaptive.color(
@@ -1761,7 +1761,7 @@ class _LumiSearchSheetState extends State<_LumiSearchSheet> {
                           ),
                           textAlign: TextAlign.center,
                           style: LumiAdaptive.style(
-                            GoogleFonts.dmSans(
+                            GoogleFonts.beVietnamPro(
                               fontSize: 16,
                               height: 1.5,
                               color: LumiAdaptive.color(
@@ -1803,7 +1803,7 @@ class _LumiSearchSheetState extends State<_LumiSearchSheet> {
                               entry.item['name']?.toString() ?? 'LUMI',
                             ),
                             style: LumiAdaptive.style(
-                              GoogleFonts.dmSans(
+                              GoogleFonts.beVietnamPro(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,
                                 color: LumiAdaptive.color(
@@ -1817,7 +1817,7 @@ class _LumiSearchSheetState extends State<_LumiSearchSheet> {
                               entry.service ? 'Dịch vụ' : 'Mỹ phẩm',
                             ),
                             style: LumiAdaptive.style(
-                              GoogleFonts.dmSans(fontSize: 13),
+                              GoogleFonts.beVietnamPro(fontSize: 13),
                             ),
                           ),
                           trailing: const Icon(
@@ -1894,7 +1894,7 @@ class _LumiFirebaseBannerCarouselState
             LumiAdaptive.text(message),
             textAlign: TextAlign.center,
             style: LumiAdaptive.style(
-              GoogleFonts.dmSans(
+              GoogleFonts.beVietnamPro(
                 fontSize: 16,
                 height: 1.5,
                 color: LumiAdaptive.color(LumiStyle.ink),
@@ -2067,7 +2067,7 @@ class _LumiFirebaseBannerCarouselState
                         maxLines: 4,
                         overflow: TextOverflow.ellipsis,
                         style: LumiAdaptive.style(
-                          GoogleFonts.dmSans(
+                          GoogleFonts.beVietnamPro(
                             fontSize: 26,
                             height: 1.2,
                             fontWeight: FontWeight.w600,
@@ -2100,7 +2100,7 @@ class _LumiFirebaseBannerCarouselState
                             tab == 2 ? 'Xem mỹ phẩm →' : 'Xem dịch vụ →',
                           ),
                           style: LumiAdaptive.style(
-                            GoogleFonts.dmSans(
+                            GoogleFonts.beVietnamPro(
                               fontSize: 16,
                               height: 1.3,
                               fontWeight: FontWeight.w700,
@@ -2119,18 +2119,12 @@ class _LumiFirebaseBannerCarouselState
     );
   }
 
-  Widget _imageUnavailable() => ColoredBox(
-    color: LumiAdaptive.color(Color(0xFFE8F2F6), surface: true),
-    child: Align(
-      alignment: Alignment.centerRight,
-      child: Padding(
-        padding: EdgeInsets.all(24),
-        child: Icon(
-          Icons.broken_image_outlined,
-          color: LumiAdaptive.color(Color(0xFF557C90)),
-          size: 36,
-        ),
-      ),
+  Widget _imageUnavailable() => Image.asset(
+    'assets/images/welcome_spa_1.png',
+    fit: BoxFit.cover,
+    alignment: Alignment.centerRight,
+    errorBuilder: (context, error, stackTrace) => ColoredBox(
+      color: LumiAdaptive.color(const Color(0xFFFBE7DC), surface: true),
     ),
   );
 }

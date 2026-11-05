@@ -1,6 +1,6 @@
+import '../data/lumi_catalog_repository.dart';
 import 'package:flutter/material.dart';
 
-import '../theme/lumi_adaptive.dart';
 
 abstract final class LumiImageSources {
   static List<String> fromItem(Map<String, dynamic> item) {
@@ -41,6 +41,9 @@ abstract final class LumiImageSources {
     ]) {
       collect(item[key]);
     }
+    final enriched = LumiCatalogRepository.withDemoImage(item);
+    collect(enriched['imageUrl']);
+    collect(enriched['imageUrls']);
     return urls;
   }
 }
@@ -59,50 +62,34 @@ class LumiCatalogImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final urls = LumiImageSources.fromItem(item);
-    Widget placeholder({required bool failed}) {
-      final colors = Theme.of(context).colorScheme;
-      return ColoredBox(
-        color: colors.secondaryContainer,
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.spa_outlined,
-                  color: colors.onSecondaryContainer,
-                  size: 34,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  LumiAdaptive.text(
-                    failed ? 'Ảnh chưa tải được' : 'Ảnh đang cập nhật',
-                  ),
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: colors.onSecondaryContainer,
-                    fontSize: 13,
-                  ),
-                ),
-              ],
-            ),
-          ),
+    Widget placeholder() {
+      final key = (item['id'] ?? item['name'] ?? 'lumi').toString();
+      final assetIndex = (key.hashCode.abs() % 5) + 1;
+      return Image.asset(
+        'assets/images/welcome_spa_$assetIndex.png',
+        fit: fit,
+        width: double.infinity,
+        height: height,
+        errorBuilder: (context, error, stackTrace) => Image.asset(
+          'assets/images/welcome_spa_1.png',
+          fit: fit,
+          width: double.infinity,
+          height: height,
         ),
       );
     }
 
     Widget attempt(int index) {
       if (index >= urls.length) {
-        return placeholder(failed: urls.isNotEmpty);
+        return placeholder();
       }
       return Image.network(
         urls[index],
         fit: fit,
         key: ValueKey(urls[index]),
         excludeFromSemantics: true,
-        errorBuilder: (_, error, stack) => attempt(index + 1),
-        loadingBuilder: (_, child, progress) => progress == null
+        errorBuilder: (context, error, stackTrace) => attempt(index + 1),
+        loadingBuilder: (context, child, progress) => progress == null
             ? child
             : ColoredBox(
                 color: Theme.of(context).colorScheme.secondaryContainer,

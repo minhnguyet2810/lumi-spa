@@ -14,6 +14,7 @@ void main() {
         'bookingCount': 3,
         'orderCount': 2,
         'totalSpent': 750000,
+        'address': '123 Đường 3/2, Quận 10, TP.HCM',
         'createdAt': '2026-10-20T10:00:00.000Z',
       };
 
@@ -23,6 +24,7 @@ void main() {
       expect(user.displayName, equals('Nguyễn Thảo'));
       expect(user.email, equals('thao@gmail.com'));
       expect(user.phone, equals('0901234567'));
+      expect(user.address, equals('123 Đường 3/2, Quận 10, TP.HCM'));
       expect(user.role, equals('user'));
       expect(user.isAdmin, isFalse);
       expect(user.roleLabel, equals('Khách hàng'));

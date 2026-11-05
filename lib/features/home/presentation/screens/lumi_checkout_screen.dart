@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../core/data/lumi_order_store.dart';
+import '../../../../core/data/lumi_coupons.dart';
 import '../../../../core/network/lumi_api_client.dart';
 import '../../../../core/data/lumi_account_repository.dart';
 import '../../../profile/presentation/screens/addresses_screen.dart';
@@ -22,12 +23,13 @@ class LumiCheckoutScreen extends StatefulWidget {
 }
 
 class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
-  static const rose = Color(0xFFB56F86);
-  static const ink = Color(0xFF503B42);
-  static const muted = Color(0xFF78676B);
-  static const cream = Color(0xFFFFFAF8);
-  static const blush = Color(0xFFF4E4E8);
-  static const blue = Color(0xFFDDECEF);
+  static const rose = Color(0xFFA5553E); // Brand Terracotta Brown
+  static const ink = Color(0xFF403735); // Deep Warm Brown
+  static const muted = Color(0xFF756863); // Warm Muted Gray
+  static const cream = Color(0xFFFFF8EF); // Warm Cream / Ivory
+  static const blush = Color(0xFFFBE7DC); // Soft Warm Peach
+  static const blue = Color(0xFFEAF3F7); // Soft Blue-Gray
+  static const gold = Color(0xFFD97706); // Warm Amber Gold for VIP
 
   static const bankName = 'Vietinbank';
   static const bankAccount = '104882453416';
@@ -45,11 +47,17 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
   final _phoneController = TextEditingController();
   final _addressController = TextEditingController();
   final _noteController = TextEditingController();
+  final _couponController = TextEditingController();
 
   bool _isSubmitting = false;
   String _paymentMethod = 'cod';
   LumiAddressItem? _selectedAddress;
   bool _saveToAddressBook = true;
+  LumiCoupon? _appliedCoupon;
+  String? _couponError;
+
+  LumiMembership? _membership;
+  List<LumiCoupon> _availableCoupons = LumiCouponStore.featuredCoupons;
 
   Future<void> _chooseAddress() async {
     final picked = await Navigator.of(context).push<LumiAddressItem>(
@@ -74,6 +82,7 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
   void initState() {
     super.initState();
     _loadSavedCustomerInfo();
+    _loadMembershipAndCoupons();
   }
 
   @override
@@ -82,7 +91,34 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
     _phoneController.dispose();
     _addressController.dispose();
     _noteController.dispose();
+    _couponController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadMembershipAndCoupons() async {
+    if (FirebaseAuth.instance.currentUser != null) {
+      try {
+        final membership = await LumiAccountRepository.fetchMembership();
+        if (mounted) {
+          setState(() {
+            _membership = membership;
+          });
+        }
+      } catch (e) {
+        debugPrint('Fetch membership error: $e');
+      }
+    }
+
+    try {
+      final coupons = await LumiCouponStore.fetchAvailableCoupons();
+      if (mounted && coupons.isNotEmpty) {
+        setState(() {
+          _availableCoupons = coupons.take(3).toList();
+        });
+      }
+    } catch (e) {
+      debugPrint('Fetch coupons error: $e');
+    }
   }
 
   Future<void> _loadSavedCustomerInfo() async {
@@ -121,18 +157,125 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
     return widget.cartItems.fold<num>(0, (total, item) => total + item.total);
   }
 
-  num get shippingFee {
+  num get initialShippingFee {
     return subtotal >= 500000 ? 0 : 30000;
   }
 
+  /// Tỷ lệ giảm giá theo Hạng thành viên (Bạc: 5%, Vàng: 10%, Kim Cương: 15%)
+  int get memberDiscountPercent {
+    final discount = _membership?.discountPercent;
+    if (discount != null && discount > 0) return discount;
+    return LumiMembershipDiscount.getDiscountPercent(_membership?.tier);
+  }
+
+  /// Thành viên Vàng và Kim Cương được đặc quyền miễn phí giao hàng toàn quốc
+  bool get isGoldOrAbove {
+    final t = (_membership?.tier ?? '').toLowerCase().trim();
+    return t == 'gold' || t == 'vàng' || t == 'diamond' || t == 'kim cương';
+  }
+
+  /// Số tiền giảm giá từ Hạng thành viên (áp dụng trực tiếp trên tổng đơn hàng)
+  int get memberDiscountAmount {
+    if (memberDiscountPercent <= 0) return 0;
+    return ((subtotal * memberDiscountPercent) / 100).round();
+  }
+
+  /// Số tiền giảm giá từ Coupon voucher
+  int get couponDiscountAmount {
+    if (_appliedCoupon == null) return 0;
+    return _appliedCoupon!.calculateDiscount(
+      subtotal: subtotal.toInt(),
+      shippingFee: initialShippingFee.toInt(),
+    );
+  }
+
+  /// Tổng số tiền giảm giá kết hợp (Ưu đãi thành viên + Voucher)
+  int get totalDiscountAmount => memberDiscountAmount + couponDiscountAmount;
+
+  num get shippingFee {
+    if (isGoldOrAbove || _appliedCoupon?.isFreeShipping == true || subtotal >= 500000) {
+      return 0;
+    }
+    return initialShippingFee;
+  }
+
   num get grandTotal {
-    return subtotal + shippingFee;
+    final net = subtotal - totalDiscountAmount;
+    final base = net > 0 ? net : 0;
+    return base + shippingFee;
+  }
+
+  void _applyCoupon(String rawCode) {
+    final code = rawCode.trim().toUpperCase();
+    if (code.isEmpty) {
+      setState(() {
+        _couponError = 'Vui lòng nhập mã giảm giá';
+      });
+      return;
+    }
+    final coupon = LumiCouponStore.findByCode(code);
+    if (coupon == null) {
+      setState(() {
+        _couponError = 'Mã giảm giá không tồn tại';
+      });
+      return;
+    }
+    if (coupon.isExhausted) {
+      setState(() {
+        _couponError = 'Mã giảm giá đã hết lượt sử dụng';
+      });
+      return;
+    }
+    if (subtotal < coupon.minOrder) {
+      final minStr = _money(coupon.minOrder);
+      setState(() {
+        _couponError = 'Đơn hàng tối thiểu $minStr để áp dụng mã này';
+      });
+      return;
+    }
+
+    setState(() {
+      _appliedCoupon = coupon;
+      _couponController.text = coupon.code;
+      _couponError = null;
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          LumiAdaptive.text('Áp dụng mã ${coupon.code} thành công!'),
+        ),
+        backgroundColor: LumiAdaptive.color(rose),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  void _removeCoupon() {
+    setState(() {
+      _appliedCoupon = null;
+      _couponController.clear();
+      _couponError = null;
+    });
   }
 
   String _money(num value) {
     final digits = value.toInt().toString();
 
     return '${digits.replaceAllMapped(RegExp(r'\B(?=(\d{3})+(?!\d))'), (match) => '.')} đ';
+  }
+
+  String _shortMoney(num value) {
+    final amount = value.toInt();
+    if (amount <= 0) return '0đ';
+    if (amount >= 1000000) {
+      final tr = amount / 1000000.0;
+      return tr == tr.roundToDouble() ? '${tr.toInt()}tr' : '${tr.toStringAsFixed(1)}tr';
+    }
+    if (amount >= 1000) {
+      return '${(amount / 1000).round()}k';
+    }
+    return '$amountđ';
   }
 
   String _productName(LumiCartItem item) {
@@ -171,10 +314,10 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
       filled: true,
       fillColor: LumiAdaptive.color(Colors.white, surface: true),
       labelStyle: LumiAdaptive.style(
-        GoogleFonts.dmSans(color: LumiAdaptive.color(muted)),
+        GoogleFonts.beVietnamPro(color: LumiAdaptive.color(muted)),
       ),
       hintStyle: LumiAdaptive.style(
-        GoogleFonts.dmSans(
+        GoogleFonts.beVietnamPro(
           color: LumiAdaptive.color(muted.withValues(alpha: .65)),
         ),
       ),
@@ -205,9 +348,9 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
         Text(
           LumiAdaptive.text(title),
           style: LumiAdaptive.style(
-            GoogleFonts.dmSans(
+            GoogleFonts.beVietnamPro(
               color: LumiAdaptive.color(ink),
-              fontSize: 19,
+              fontSize: 18,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -246,6 +389,18 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
                   : Image.network(
                       imageUrl,
                       fit: BoxFit.cover,
+                      loadingBuilder: (context, child, progress) => progress == null
+                          ? child
+                          : ColoredBox(
+                              color: LumiAdaptive.color(blue, surface: true),
+                              child: const Center(
+                                child: SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                ),
+                              ),
+                            ),
                       errorBuilder: (_, _, _) {
                         return ColoredBox(
                           color: LumiAdaptive.color(blue),
@@ -269,7 +424,7 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: LumiAdaptive.style(
-                    GoogleFonts.dmSans(
+                    GoogleFonts.beVietnamPro(
                       color: LumiAdaptive.color(ink),
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
@@ -280,7 +435,7 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
                 Text(
                   LumiAdaptive.text('Số lượng: ${item.quantity}'),
                   style: LumiAdaptive.style(
-                    GoogleFonts.dmSans(
+                    GoogleFonts.beVietnamPro(
                       color: LumiAdaptive.color(muted),
                       fontSize: 13,
                     ),
@@ -293,7 +448,7 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
           Text(
             LumiAdaptive.text(_money(item.total)),
             style: LumiAdaptive.style(
-              GoogleFonts.dmSans(
+              GoogleFonts.beVietnamPro(
                 color: LumiAdaptive.color(rose),
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
@@ -305,26 +460,48 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
     );
   }
 
-  Widget _priceRow(String title, num value, {bool isTotal = false}) {
+  Widget _priceRow(String title, num value, {bool isTotal = false, String? subtitle}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            LumiAdaptive.text(title),
-            style: LumiAdaptive.style(
-              GoogleFonts.dmSans(
-                color: LumiAdaptive.color(isTotal ? ink : muted),
-                fontSize: isTotal ? 16 : 14,
-                fontWeight: isTotal ? FontWeight.w700 : FontWeight.w400,
+          Row(
+            children: [
+              Text(
+                LumiAdaptive.text(title),
+                style: LumiAdaptive.style(
+                  GoogleFonts.beVietnamPro(
+                    color: LumiAdaptive.color(isTotal ? ink : muted),
+                    fontSize: isTotal ? 16 : 14,
+                    fontWeight: isTotal ? FontWeight.w700 : FontWeight.w400,
+                  ),
+                ),
               ),
-            ),
+              if (subtitle != null) ...[
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: LumiAdaptive.color(blush),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    LumiAdaptive.text(subtitle),
+                    style: GoogleFonts.beVietnamPro(
+                      color: LumiAdaptive.color(rose),
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            ],
           ),
           Text(
             LumiAdaptive.text(value == 0 ? 'Miễn phí' : _money(value)),
             style: LumiAdaptive.style(
-              GoogleFonts.dmSans(
+              GoogleFonts.beVietnamPro(
                 color: LumiAdaptive.color(isTotal ? rose : ink),
                 fontSize: isTotal ? 18 : 14,
                 fontWeight: isTotal ? FontWeight.w700 : FontWeight.w500,
@@ -358,7 +535,7 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
         title: Text(
           LumiAdaptive.text(title),
           style: LumiAdaptive.style(
-            GoogleFonts.dmSans(
+            GoogleFonts.beVietnamPro(
               color: LumiAdaptive.color(ink),
               fontWeight: FontWeight.w700,
             ),
@@ -367,7 +544,7 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
         subtitle: Text(
           LumiAdaptive.text(subtitle),
           style: LumiAdaptive.style(
-            GoogleFonts.dmSans(color: LumiAdaptive.color(muted), fontSize: 13),
+            GoogleFonts.beVietnamPro(color: LumiAdaptive.color(muted), fontSize: 13),
           ),
         ),
         secondary: Icon(
@@ -394,7 +571,7 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
             child: Text(
               LumiAdaptive.text(label),
               style: LumiAdaptive.style(
-                GoogleFonts.dmSans(
+                GoogleFonts.beVietnamPro(
                   color: LumiAdaptive.color(muted),
                   fontSize: 13,
                 ),
@@ -405,7 +582,7 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
             child: Text(
               LumiAdaptive.text(value),
               style: LumiAdaptive.style(
-                GoogleFonts.dmSans(
+                GoogleFonts.beVietnamPro(
                   color: LumiAdaptive.color(ink),
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
@@ -462,7 +639,7 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
           Text(
             LumiAdaptive.text('Thông tin chuyển khoản'),
             style: LumiAdaptive.style(
-              GoogleFonts.dmSans(
+              GoogleFonts.beVietnamPro(
                 color: LumiAdaptive.color(ink),
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
@@ -482,7 +659,7 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
               'chụp giao dịch để đối chiếu khi cần.',
             ),
             style: LumiAdaptive.style(
-              GoogleFonts.dmSans(
+              GoogleFonts.beVietnamPro(
                 color: LumiAdaptive.color(muted),
                 fontSize: 12,
                 height: 1.4,
@@ -531,8 +708,10 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
     late num orderTotal;
     final now = DateTime.now();
 
+    final hour = now.hour.toString().padLeft(2, '0');
+    final minute = now.minute.toString().padLeft(2, '0');
     final formattedDate =
-        '${now.day.toString().padLeft(2, '0')}/'
+        '$hour:$minute ${now.day.toString().padLeft(2, '0')}/'
         '${now.month.toString().padLeft(2, '0')}/'
         '${now.year}';
 
@@ -574,6 +753,10 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
           'shippingAddress': customerAddress,
           'note': customerNote,
           'paymentMethod': _paymentMethod,
+          if (_appliedCoupon != null) 'couponCode': _appliedCoupon!.code,
+          if (couponDiscountAmount > 0) 'couponDiscount': couponDiscountAmount,
+          if (memberDiscountAmount > 0) 'memberDiscount': memberDiscountAmount,
+          if (totalDiscountAmount > 0) 'discount': totalDiscountAmount,
         },
       );
       final receipt = Map<String, dynamic>.from(response['data'] as Map);
@@ -593,11 +776,19 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
         _isSubmitting = false;
       });
 
+      String errorMsg = 'Không thể tạo đơn hàng. Vui lòng thử lại.';
+      if (error is LumiApiException) {
+        errorMsg = error.message;
+      } else if (error.toString().contains('COUPON_EXHAUSTED')) {
+        errorMsg = 'Mã giảm giá đã hết lượt sử dụng.';
+      }
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            LumiAdaptive.text('Không thể tạo đơn hàng. Vui lòng thử lại.'),
+            LumiAdaptive.text(errorMsg),
           ),
+          backgroundColor: Colors.redAccent,
         ),
       );
 
@@ -624,6 +815,8 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
       note: customerNote,
       items: items,
       paymentMethod: paymentMethodLabel,
+      couponCode: _appliedCoupon?.code,
+      discount: totalDiscountAmount,
     );
 
     LumiShopCatalog.clearCart();
@@ -642,6 +835,665 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
               : 'Thanh toán khi nhận hàng',
         ),
       ),
+    );
+  }
+
+  Widget _membershipPrivilegeBanner() {
+    if (memberDiscountPercent <= 0) return const SizedBox.shrink();
+
+    final tierName = _membership?.tierLabel ?? 'Thành viên';
+    final freeshipText = isGoldOrAbove ? ' & Miễn phí ship toàn quốc' : '';
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 22),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFFDF8),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFF1D8B8), width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: gold.withValues(alpha: .06),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(9),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFEF3C7),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(
+              Icons.workspace_premium_rounded,
+              color: gold,
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      tierName,
+                      style: GoogleFonts.beVietnamPro(
+                        color: const Color(0xFF92400E),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFDE68A),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        '-$memberDiscountPercent%',
+                        style: GoogleFonts.beVietnamPro(
+                          color: const Color(0xFF78350F),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  'Tự động giảm $memberDiscountPercent% trực tiếp trên hóa đơn$freeshipText.',
+                  style: GoogleFonts.beVietnamPro(
+                    color: const Color(0xFF78350F),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            '- ${_money(memberDiscountAmount)}',
+            style: GoogleFonts.beVietnamPro(
+              color: gold,
+              fontSize: 14,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showCouponSheet() {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (bottomSheetContext) {
+        return Container(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(bottomSheetContext).size.height * 0.78,
+          ),
+          decoration: BoxDecoration(
+            color: LumiAdaptive.color(cream, surface: true),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Center(
+                child: Container(
+                  margin: const EdgeInsets.only(top: 12, bottom: 8),
+                  width: 44,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: LumiAdaptive.color(muted.withValues(alpha: .3)),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                child: Row(
+                  children: [
+                    Icon(Icons.discount_outlined, color: LumiAdaptive.color(rose)),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        LumiAdaptive.text('Mã giảm giá LUMI'),
+                        style: LumiAdaptive.style(
+                          GoogleFonts.beVietnamPro(
+                            color: LumiAdaptive.color(ink),
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.close, color: LumiAdaptive.color(muted)),
+                      onPressed: () => Navigator.pop(bottomSheetContext),
+                    ),
+                  ],
+                ),
+              ),
+              Divider(height: 1, color: LumiAdaptive.color(blush)),
+              Expanded(
+                child: Builder(
+                  builder: (context) {
+                    final displayedCoupons = _availableCoupons.take(3).toList();
+                    return ListView.separated(
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+                      itemCount: displayedCoupons.length,
+                      separatorBuilder: (_, _) => const SizedBox(height: 12),
+                      itemBuilder: (context, index) {
+                        final coupon = displayedCoupons[index];
+                        final isApplied = _appliedCoupon?.code == coupon.code;
+                        final isExhausted = coupon.isExhausted;
+                        final isEligible = subtotal >= coupon.minOrder && !isExhausted;
+
+                        return Container(
+                          decoration: BoxDecoration(
+                            color: LumiAdaptive.color(Colors.white, surface: true),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: isApplied
+                                  ? LumiAdaptive.color(rose)
+                                  : LumiAdaptive.color(blush),
+                              width: isApplied ? 1.6 : 1.0,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: rose.withValues(alpha: .04),
+                                blurRadius: 6,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(9),
+                            child: Stack(
+                              children: [
+                                IntrinsicHeight(
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                                    children: [
+                                      // 1. CỘT TRÁI (TICKET STUB - PHONG CÁCH SHOPEE)
+                                      Container(
+                                        width: 84,
+                                        decoration: BoxDecoration(
+                                          color: isExhausted
+                                              ? const Color(0xFF94A3B8)
+                                              : LumiAdaptive.color(rose),
+                                        ),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 6,
+                                          vertical: 10,
+                                        ),
+                                        child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Icon(
+                                              coupon.isFreeShipping
+                                                  ? Icons.local_shipping_outlined
+                                                  : (coupon.isUserRedeemed
+                                                      ? Icons.card_giftcard_rounded
+                                                      : Icons.spa_outlined),
+                                              color: Colors.white,
+                                              size: 26,
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              coupon.isFreeShipping
+                                                  ? 'VẬN CHUYỂN'
+                                                  : (coupon.isUserRedeemed
+                                                      ? 'ĐỔI ĐIỂM'
+                                                      : 'LUMI SPA'),
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.w800,
+                                                letterSpacing: 0.4,
+                                              ),
+                                              textAlign: TextAlign.center,
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+
+                                      // ĐƯỜNG PHÂN CÁCH VÉ
+                                      Container(
+                                        width: 1,
+                                        color: const Color(0xFFF1E4E1),
+                                      ),
+
+                                      // 2. KHU VỰC THÔNG TIN CHÍNH (NGẮN GỌN, CHUẨN SHOPEE)
+                                      Expanded(
+                                        child: Padding(
+                                          padding: const EdgeInsets.fromLTRB(10, 8, 4, 8),
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              // Dòng 1: Tiêu đề giảm giá in đậm ngắn gọn
+                                              Text(
+                                                coupon.shopeeTitle,
+                                                style: LumiAdaptive.style(
+                                                  GoogleFonts.beVietnamPro(
+                                                    fontSize: 13,
+                                                    fontWeight: FontWeight.w700,
+                                                    color: isExhausted
+                                                        ? const Color(0xFF94A3B8)
+                                                        : LumiAdaptive.color(ink),
+                                                    height: 1.25,
+                                                  ),
+                                                ),
+                                                maxLines: 2,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                              const SizedBox(height: 3),
+                                              // Dòng 2: Đơn tối thiểu
+                                              Text(
+                                                coupon.minOrder > 0
+                                                    ? 'Đơn tối thiểu ${_shortMoney(coupon.minOrder)}'
+                                                    : 'Đơn tối thiểu 0đ',
+                                                style: LumiAdaptive.style(
+                                                  GoogleFonts.beVietnamPro(
+                                                    fontSize: 11,
+                                                    color: (!isEligible && !isExhausted)
+                                                        ? Colors.redAccent
+                                                        : LumiAdaptive.color(muted),
+                                                    fontWeight: (!isEligible && !isExhausted)
+                                                        ? FontWeight.w600
+                                                        : FontWeight.normal,
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(height: 4),
+                                              // Dòng 3: Tag mã voucher & số lượt
+                                              Wrap(
+                                                spacing: 4,
+                                                runSpacing: 2,
+                                                crossAxisAlignment: WrapCrossAlignment.center,
+                                                children: [
+                                                  Container(
+                                                    padding: const EdgeInsets.symmetric(
+                                                      horizontal: 5,
+                                                      vertical: 1.5,
+                                                    ),
+                                                    decoration: BoxDecoration(
+                                                      color: LumiAdaptive.color(
+                                                        rose.withValues(alpha: 0.08),
+                                                      ),
+                                                      borderRadius: BorderRadius.circular(4),
+                                                      border: Border.all(
+                                                        color: LumiAdaptive.color(
+                                                          rose.withValues(alpha: 0.3),
+                                                        ),
+                                                        width: 0.8,
+                                                      ),
+                                                    ),
+                                                    child: Text(
+                                                      coupon.code,
+                                                      style: TextStyle(
+                                                        color: LumiAdaptive.color(rose),
+                                                        fontSize: 9.5,
+                                                        fontWeight: FontWeight.w800,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  if (!isExhausted && coupon.remainingUses > 0)
+                                                    Container(
+                                                      padding: const EdgeInsets.symmetric(
+                                                        horizontal: 5,
+                                                        vertical: 1.5,
+                                                      ),
+                                                      decoration: BoxDecoration(
+                                                        color: const Color(0xFFFEF3C7),
+                                                        borderRadius: BorderRadius.circular(4),
+                                                      ),
+                                                      child: Text(
+                                                        'Còn ${coupon.remainingUses} lượt',
+                                                        style: const TextStyle(
+                                                          color: Color(0xFFB45309),
+                                                          fontSize: 9,
+                                                          fontWeight: FontWeight.w600,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                ],
+                                              ),
+                                              const SizedBox(height: 3),
+                                              // Dòng 4: Hiệu lực
+                                              Row(
+                                                children: [
+                                                  Icon(
+                                                    Icons.access_time_rounded,
+                                                    size: 10,
+                                                    color: LumiAdaptive.color(muted),
+                                                  ),
+                                                  const SizedBox(width: 3),
+                                                  Text(
+                                                    'Có hiệu lực • HSD: 30 ngày',
+                                                    style: LumiAdaptive.style(
+                                                      GoogleFonts.beVietnamPro(
+                                                        fontSize: 9.5,
+                                                        color: LumiAdaptive.color(muted),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+
+                                      // 3. NÚT HÀNH ĐỘNG BÊN PHẢI (CHUẨN SHOPEE [ Dùng ])
+                                      Container(
+                                        alignment: Alignment.center,
+                                        padding: const EdgeInsets.only(right: 10, left: 2),
+                                        child: isExhausted
+                                            ? Text(
+                                                'Hết lượt',
+                                                style: TextStyle(
+                                                  color: const Color(0xFF94A3B8),
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              )
+                                            : OutlinedButton(
+                                                style: OutlinedButton.styleFrom(
+                                                  backgroundColor: isApplied
+                                                      ? LumiAdaptive.color(rose)
+                                                      : Colors.white,
+                                                  side: BorderSide(
+                                                    color: (!isEligible && !isApplied)
+                                                        ? const Color(0xFFCBD5E1)
+                                                        : LumiAdaptive.color(rose),
+                                                    width: 1.2,
+                                                  ),
+                                                  foregroundColor: isApplied
+                                                      ? Colors.white
+                                                      : ((!isEligible)
+                                                          ? const Color(0xFF94A3B8)
+                                                          : LumiAdaptive.color(rose)),
+                                                  padding: const EdgeInsets.symmetric(
+                                                    horizontal: 10,
+                                                    vertical: 4,
+                                                  ),
+                                                  minimumSize: const Size(56, 30),
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius: BorderRadius.circular(6),
+                                                  ),
+                                                  elevation: 0,
+                                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                                ),
+                                                onPressed: (!isEligible && !isApplied)
+                                                    ? () {
+                                                        ScaffoldMessenger.of(context).showSnackBar(
+                                                          SnackBar(
+                                                            content: Text(
+                                                              'Đơn hàng chưa đạt giá trị tối thiểu ${_money(coupon.minOrder)}',
+                                                            ),
+                                                            duration: const Duration(seconds: 2),
+                                                          ),
+                                                        );
+                                                      }
+                                                    : () {
+                                                        if (isApplied) {
+                                                          _removeCoupon();
+                                                        } else {
+                                                          _applyCoupon(coupon.code);
+                                                        }
+                                                        Navigator.pop(bottomSheetContext);
+                                                      },
+                                                child: Text(
+                                                  isApplied ? 'Đã dùng' : 'Dùng',
+                                                  style: const TextStyle(
+                                                    fontSize: 11.5,
+                                                    fontWeight: FontWeight.w700,
+                                                  ),
+                                                ),
+                                              ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                // BADGE "Mới!" GÓC TRÊN BÊN PHẢI GIỐNG SHOPEE
+                                if (index == 0 || coupon.code == 'FREESHIP')
+                                  Positioned(
+                                    top: 0,
+                                    right: 0,
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 6,
+                                        vertical: 2,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: LumiAdaptive.color(rose),
+                                        borderRadius: const BorderRadius.only(
+                                          topRight: Radius.circular(9),
+                                          bottomLeft: Radius.circular(6),
+                                        ),
+                                      ),
+                                      child: const Text(
+                                        'Mới!',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 8.5,
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _couponSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            _sectionTitle('Mã giảm giá', Icons.discount_outlined),
+            TextButton.icon(
+              onPressed: _showCouponSheet,
+              icon: Icon(Icons.confirmation_number_outlined, size: 16, color: LumiAdaptive.color(rose)),
+              label: Text(
+                LumiAdaptive.text('Xem voucher'),
+                style: TextStyle(
+                  color: LumiAdaptive.color(rose),
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        if (_appliedCoupon != null)
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: LumiAdaptive.color(const Color(0xFFFFF9F5), surface: true),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: LumiAdaptive.color(blush), width: 1.4),
+              boxShadow: [
+                BoxShadow(
+                  color: rose.withValues(alpha: .04),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: LumiAdaptive.color(blush, surface: true),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    Icons.confirmation_number_rounded,
+                    color: LumiAdaptive.color(rose),
+                    size: 22,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            _appliedCoupon!.code,
+                            style: GoogleFonts.beVietnamPro(
+                              color: LumiAdaptive.color(rose),
+                              fontSize: 14,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: LumiAdaptive.color(blush),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              LumiAdaptive.text(_appliedCoupon!.badgeText),
+                              style: GoogleFonts.beVietnamPro(
+                                color: LumiAdaptive.color(rose),
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${LumiAdaptive.text(_appliedCoupon!.title)} (-${_money(couponDiscountAmount)})',
+                        style: GoogleFonts.beVietnamPro(
+                          color: LumiAdaptive.color(ink),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  tooltip: LumiAdaptive.text('Gỡ bỏ'),
+                  icon: Icon(Icons.close, color: LumiAdaptive.color(muted), size: 20),
+                  onPressed: _removeCoupon,
+                ),
+              ],
+            ),
+          )
+        else
+          SizedBox(
+            height: 48,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _couponController,
+                    textCapitalization: TextCapitalization.characters,
+                    style: GoogleFonts.beVietnamPro(
+                      color: LumiAdaptive.color(ink),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: LumiAdaptive.text('Nhập mã voucher (VD: LUMISPA10)'),
+                      hintStyle: GoogleFonts.beVietnamPro(
+                        color: LumiAdaptive.color(muted.withValues(alpha: .6)),
+                        fontSize: 13,
+                      ),
+                      prefixIcon: Icon(
+                        Icons.confirmation_number_outlined,
+                        color: LumiAdaptive.color(rose),
+                        size: 20,
+                      ),
+                      filled: true,
+                      fillColor: LumiAdaptive.color(Colors.white, surface: true),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 0),
+                      isDense: true,
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide(color: LumiAdaptive.color(blush)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide(color: LumiAdaptive.color(rose), width: 1.5),
+                      ),
+                    ),
+                    onSubmitted: _applyCoupon,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                FilledButton(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: LumiAdaptive.color(rose),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    elevation: 0,
+                  ),
+                  onPressed: () => _applyCoupon(_couponController.text),
+                  child: Text(
+                    LumiAdaptive.text('Áp dụng'),
+                    style: GoogleFonts.beVietnamPro(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        if (_couponError != null) ...[
+          const SizedBox(height: 6),
+          Padding(
+            padding: const EdgeInsets.only(left: 4),
+            child: Text(
+              LumiAdaptive.text(_couponError!),
+              style: const TextStyle(color: Colors.redAccent, fontSize: 12, fontWeight: FontWeight.w500),
+            ),
+          ),
+        ],
+      ],
     );
   }
 
@@ -668,7 +1520,7 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
                 : 'ĐẶT HÀNG · ${_money(grandTotal)}',
           ),
           style: LumiAdaptive.style(
-            GoogleFonts.dmSans(fontWeight: FontWeight.w700, letterSpacing: .4),
+            GoogleFonts.beVietnamPro(fontWeight: FontWeight.w700, letterSpacing: .4),
           ),
         ),
         style: LumiAdaptive.style(
@@ -700,7 +1552,7 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
         title: Text(
           LumiAdaptive.text('Thanh toán'),
           style: LumiAdaptive.style(
-            GoogleFonts.dmSans(
+            GoogleFonts.beVietnamPro(
               color: LumiAdaptive.color(ink),
               fontWeight: FontWeight.w700,
             ),
@@ -712,7 +1564,7 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
               child: Text(
                 LumiAdaptive.text('Giỏ hàng đang trống.'),
                 style: LumiAdaptive.style(
-                  GoogleFonts.dmSans(color: LumiAdaptive.color(muted)),
+                  GoogleFonts.beVietnamPro(color: LumiAdaptive.color(muted)),
                 ),
               ),
             )
@@ -969,6 +1821,9 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
                   ),
                   _bankTransferInfo(),
                   const SizedBox(height: 26),
+                  _membershipPrivilegeBanner(),
+                  _couponSection(),
+                  const SizedBox(height: 26),
                   _sectionTitle(
                     'Tóm tắt đơn hàng',
                     Icons.receipt_long_outlined,
@@ -984,10 +1839,90 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
                     child: Column(
                       children: [
                         _priceRow('Tạm tính', subtotal),
-                        _priceRow('Phí giao hàng', shippingFee),
-                        const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 7),
-                          child: Divider(),
+                        if (memberDiscountAmount > 0)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 5),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.workspace_premium_rounded,
+                                      size: 18,
+                                      color: Color(0xFFD97706),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      '${LumiAdaptive.text('Ưu đãi')} ${_membership?.tierLabel ?? 'Thành viên'} (-$memberDiscountPercent%)',
+                                      style: GoogleFonts.beVietnamPro(
+                                        color: const Color(0xFFD97706),
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Text(
+                                  '- ${_money(memberDiscountAmount)}',
+                                  style: GoogleFonts.beVietnamPro(
+                                    color: const Color(0xFFD97706),
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        if (couponDiscountAmount > 0)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 5),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.confirmation_number_outlined,
+                                      size: 16,
+                                      color: LumiAdaptive.color(rose),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      '${LumiAdaptive.text('Giảm giá')} (${_appliedCoupon?.code ?? ''})',
+                                      style: LumiAdaptive.style(
+                                        GoogleFonts.beVietnamPro(
+                                          color: LumiAdaptive.color(rose),
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Text(
+                                  '- ${_money(couponDiscountAmount)}',
+                                  style: LumiAdaptive.style(
+                                    GoogleFonts.beVietnamPro(
+                                      color: LumiAdaptive.color(rose),
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        _priceRow(
+                          'Phí giao hàng',
+                          shippingFee,
+                          subtitle: isGoldOrAbove
+                              ? 'Freeship VIP'
+                              : (_appliedCoupon?.isFreeShipping == true ? 'Freeship' : null),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 7),
+                          child: Divider(color: LumiAdaptive.color(blush)),
                         ),
                         _priceRow('Tổng cộng', grandTotal, isTotal: true),
                       ],
@@ -1003,7 +1938,7 @@ class _LumiCheckoutScreenState extends State<LumiCheckoutScreen> {
                     ),
                     textAlign: TextAlign.center,
                     style: LumiAdaptive.style(
-                      GoogleFonts.dmSans(
+                      GoogleFonts.beVietnamPro(
                         color: LumiAdaptive.color(muted),
                         fontSize: 12,
                       ),

@@ -27,7 +27,8 @@ class LumiAdminApp extends StatelessWidget {
     return MaterialApp(
       title: 'LUMI SPA — Portal Quản Trị',
       debugShowCheckedModeBanner: false,
-      theme: LumiStyle.theme.copyWith(scaffoldBackgroundColor: LumiStyle.ivory),
+      theme: LumiStyle.theme,
+      darkTheme: LumiStyle.darkTheme,
       home: const AdminPortalHubScreen(),
       builder: (context, child) => Overlay.wrap(
         child: AdminAccessGate(child: child ?? const SizedBox.shrink()),

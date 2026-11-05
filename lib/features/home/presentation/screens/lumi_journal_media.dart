@@ -102,7 +102,7 @@ class _LumiJournalFeatureState extends State<LumiJournalFeature> {
                         child: Text(
                           LumiAdaptive.text('LUMI Journal'),
                           style: LumiAdaptive.style(
-                            GoogleFonts.dmSans(
+                            GoogleFonts.beVietnamPro(
                               color: LumiAdaptive.color(_ink),
                               fontSize: 15,
                               fontWeight: FontWeight.w700,
@@ -122,7 +122,7 @@ class _LumiJournalFeatureState extends State<LumiJournalFeature> {
                     Text(
                       LumiAdaptive.text('Góc chăm sóc da'),
                       style: LumiAdaptive.style(
-                        GoogleFonts.dmSans(
+                        GoogleFonts.beVietnamPro(
                           color: LumiAdaptive.color(_ink),
                           fontSize: 26,
                           height: 1.2,
@@ -140,9 +140,9 @@ class _LumiJournalFeatureState extends State<LumiJournalFeature> {
                       maxLines: 3,
                       overflow: TextOverflow.ellipsis,
                       style: LumiAdaptive.style(
-                        GoogleFonts.dmSans(
+                        GoogleFonts.beVietnamPro(
                           color: LumiAdaptive.color(_ink),
-                          fontSize: 17,
+                          fontSize: 16,
                           height: 1.5,
                         ),
                       ),
@@ -154,7 +154,7 @@ class _LumiJournalFeatureState extends State<LumiJournalFeature> {
                           child: Text(
                             LumiAdaptive.text('Khám phá góc chăm sóc'),
                             style: LumiAdaptive.style(
-                              GoogleFonts.dmSans(
+                              GoogleFonts.beVietnamPro(
                                 color: LumiAdaptive.color(_accent),
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,
@@ -341,8 +341,8 @@ class _LumiJournalShortsState extends State<LumiJournalShorts> {
           Text(
             LumiAdaptive.text('Một chút cảm hứng mỗi ngày'),
             style: LumiAdaptive.style(
-              GoogleFonts.dmSans(
-                fontSize: 27,
+              GoogleFonts.beVietnamPro(
+                fontSize: 28,
                 height: 1.25,
                 color: LumiAdaptive.color(_ink),
                 fontWeight: FontWeight.w700,
@@ -353,7 +353,7 @@ class _LumiJournalShortsState extends State<LumiJournalShorts> {
           Text(
             LumiAdaptive.text('Những thước phim chăm sóc và thư giãn từ LUMI.'),
             style: LumiAdaptive.style(
-              GoogleFonts.dmSans(
+              GoogleFonts.beVietnamPro(
                 fontSize: 16,
                 height: 1.5,
                 color: LumiAdaptive.color(_ink),
@@ -369,8 +369,8 @@ class _LumiJournalShortsState extends State<LumiJournalShorts> {
                   'LUMI chưa đăng video. Bạn có thể khám phá các bài viết ở tab Bài viết.',
                 ),
                 style: LumiAdaptive.style(
-                  GoogleFonts.dmSans(
-                    fontSize: 17,
+                  GoogleFonts.beVietnamPro(
+                    fontSize: 16,
                     height: 1.5,
                     color: LumiAdaptive.color(_ink),
                   ),
@@ -434,7 +434,7 @@ class _LumiJournalShortsState extends State<LumiJournalShorts> {
                             child: Text(
                               LumiAdaptive.text(title),
                               style: LumiAdaptive.style(
-                                GoogleFonts.dmSans(
+                                GoogleFonts.beVietnamPro(
                                   fontSize: 21,
                                   height: 1.35,
                                   fontWeight: FontWeight.w700,
@@ -553,8 +553,8 @@ class _LumiVideoScreenState extends State<_LumiVideoScreen>
                       _error ?? 'Video không khả dụng. Vui lòng thử lại sau.',
                     ),
                     style: LumiAdaptive.style(
-                      GoogleFonts.dmSans(
-                        fontSize: 17,
+                      GoogleFonts.beVietnamPro(
+                        fontSize: 16,
                         color: LumiAdaptive.color(_ink),
                       ),
                     ),

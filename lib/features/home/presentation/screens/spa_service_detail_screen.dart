@@ -47,7 +47,7 @@ class LumiSpaServiceDetailScreen extends StatelessWidget {
         title: Text(
           LumiAdaptive.text('Chi tiết dịch vụ'),
           style: LumiAdaptive.style(
-            GoogleFonts.dmSans(
+            GoogleFonts.beVietnamPro(
               fontSize: 20,
               fontWeight: FontWeight.w700,
               color: LumiAdaptive.color(ink),
@@ -70,7 +70,7 @@ class LumiSpaServiceDetailScreen extends StatelessWidget {
                   Text(
                     LumiAdaptive.text('LUMI SPA & WELLNESS'),
                     style: LumiAdaptive.style(
-                      GoogleFonts.dmSans(
+                      GoogleFonts.beVietnamPro(
                         fontSize: 14,
                         letterSpacing: 1.7,
                         fontWeight: FontWeight.w700,
@@ -82,7 +82,7 @@ class LumiSpaServiceDetailScreen extends StatelessWidget {
                   Text(
                     LumiAdaptive.text(name),
                     style: LumiAdaptive.style(
-                      GoogleFonts.dmSans(
+                      GoogleFonts.beVietnamPro(
                         fontSize: 37,
                         height: 1.1,
                         fontWeight: FontWeight.w600,
@@ -108,7 +108,7 @@ class LumiSpaServiceDetailScreen extends StatelessWidget {
                           child: Text(
                             LumiAdaptive.text(category),
                             style: LumiAdaptive.style(
-                              GoogleFonts.dmSans(
+                              GoogleFonts.beVietnamPro(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
                                 color: LumiAdaptive.color(ink),
@@ -123,7 +123,7 @@ class LumiSpaServiceDetailScreen extends StatelessWidget {
                   Text(
                     LumiAdaptive.text('Về liệu trình này'),
                     style: LumiAdaptive.style(
-                      GoogleFonts.dmSans(
+                      GoogleFonts.beVietnamPro(
                         fontSize: 22,
                         fontWeight: FontWeight.w700,
                         color: LumiAdaptive.color(ink),
@@ -139,7 +139,7 @@ class LumiSpaServiceDetailScreen extends StatelessWidget {
                           : description,
                     ),
                     style: LumiAdaptive.style(
-                      GoogleFonts.dmSans(
+                      GoogleFonts.beVietnamPro(
                         fontSize: 16,
                         height: 1.65,
                         color: LumiAdaptive.color(muted),
@@ -151,7 +151,7 @@ class LumiSpaServiceDetailScreen extends StatelessWidget {
                     Text(
                       LumiAdaptive.text(detailed),
                       style: LumiAdaptive.style(
-                        GoogleFonts.dmSans(
+                        GoogleFonts.beVietnamPro(
                           fontSize: 15,
                           height: 1.65,
                           color: LumiAdaptive.color(muted),
@@ -165,7 +165,7 @@ class LumiSpaServiceDetailScreen extends StatelessWidget {
                     Text(
                       LumiAdaptive.text('Lợi ích nổi bật'),
                       style: LumiAdaptive.style(
-                        GoogleFonts.dmSans(
+                        GoogleFonts.beVietnamPro(
                           fontSize: 21,
                           fontWeight: FontWeight.w700,
                           color: LumiAdaptive.color(ink),
@@ -189,7 +189,7 @@ class LumiSpaServiceDetailScreen extends StatelessWidget {
                               child: Text(
                                 LumiAdaptive.text(benefit.toString()),
                                 style: LumiAdaptive.style(
-                                  GoogleFonts.dmSans(
+                                  GoogleFonts.beVietnamPro(
                                     fontSize: 15,
                                     height: 1.5,
                                     color: LumiAdaptive.color(muted),
@@ -206,7 +206,7 @@ class LumiSpaServiceDetailScreen extends StatelessWidget {
                     Text(
                       LumiAdaptive.text('Quy trình trải nghiệm'),
                       style: LumiAdaptive.style(
-                        GoogleFonts.dmSans(
+                        GoogleFonts.beVietnamPro(
                           fontSize: 21,
                           fontWeight: FontWeight.w700,
                           color: LumiAdaptive.color(ink),
@@ -231,7 +231,7 @@ class LumiSpaServiceDetailScreen extends StatelessWidget {
                               child: Text(
                                 LumiAdaptive.text('${i + 1}'),
                                 style: LumiAdaptive.style(
-                                  GoogleFonts.dmSans(
+                                  GoogleFonts.beVietnamPro(
                                     color: LumiAdaptive.color(rose),
                                     fontWeight: FontWeight.w700,
                                   ),
@@ -245,7 +245,7 @@ class LumiSpaServiceDetailScreen extends StatelessWidget {
                                 child: Text(
                                   LumiAdaptive.text(steps[i].toString()),
                                   style: LumiAdaptive.style(
-                                    GoogleFonts.dmSans(
+                                    GoogleFonts.beVietnamPro(
                                       fontSize: 15,
                                       height: 1.5,
                                       color: LumiAdaptive.color(ink),
@@ -263,7 +263,7 @@ class LumiSpaServiceDetailScreen extends StatelessWidget {
                     Text(
                       LumiAdaptive.text('Phù hợp với ai?'),
                       style: LumiAdaptive.style(
-                        GoogleFonts.dmSans(
+                        GoogleFonts.beVietnamPro(
                           fontSize: 21,
                           fontWeight: FontWeight.w700,
                           color: LumiAdaptive.color(ink),
@@ -274,7 +274,7 @@ class LumiSpaServiceDetailScreen extends StatelessWidget {
                     Text(
                       LumiAdaptive.text(suitable),
                       style: LumiAdaptive.style(
-                        GoogleFonts.dmSans(
+                        GoogleFonts.beVietnamPro(
                           fontSize: 15,
                           height: 1.6,
                           color: LumiAdaptive.color(muted),
@@ -304,8 +304,8 @@ class LumiSpaServiceDetailScreen extends StatelessWidget {
                               Text(
                                 LumiAdaptive.text('Lưu ý quan trọng'),
                                 style: LumiAdaptive.style(
-                                  GoogleFonts.dmSans(
-                                    fontSize: 17,
+                                  GoogleFonts.beVietnamPro(
+                                    fontSize: 16,
                                     fontWeight: FontWeight.w700,
                                     color: LumiAdaptive.color(ink),
                                   ),
@@ -317,7 +317,7 @@ class LumiSpaServiceDetailScreen extends StatelessWidget {
                           Text(
                             LumiAdaptive.text(notes),
                             style: LumiAdaptive.style(
-                              GoogleFonts.dmSans(
+                              GoogleFonts.beVietnamPro(
                                 fontSize: 14,
                                 height: 1.6,
                                 color: LumiAdaptive.color(ink),
@@ -359,7 +359,7 @@ class LumiSpaServiceDetailScreen extends StatelessWidget {
                       'yêu cầu đăng nhập để tiếp tục.',
                     ),
                     style: LumiAdaptive.style(
-                      GoogleFonts.dmSans(
+                      GoogleFonts.beVietnamPro(
                         fontSize: 14,
                         height: 1.5,
                         color: LumiAdaptive.color(muted),
@@ -397,7 +397,7 @@ class LumiSpaServiceDetailScreen extends StatelessWidget {
                       Text(
                         LumiAdaptive.text('Đặt lịch dịch vụ'),
                         style: LumiAdaptive.style(
-                          GoogleFonts.dmSans(
+                          GoogleFonts.beVietnamPro(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
                           ),
@@ -425,7 +425,7 @@ class LumiSpaServiceDetailScreen extends StatelessWidget {
           child: Text(
             LumiAdaptive.text(label),
             style: LumiAdaptive.style(
-              GoogleFonts.dmSans(
+              GoogleFonts.beVietnamPro(
                 fontSize: 15,
                 color: LumiAdaptive.color(muted),
               ),
@@ -437,7 +437,7 @@ class LumiSpaServiceDetailScreen extends StatelessWidget {
             LumiAdaptive.text(value),
             textAlign: TextAlign.right,
             style: LumiAdaptive.style(
-              GoogleFonts.dmSans(
+              GoogleFonts.beVietnamPro(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
                 color: LumiAdaptive.color(ink),

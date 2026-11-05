@@ -1,3 +1,4 @@
+import '../../../../core/widgets/lumi_catalog_image.dart';
 import '../../../../core/theme/lumi_adaptive.dart';
 
 import 'dart:async';
@@ -164,16 +165,18 @@ class _TreatmentHistoryScreenState extends State<TreatmentHistoryScreen> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: LumiAdaptive.color(background, surface: true),
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: Icon(
-                  Icons.spa_outlined,
-                  color: LumiAdaptive.color(LumiStyle.ink),
-                  size: 26,
+              ClipRRect(
+                borderRadius: BorderRadius.circular(15),
+                child: SizedBox(
+                  width: 50,
+                  height: 50,
+                  child: LumiCatalogImage(
+                    item: {
+                      'id': item.serviceId,
+                      'name': item.serviceName,
+                    },
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
               const SizedBox(width: 14),

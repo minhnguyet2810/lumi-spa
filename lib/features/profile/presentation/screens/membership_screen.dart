@@ -1,8 +1,10 @@
-import '../../../../core/theme/lumi_adaptive.dart';
-
+import '../../../../core/data/lumi_order_store.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/data/lumi_account_repository.dart';
+import '../../../../core/theme/lumi_adaptive.dart';
 import '../../../../core/theme/lumi_style.dart';
 
 class MembershipScreen extends StatefulWidget {
@@ -14,546 +16,1264 @@ class MembershipScreen extends StatefulWidget {
 
 class _MembershipScreenState extends State<MembershipScreen> {
   late Future<LumiMembership> _membershipFuture;
+  late Future<List<LumiRewardItem>> _rewardsFuture;
+  int _selectedTierIndex = 0;
+  int _selectedRewardFilter = 0; // 0: Tất cả, 1: Voucher, 2: Quà & Spa
+  bool _isSyncing = false;
+  String? _redeemingId;
 
   @override
   void initState() {
     super.initState();
     _membershipFuture = LumiAccountRepository.fetchMembership();
+    _rewardsFuture = LumiAccountRepository.fetchRewardCatalog();
   }
 
   void _retry() {
     setState(() {
       _membershipFuture = LumiAccountRepository.fetchMembership();
+      _rewardsFuture = LumiAccountRepository.fetchRewardCatalog();
     });
+  }
+
+  Future<void> _sync() async {
+    if (_isSyncing) return;
+    setState(() => _isSyncing = true);
+    try {
+      final updated = await LumiAccountRepository.syncMembership();
+      final rewards = await LumiAccountRepository.fetchRewardCatalog();
+      setState(() {
+        _membershipFuture = Future.value(updated);
+        _rewardsFuture = Future.value(rewards);
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              LumiAdaptive.text('Đã cập nhật dữ liệu điểm thành viên mới nhất ✨'),
+              style: GoogleFonts.beVietnamPro(),
+            ),
+            backgroundColor: const Color(0xFF2E7D32),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              LumiAdaptive.text('Không thể đồng bộ điểm. Vui lòng thử lại sau.'),
+              style: GoogleFonts.beVietnamPro(),
+            ),
+            backgroundColor: Colors.red.shade700,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSyncing = false);
+    }
+  }
+
+  String _formatCurrency(num amount) => LumiOrderStore.formatCurrency(amount);
+
+  String _formatNumber(int number) {
+    final parts = <String>[];
+    String s = number.toString();
+    while (s.length > 3) {
+      parts.insert(0, s.substring(s.length - 3));
+      s = s.substring(0, s.length - 3);
+    }
+    parts.insert(0, s);
+    return parts.join('.');
   }
 
   @override
   Widget build(BuildContext context) => LumiAdaptive.watch(
     context,
     () => Scaffold(
-      appBar: AppBar(title: Text(LumiAdaptive.text('Thẻ thành viên LUMI'))),
-      body: FutureBuilder<LumiMembership>(
-        future: _membershipFuture,
-        builder: (context, snapshot) {
-          final membership = snapshot.data;
-          final loading = snapshot.connectionState == ConnectionState.waiting;
+      appBar: AppBar(
+        title: Text(
+          LumiAdaptive.text('Thẻ thành viên LUMI'),
+          style: GoogleFonts.beVietnamPro(fontWeight: FontWeight.w600),
+        ),
+        actions: [
+          IconButton(
+            tooltip: LumiAdaptive.text('Đồng bộ điểm'),
+            onPressed: _isSyncing ? null : _sync,
+            icon: _isSyncing
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.sync_rounded),
+          ),
+        ],
+      ),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          final updated = await LumiAccountRepository.syncMembership();
+          final rewards = await LumiAccountRepository.fetchRewardCatalog();
+          setState(() {
+            _membershipFuture = Future.value(updated);
+            _rewardsFuture = Future.value(rewards);
+          });
+        },
+        child: FutureBuilder<LumiMembership>(
+          future: _membershipFuture,
+          builder: (context, snapshot) {
+            final membership = snapshot.data;
+            final loading = snapshot.connectionState == ConnectionState.waiting;
 
-          return ListView(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
-            children: [
-              _membershipHero(membership),
-              const SizedBox(height: 16),
-              _progressCard(membership),
-              const SizedBox(height: 16),
-              if (loading && membership == null)
-                Padding(
-                  padding: EdgeInsets.all(20),
-                  child: Center(
-                    child: CircularProgressIndicator(
-                      color: LumiAdaptive.color(LumiStyle.rose),
+            if (snapshot.hasError) {
+              return ListView(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                children: [
+                  _messageCard(
+                    icon: Icons.cloud_off_outlined,
+                    title: 'Không tải được dữ liệu thành viên',
+                    message: snapshot.error.toString(),
+                    action: FilledButton(
+                      onPressed: _retry,
+                      child: Text(LumiAdaptive.text('Thử lại')),
                     ),
                   ),
-                ),
-              if (snapshot.hasError)
-                _messageCard(
-                  icon: Icons.cloud_off_outlined,
-                  title: 'Không tải được dữ liệu thành viên',
-                  message: snapshot.error.toString(),
-                  action: TextButton(
-                    onPressed: _retry,
-                    child: Text(LumiAdaptive.text('Thử lại')),
-                  ),
-                ),
-<<<<<<< HEAD
-              ),
-            const SizedBox(height: 16),
-            _benefitsCard(membership?.tier),
-          ],
-        );
-      },
-=======
-              _benefitsCard(membership?.tier),
-            ],
-          );
-        },
+                ],
+              );
+            }
+
+            if (loading && membership == null) {
+              return const Center(
+                child: CircularProgressIndicator(color: AppColors.dustyRose),
+              );
+            }
+
+            return ListView(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 36),
+              children: [
+                _digitalMemberCard(membership),
+                const SizedBox(height: 16),
+                _progressSection(membership),
+                const SizedBox(height: 16),
+                _conversionRateBanner(),
+                const SizedBox(height: 20),
+                _rewardsSection(membership),
+                const SizedBox(height: 24),
+                _tierPerksSection(membership),
+              ],
+            );
+          },
+        ),
       ),
->>>>>>> f69fef543243a3b629319035f2b9c062ba0b8aab
     ),
   );
 
-  Widget _membershipHero(LumiMembership? membership) => Container(
-    clipBehavior: Clip.antiAlias,
-    decoration: BoxDecoration(
-      color: LumiAdaptive.color(const Color(0xFFFBE7DC), surface: true),
-      borderRadius: BorderRadius.circular(28),
-      border: Border.all(color: LumiAdaptive.color(const Color(0xFFFFFDFA))),
-      boxShadow: [
-        BoxShadow(
-          color: LumiAdaptive.color(Color(0x12403735), surface: true),
-          blurRadius: 24,
-          offset: Offset(0, 8),
+  /// Thẻ thành viên kỹ thuật số cao cấp (Digital Member Card)
+  Widget _digitalMemberCard(LumiMembership? membership) {
+    final tier = (membership?.tier ?? 'Member').toLowerCase();
+    final points = membership?.points ?? 0;
+    final totalSpent = membership?.totalSpent ?? 0;
+    final discount = membership?.discountPercent ?? 0;
+
+    // Gradient và màu sắc chủ đạo theo hạng
+    List<Color> cardGradient;
+    Color badgeColor;
+    IconData tierIcon;
+
+    if (tier == 'diamond') {
+      cardGradient = [
+        const Color(0xFF0F172A),
+        const Color(0xFF0369A1),
+        const Color(0xFF0284C7),
+      ];
+      badgeColor = const Color(0xFF38BDF8);
+      tierIcon = Icons.diamond_outlined;
+    } else if (tier == 'gold') {
+      cardGradient = [
+        const Color(0xFF451A03),
+        const Color(0xFF92400E),
+        const Color(0xFFD97706),
+      ];
+      badgeColor = const Color(0xFFFBBF24);
+      tierIcon = Icons.workspace_premium_rounded;
+    } else if (tier == 'silver') {
+      cardGradient = [
+        const Color(0xFF1E293B),
+        const Color(0xFF475569),
+        const Color(0xFF64748B),
+      ];
+      badgeColor = const Color(0xFFE2E8F0);
+      tierIcon = Icons.military_tech_rounded;
+    } else {
+      // Member / Bronze
+      cardGradient = [
+        const Color(0xFF3B1E19),
+        const Color(0xFF7C3E32),
+        const Color(0xFFA5553E),
+      ];
+      badgeColor = const Color(0xFFFDBA74);
+      tierIcon = Icons.spa_rounded;
+    }
+
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(22),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: cardGradient,
         ),
-      ],
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Stack(
-          children: [
-            SizedBox(
-              height: 170,
-              width: double.infinity,
-              child: Image.asset(
-                'assets/images/welcome_spa_5.png',
-                fit: BoxFit.cover,
-                alignment: const Alignment(0, 0.25),
-                excludeFromSemantics: true,
-                errorBuilder: (context, error, stackTrace) => ColoredBox(
-                  color: LumiAdaptive.color(Color(0xFFE6F1F5), surface: true),
-                  child: Center(
-                    child: Icon(
-                      Icons.spa_outlined,
-                      size: 48,
-                      color: LumiAdaptive.color(Color(0xFF406779)),
+        boxShadow: [
+          BoxShadow(
+            color: cardGradient.last.withValues(alpha: 0.35),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Stack(
+        children: [
+          // Hoa văn chìm
+          Positioned(
+            right: -24,
+            bottom: -24,
+            child: Icon(
+              tierIcon,
+              size: 160,
+              color: Colors.white.withValues(alpha: 0.08),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(22),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(7),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.15),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(tierIcon, color: badgeColor, size: 22),
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          'LUMI SPA',
+                          style: GoogleFonts.beVietnamPro(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 2,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: badgeColor.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: badgeColor.withValues(alpha: 0.6)),
+                      ),
+                      child: Text(
+                        LumiAdaptive.text(membership?.tierLabel ?? (membership?.tier ?? 'Thành viên')),
+                        style: GoogleFonts.beVietnamPro(
+                          color: badgeColor,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 28),
+                Text(
+                  LumiAdaptive.text('Điểm tích lũy hiện có'),
+                  style: GoogleFonts.beVietnamPro(
+                    color: Colors.white.withValues(alpha: 0.8),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                  textBaseline: TextBaseline.alphabetic,
+                  children: [
+                    Text(
+                      _formatNumber(points),
+                      style: GoogleFonts.beVietnamPro(
+                        color: Colors.white,
+                        fontSize: 34,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      LumiAdaptive.text('điểm'),
+                      style: GoogleFonts.beVietnamPro(
+                        color: Colors.white.withValues(alpha: 0.85),
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const Spacer(),
+                    if (discount > 0)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.18),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          'Giảm $discount%',
+                          style: GoogleFonts.beVietnamPro(
+                            color: Colors.white,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                const Divider(color: Colors.white24, height: 1),
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      LumiAdaptive.text('Tổng chi tiêu: ${_formatCurrency(totalSpent)}'),
+                      style: GoogleFonts.beVietnamPro(
+                        color: Colors.white.withValues(alpha: 0.85),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    Text(
+                      '1.000 đ = 1 điểm',
+                      style: GoogleFonts.beVietnamPro(
+                        color: Colors.white.withValues(alpha: 0.75),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Khối tiến trình thăng hạng
+  Widget _progressSection(LumiMembership? membership) {
+    final isDiamond = (membership?.tier ?? '').toLowerCase() == 'diamond';
+    final nextTierLabel = membership?.nextTierLabel ?? membership?.nextTier;
+    final pointsToNext = membership?.pointsToNextTier ?? 0;
+    final spentToNext = membership?.spentToNextTier ?? (pointsToNext * 1000);
+    final progress = (membership?.progress ?? 0.0).clamp(0.0, 1.0);
+
+    return _card(
+      background: LumiAdaptive.isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.trending_up_rounded,
+                color: LumiAdaptive.color(AppColors.dustyRose),
+                size: 22,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  LumiAdaptive.text(
+                    isDiamond ? 'Hạng thành viên tối cao' : 'Tiến trình thăng hạng',
+                  ),
+                  style: GoogleFonts.beVietnamPro(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: LumiAdaptive.color(LumiStyle.plum),
+                  ),
+                ),
+              ),
+              if (!isDiamond)
+                Text(
+                  '${(progress * 100).toInt()}%',
+                  style: GoogleFonts.beVietnamPro(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: LumiAdaptive.color(AppColors.dustyRose),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          if (isDiamond) ...[
+            Text(
+              LumiAdaptive.text(
+                'Chúc mừng quý khách! Bạn đang nắm giữ thẻ Kim Cương – hạng thành viên đặc quyền cao nhất của LUMI SPA.',
+              ),
+              style: GoogleFonts.beVietnamPro(
+                fontSize: 14,
+                color: LumiAdaptive.color(LumiStyle.ink),
+                height: 1.4,
+              ),
+            ),
+          ] else ...[
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: LinearProgressIndicator(
+                value: progress,
+                minHeight: 9,
+                backgroundColor: LumiAdaptive.color(const Color(0xFFE2E8F0)),
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  LumiAdaptive.color(AppColors.dustyRose),
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text.rich(
+              TextSpan(
+                text: LumiAdaptive.text('Cần tích luỹ thêm '),
+                children: [
+                  TextSpan(
+                    text: '${_formatNumber(pointsToNext)} điểm',
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  TextSpan(
+                    text: ' (~${_formatCurrency(spentToNext)}) để thăng lên ',
+                  ),
+                  TextSpan(
+                    text: LumiAdaptive.text(nextTierLabel ?? 'hạng kế tiếp'),
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      color: LumiAdaptive.color(AppColors.dustyRose),
                     ),
                   ),
-                ),
+                ],
               ),
-            ),
-            Positioned.fill(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      LumiAdaptive.color(Color(0x6630241F), surface: true),
-                      LumiAdaptive.color(Color(0x0030241F), surface: true),
-                      LumiAdaptive.color(Color(0x4430241F), surface: true),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            Positioned(
-              top: 18,
-              left: 20,
-              child: Text(
-                LumiAdaptive.text('LUMI'),
-                style: LumiAdaptive.style(
-                  LumiStyle.body(
-                    size: 26,
-                    color: LumiAdaptive.color(Colors.white, surface: true),
-                  ).copyWith(
-                    height: 1.2,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 1,
-                  ),
-                ),
-              ),
-            ),
-            Positioned(
-              top: 16,
-              right: 18,
-              child: Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: LumiAdaptive.color(Color(0xFFFFF8EF), surface: true),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.workspace_premium_outlined,
-                  color: LumiAdaptive.color(Color(0xFFA5553E)),
-                  size: 27,
-                ),
+              style: GoogleFonts.beVietnamPro(
+                fontSize: 13,
+                color: LumiAdaptive.color(LumiStyle.ink),
+                height: 1.45,
               ),
             ),
           ],
+        ],
+      ),
+    );
+  }
+
+  /// Banner quy chế quy đổi điểm minh bạch
+  Widget _conversionRateBanner() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: LumiAdaptive.isDark ? const Color(0xFF1E293B) : const Color(0xFFFFF7ED),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: LumiAdaptive.isDark ? const Color(0xFF334155) : const Color(0xFFFFEDD5),
         ),
-        Padding(
-          padding: const EdgeInsets.all(22),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                LumiAdaptive.text('Thẻ thành viên của bạn'),
-                style: LumiAdaptive.style(
-                  LumiStyle.body(
-                    size: 16,
-                    color: LumiAdaptive.color(LumiStyle.ink, surface: true),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF97316).withValues(alpha: 0.15),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.stars_rounded,
+              color: Color(0xFFEA580C),
+              size: 22,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  LumiAdaptive.text('Quy ước tích điểm LUMI'),
+                  style: GoogleFonts.beVietnamPro(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: LumiAdaptive.isDark ? Colors.white : const Color(0xFF9A3412),
                   ),
                 ),
+                const SizedBox(height: 2),
+                Text(
+                  LumiAdaptive.text('1.000 VNĐ = 1 điểm. Điểm tự động cộng ngay khi hoàn thành đơn mua hoặc liệu trình spa.'),
+                  style: GoogleFonts.beVietnamPro(
+                    fontSize: 12,
+                    color: LumiAdaptive.isDark ? const Color(0xFF94A3B8) : const Color(0xFFC2410C),
+                    height: 1.35,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _rewardFilterChip(String label, int index) {
+    final isSelected = _selectedRewardFilter == index;
+    return ChoiceChip(
+      label: Text(
+        LumiAdaptive.text(label),
+        style: GoogleFonts.beVietnamPro(
+          fontSize: 12,
+          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+          color: isSelected ? Colors.white : LumiAdaptive.color(LumiStyle.plum),
+        ),
+      ),
+      selected: isSelected,
+      selectedColor: AppColors.dustyRose,
+      backgroundColor: LumiAdaptive.isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      side: BorderSide(
+        color: isSelected ? AppColors.dustyRose : Colors.transparent,
+      ),
+      onSelected: (_) => setState(() => _selectedRewardFilter = index),
+    );
+  }
+
+  /// Danh mục Đổi điểm nhận quà & Voucher
+  Widget _rewardsSection(LumiMembership? membership) {
+    return FutureBuilder<List<LumiRewardItem>>(
+      future: _rewardsFuture,
+      builder: (context, snapshot) {
+        final rewards = snapshot.data ?? const <LumiRewardItem>[];
+        final loading = snapshot.connectionState == ConnectionState.waiting;
+        final userPoints = membership?.points ?? 0;
+
+        List<LumiRewardItem> filtered = rewards;
+        if (_selectedRewardFilter == 1) {
+          filtered = rewards.where((r) => r.type == 'voucher').toList();
+        } else if (_selectedRewardFilter == 2) {
+          filtered = rewards.where((r) => r.type != 'voucher').toList();
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  Icons.card_giftcard_rounded,
+                  color: LumiAdaptive.color(AppColors.dustyRose),
+                  size: 22,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    LumiAdaptive.text('Đổi điểm nhận quà & Voucher'),
+                    style: GoogleFonts.beVietnamPro(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
+                      color: LumiAdaptive.color(LumiStyle.plum),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              LumiAdaptive.text('Đổi điểm tích luỹ lấy mã giảm giá mua mỹ phẩm hoặc quà tặng liệu trình spa.'),
+              style: GoogleFonts.beVietnamPro(
+                fontSize: 12,
+                color: LumiAdaptive.color(LumiStyle.muted),
+                height: 1.35,
               ),
-              const SizedBox(height: 14),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+            ),
+            const SizedBox(height: 12),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
                 children: [
-                  Expanded(
+                  _rewardFilterChip('Tất cả', 0),
+                  const SizedBox(width: 8),
+                  _rewardFilterChip('Mã giảm giá', 1),
+                  const SizedBox(width: 8),
+                  _rewardFilterChip('Quà tặng & Spa', 2),
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
+            if (loading && rewards.isEmpty)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(24),
+                  child: CircularProgressIndicator(color: AppColors.dustyRose),
+                ),
+              )
+            else if (filtered.isEmpty)
+              _card(
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
                     child: Text(
-                      LumiAdaptive.text(membership?.tier ?? 'Chưa xác định'),
-                      style: LumiAdaptive.style(
-                        LumiStyle.body(
-                          size: 27,
-                          color: LumiAdaptive.color(
-                            LumiStyle.ink,
-                            surface: true,
-                          ),
-                        ).copyWith(fontWeight: FontWeight.w600, height: 1.25),
+                      LumiAdaptive.text('Hiện chưa có quà tặng trong danh mục này.'),
+                      style: GoogleFonts.beVietnamPro(
+                        fontSize: 13,
+                        color: LumiAdaptive.color(LumiStyle.muted),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 16),
-                  Flexible(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
+                ),
+              )
+            else
+              ...filtered.map((reward) => _rewardCard(reward, userPoints)),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _rewardCard(LumiRewardItem reward, int userPoints) {
+    final canRedeem = userPoints >= reward.pointsRequired && !reward.isOutOfStock;
+    final isRedeemingThis = _redeemingId == reward.id;
+
+    IconData icon;
+    if (reward.isFreeShipping) {
+      icon = Icons.local_shipping_outlined;
+    } else if (reward.type == 'voucher') {
+      icon = Icons.confirmation_number_outlined;
+    } else if (reward.type == 'spa') {
+      icon = Icons.spa_outlined;
+    } else {
+      icon = Icons.card_giftcard_rounded;
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: LumiAdaptive.color(LumiStyle.surface, surface: true),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: LumiAdaptive.isDark
+              ? const Color(0xFF334155)
+              : const Color(0xFFEDE4DB),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: AppColors.dustyRose.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  icon,
+                  color: AppColors.dustyRose,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
                       children: [
-                        Text(
-                          LumiAdaptive.text(
-                            membership?.points?.toString() ?? '—',
-                          ),
-                          textAlign: TextAlign.right,
-                          style: LumiAdaptive.style(
-                            LumiStyle.body(
-                              size: 34,
-                              color: LumiAdaptive.color(
-                                LumiStyle.ink,
-                                surface: true,
-                              ),
-                            ).copyWith(
-                              height: 1.1,
+                        Expanded(
+                          child: Text(
+                            LumiAdaptive.text(reward.title),
+                            style: GoogleFonts.beVietnamPro(
+                              fontSize: 14,
                               fontWeight: FontWeight.w700,
+                              color: LumiAdaptive.color(LumiStyle.plum),
                             ),
                           ),
                         ),
-                        const SizedBox(height: 5),
-                        Text(
-                          LumiAdaptive.text('điểm tích lũy'),
-                          textAlign: TextAlign.right,
-                          style: LumiAdaptive.style(
-                            LumiStyle.body(
-                              size: 15,
-                              color: LumiAdaptive.color(
-                                LumiStyle.ink,
-                                surface: true,
-                              ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: AppColors.dustyRose.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            reward.badgeText,
+                            style: GoogleFonts.beVietnamPro(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.dustyRose,
                             ),
                           ),
                         ),
                       ],
                     ),
+                    const SizedBox(height: 4),
+                    Text(
+                      LumiAdaptive.text(reward.description),
+                      style: GoogleFonts.beVietnamPro(
+                        fontSize: 12,
+                        color: LumiAdaptive.color(LumiStyle.muted),
+                        height: 1.35,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          const Divider(height: 1),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              // Điểm yêu cầu
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFD97706).withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.stars_rounded, size: 16, color: Color(0xFFD97706)),
+                    const SizedBox(width: 4),
+                    Text(
+                      '${_formatNumber(reward.pointsRequired)} điểm',
+                      style: GoogleFonts.beVietnamPro(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFFD97706),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              // Số lượng còn lại
+              Text(
+                reward.isOutOfStock
+                    ? 'Đã hết lượt'
+                    : 'Còn ${reward.remainingStock}/${reward.stock}',
+                style: GoogleFonts.beVietnamPro(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                  color: reward.isOutOfStock
+                      ? Colors.red.shade600
+                      : LumiAdaptive.color(LumiStyle.muted),
+                ),
+              ),
+              const Spacer(),
+              // Nút đổi
+              SizedBox(
+                height: 34,
+                child: FilledButton(
+                  onPressed: (!canRedeem || isRedeemingThis)
+                      ? null
+                      : () => _confirmRedeem(reward, userPoints),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.dustyRose,
+                    disabledBackgroundColor: LumiAdaptive.isDark
+                        ? const Color(0xFF334155)
+                        : const Color(0xFFE2E8F0),
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: isRedeemingThis
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : Text(
+                          reward.isOutOfStock
+                              ? 'Hết lượt'
+                              : (userPoints < reward.pointsRequired
+                                  ? 'Thiếu điểm'
+                                  : 'Đổi ngay'),
+                          style: GoogleFonts.beVietnamPro(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: canRedeem
+                                ? Colors.white
+                                : (LumiAdaptive.isDark
+                                    ? const Color(0xFF94A3B8)
+                                    : const Color(0xFF94A3B8)),
+                          ),
+                        ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _confirmRedeem(LumiRewardItem reward, int currentPoints) async {
+    final remainingAfter = currentPoints - reward.pointsRequired;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: LumiAdaptive.color(LumiStyle.surface, surface: true),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColors.dustyRose.withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.stars_rounded, color: AppColors.dustyRose, size: 24),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                LumiAdaptive.text('Xác nhận đổi điểm?'),
+                style: GoogleFonts.beVietnamPro(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w700,
+                  color: LumiAdaptive.color(LumiStyle.plum),
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              LumiAdaptive.text('Bạn đang đổi ưu đãi:'),
+              style: GoogleFonts.beVietnamPro(
+                fontSize: 13,
+                color: LumiAdaptive.color(LumiStyle.muted),
+              ),
+            ),
+            const SizedBox(height: 6),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: LumiAdaptive.isDark ? const Color(0xFF1E293B) : const Color(0xFFFFF7ED),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: LumiAdaptive.isDark ? const Color(0xFF334155) : const Color(0xFFFFEDD5),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    reward.title,
+                    style: GoogleFonts.beVietnamPro(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: LumiAdaptive.isDark ? Colors.white : const Color(0xFF9A3412),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '-${_formatNumber(reward.pointsRequired)} điểm tích luỹ',
+                    style: GoogleFonts.beVietnamPro(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFFEA580C),
+                    ),
                   ),
                 ],
               ),
-            ],
-          ),
-        ),
-      ],
-    ),
-  );
-
-  Widget _progressCard(LumiMembership? membership) {
-    final points = membership?.points;
-    return _card(
-      background: const Color(0xFFEAF3F7),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            LumiAdaptive.text('Tích lũy của bạn'),
-            style: LumiAdaptive.style(
-              LumiStyle.body(
-                size: 22,
-                color: LumiAdaptive.color(LumiStyle.ink, surface: true),
-              ).copyWith(fontWeight: FontWeight.w600, height: 1.3),
             ),
-          ),
-          const SizedBox(height: 8),
-          if (points == null)
-            Text(
-              LumiAdaptive.text('Chưa có thông tin điểm tích lũy.'),
-              style: LumiAdaptive.style(LumiStyle.body(size: 16)),
-            )
-          else if (points == 0)
-            Text(
-              LumiAdaptive.text(
-                'Điểm sẽ được cập nhật sau giao dịch đủ điều kiện.',
-              ),
-              style: LumiAdaptive.style(LumiStyle.body(size: 16)),
-            )
-          else
-            Text(
-              LumiAdaptive.text(
-                '$points điểm đã được ghi nhận. Mốc tiến hạng chưa được cung cấp.',
-              ),
-              style: LumiAdaptive.style(LumiStyle.body(size: 16)),
-            ),
-          if (membership?.isDefault == true) ...[
             const SizedBox(height: 12),
             Text(
-              LumiAdaptive.text('Bạn đang ở hạng thành viên mặc định.'),
-              style: LumiAdaptive.style(LumiStyle.body(size: 14)),
+              LumiAdaptive.text(
+                'Điểm hiện có: ${_formatNumber(currentPoints)} điểm\n'
+                'Điểm sau khi đổi: ${_formatNumber(remainingAfter)} điểm\n'
+                '(Hạng thành viên của bạn vẫn được giữ nguyên)',
+              ),
+              style: GoogleFonts.beVietnamPro(
+                fontSize: 12,
+                color: LumiAdaptive.color(LumiStyle.ink),
+                height: 1.4,
+              ),
             ),
           ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(
+              LumiAdaptive.text('Suy nghĩ lại'),
+              style: GoogleFonts.beVietnamPro(
+                color: LumiAdaptive.color(LumiStyle.muted),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.dustyRose,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            child: Text(
+              LumiAdaptive.text('Đổi ngay'),
+              style: GoogleFonts.beVietnamPro(
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _redeemingId = reward.id);
+    try {
+      final res = await LumiAccountRepository.redeemReward(reward.id);
+      if (!mounted) return;
+
+      // Làm mới dữ liệu điểm và danh mục quà
+      setState(() {
+        _membershipFuture = LumiAccountRepository.fetchMembership();
+        _rewardsFuture = LumiAccountRepository.fetchRewardCatalog();
+      });
+
+      // Hiển thị popup nhận mã thành công
+      _showSuccessDialog(reward, res);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            LumiAdaptive.text('Đổi quà thất bại: ${e.toString()}'),
+            style: GoogleFonts.beVietnamPro(),
+          ),
+          backgroundColor: Colors.red.shade700,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _redeemingId = null);
+    }
+  }
+
+  void _showSuccessDialog(LumiRewardItem reward, LumiRedemptionResult res) {
+    final code = res.code ?? '';
+    final isVoucher = reward.type == 'voucher';
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: LumiAdaptive.color(LumiStyle.surface, surface: true),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 64,
+              height: 64,
+              decoration: const BoxDecoration(
+                color: Color(0xFFDCFCE7),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.check_circle_rounded,
+                color: Color(0xFF16A34A),
+                size: 38,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              LumiAdaptive.text('Đổi ưu đãi thành công! 🎉'),
+              style: GoogleFonts.beVietnamPro(
+                fontSize: 17,
+                fontWeight: FontWeight.w700,
+                color: LumiAdaptive.color(LumiStyle.plum),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              LumiAdaptive.text(reward.title),
+              textAlign: TextAlign.center,
+              style: GoogleFonts.beVietnamPro(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: LumiAdaptive.color(LumiStyle.ink),
+              ),
+            ),
+            if (code.isNotEmpty) ...[
+              const SizedBox(height: 14),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                decoration: BoxDecoration(
+                  color: LumiAdaptive.isDark
+                      ? const Color(0xFF1E293B)
+                      : const Color(0xFFF1F5F9),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppColors.dustyRose.withValues(alpha: 0.4),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      code,
+                      style: GoogleFonts.beVietnamPro(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.5,
+                        color: AppColors.dustyRose,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    IconButton(
+                      tooltip: LumiAdaptive.text('Sao chép mã'),
+                      icon: const Icon(Icons.copy_rounded, size: 18, color: AppColors.dustyRose),
+                      onPressed: () {
+                        Clipboard.setData(ClipboardData(text: code));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              LumiAdaptive.text('Đã sao chép mã $code vào bộ nhớ tạm!'),
+                              style: GoogleFonts.beVietnamPro(),
+                            ),
+                            behavior: SnackBarBehavior.floating,
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ],
+            const SizedBox(height: 12),
+            Text(
+              LumiAdaptive.text(
+                isVoucher
+                    ? 'Mã đã được tự động lưu vào ví voucher và sẵn sàng chọn áp dụng khi thanh toán đặt hàng!'
+                    : 'Vui lòng cung cấp mã trên cho nhân viên LUMI SPA khi tới trải nghiệm liệu trình hoặc nhận quà.',
+              ),
+              textAlign: TextAlign.center,
+              style: GoogleFonts.beVietnamPro(
+                fontSize: 12,
+                color: LumiAdaptive.color(LumiStyle.muted),
+                height: 1.4,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              style: FilledButton.styleFrom(
+                backgroundColor: AppColors.dustyRose,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: Text(
+                LumiAdaptive.text('Tuyệt vời, đã hiểu'),
+                style: GoogleFonts.beVietnamPro(
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _benefitsCard(String? tier) => _card(
-    child: Column(
+  /// Danh mục so sánh và khám phá đặc quyền của từng hạng thành viên
+  Widget _tierPerksSection(LumiMembership? membership) {
+    final allTiers = membership?.allTiers ?? _defaultTiers();
+    if (allTiers.isEmpty) return const SizedBox.shrink();
+
+    final safeIndex = _selectedTierIndex.clamp(0, allTiers.length - 1);
+    final selectedTier = allTiers[safeIndex];
+    final userTierName = (membership?.tier ?? 'Member').toLowerCase();
+
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          LumiAdaptive.text('Quyền lợi'),
-          style: LumiAdaptive.style(
-            LumiStyle.body(
-              size: 22,
-              color: LumiAdaptive.color(LumiStyle.ink, surface: true),
-            ).copyWith(fontWeight: FontWeight.w600, height: 1.3),
+          LumiAdaptive.text('Bảng quyền lợi các hạng thành viên'),
+          style: GoogleFonts.beVietnamPro(
+            fontSize: 17,
+            fontWeight: FontWeight.w700,
+            color: LumiAdaptive.color(LumiStyle.plum),
           ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-<<<<<<< HEAD
-          tier == null ? 'Đặc quyền dành cho thành viên' : 'Hạng $tier',
-          style: LumiStyle.body(size: 13, color: LumiStyle.muted),
         ),
         const SizedBox(height: 12),
-        _benefit(
-          Icons.event_available_outlined,
-          'Chủ động xem và quản lý lịch hẹn tại LUMI',
-=======
-          LumiAdaptive.text(
-            tier == null
-                ? 'Thông tin hạng chưa khả dụng'
-                : 'Dành cho hạng $tier',
-          ),
-          style: LumiAdaptive.style(LumiStyle.body(size: 16)),
-        ),
-        const SizedBox(height: 12),
-        _benefit(Icons.spa_outlined, 'Ưu đãi dịch vụ làm đẹp'),
-        _benefit(Icons.event_available_outlined, 'Ưu tiên cập nhật lịch hẹn'),
-        _benefit(
-          Icons.card_giftcard_outlined,
-          'Quà tặng trong các dịp đặc biệt',
-        ),
-        const SizedBox(height: 8),
-        Text(
-          LumiAdaptive.text(
-            'Quyền lợi thực tế tùy thuộc vào hạng và chính sách hiện hành của LUMI.',
-          ),
-          style: LumiAdaptive.style(LumiStyle.body(size: 14)),
->>>>>>> f69fef543243a3b629319035f2b9c062ba0b8aab
-        ),
-        _benefit(
-          Icons.spa_outlined,
-          'Khám phá liệu trình và ưu đãi phù hợp',
-        ),
-        _benefit(
-          Icons.stars_outlined,
-          'Theo dõi điểm tích lũy khi được hệ thống cập nhật',
-        ),
-        const SizedBox(height: 10),
-        SizedBox(
-          width: double.infinity,
-          child: OutlinedButton(
-            onPressed: () => _showOtherTierBenefits(tier),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: LumiStyle.plum,
-              side: const BorderSide(color: LumiStyle.line),
-              padding: const EdgeInsets.symmetric(vertical: 13),
-            ),
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text('Xem quyền lợi các hạng thành viên khác'),
-                SizedBox(width: 6),
-                Icon(Icons.arrow_forward_rounded, size: 17),
-              ],
-            ),
-          ),
-        ),
-      ],
-    ),
-  );
+        // Bộ chọn Tab Hạng
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: List.generate(allTiers.length, (index) {
+              final t = allTiers[index];
+              final isSelected = index == safeIndex;
+              final isUserCurrentTier = t.name.toLowerCase() == userTierName;
 
-  void _showOtherTierBenefits(String? currentTier) {
-    const tierBenefits = <({String name, IconData icon, List<String> benefits})>[
-      (
-        name: 'Member',
-        icon: Icons.spa_outlined,
-        benefits: [
-          'Quản lý lịch hẹn và thông tin chăm sóc cá nhân',
-          'Cập nhật điểm tích lũy khi hệ thống ghi nhận',
-          'Nhận thông tin dịch vụ và hoạt động mới của LUMI',
-        ],
-      ),
-      (
-        name: 'Silver',
-        icon: Icons.workspace_premium_outlined,
-        benefits: [
-          'Các tiện ích của hạng Member',
-          'Ưu tiên tiếp cận một số chương trình dành cho hội viên',
-          'Quà tặng hoặc ưu đãi trong dịp sinh nhật',
-        ],
-      ),
-      (
-        name: 'Gold',
-        icon: Icons.military_tech_outlined,
-        benefits: [
-          'Các tiện ích của hạng Silver',
-          'Ưu tiên lựa chọn khung giờ cho liệu trình',
-          'Ưu đãi chọn lọc cho dịch vụ chăm sóc',
-        ],
-      ),
-      (
-        name: 'Platinum',
-        icon: Icons.diamond_outlined,
-        benefits: [
-          'Các tiện ích của hạng Gold',
-          'Hỗ trợ tư vấn và sắp xếp lịch hẹn ưu tiên',
-          'Trải nghiệm quà tặng dành riêng cho hội viên',
-        ],
-      ),
-    ];
-
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      showDragHandle: true,
-      backgroundColor: LumiStyle.ivory,
-      builder: (context) => SafeArea(
-        child: FractionallySizedBox(
-          heightFactor: 0.88,
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
-            children: [
-              Text(
-                'Các hạng thành viên',
-                style: LumiStyle.heading(size: 30),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                'Khám phá những đặc quyền được gợi ý cho từng cấp độ hội viên.',
-                style: LumiStyle.body(size: 14),
-              ),
-              const SizedBox(height: 16),
-              for (final (index, tier) in tierBenefits.indexed) ...[
-                _tierBenefitsCard(
-                  tier,
-                  isCurrentTier:
-                      currentTier?.toLowerCase() == tier.name.toLowerCase(),
+              return Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: FilterChip(
+                  label: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        LumiAdaptive.text(t.label),
+                        style: GoogleFonts.beVietnamPro(
+                          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                          fontSize: 13,
+                        ),
+                      ),
+                      if (isUserCurrentTier) ...[
+                        const SizedBox(width: 4),
+                        const Icon(Icons.check_circle_rounded, size: 14, color: AppColors.dustyRose),
+                      ],
+                    ],
+                  ),
+                  selected: isSelected,
+                  onSelected: (_) {
+                    setState(() => _selectedTierIndex = index);
+                  },
+                  selectedColor: AppColors.dustyRose.withValues(alpha: 0.15),
+                  checkmarkColor: AppColors.dustyRose,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    side: BorderSide(
+                      color: isSelected ? AppColors.dustyRose : Colors.transparent,
+                    ),
+                  ),
                 ),
-                if (index < tierBenefits.length - 1)
-                  const SizedBox(height: 12),
-              ],
-              const SizedBox(height: 14),
-              Text(
-                'Các hạng và quyền lợi trong danh sách này mang tính minh họa. '
-                'Hạng hiện tại và điểm của bạn chỉ hiển thị theo dữ liệu backend; '
-                'chính sách chính thức sẽ theo thông báo của LUMI.',
-                style: LumiStyle.body(size: 12),
+              );
+            }),
+          ),
+        ),
+        const SizedBox(height: 14),
+        // Chi tiết quyền lợi của hạng đang chọn
+        _card(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.dustyRose.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      'Hạng ${selectedTier.label}',
+                      style: GoogleFonts.beVietnamPro(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.dustyRose,
+                      ),
+                    ),
+                  ),
+                  const Spacer(),
+                  Text(
+                    selectedTier.discountPercent > 0
+                        ? 'Giảm ${selectedTier.discountPercent}% dịch vụ'
+                        : 'Tích điểm chuẩn',
+                    style: GoogleFonts.beVietnamPro(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: LumiAdaptive.color(LumiStyle.ink),
+                    ),
+                  ),
+                ],
               ),
+              const SizedBox(height: 10),
+              Text(
+                LumiAdaptive.text(
+                  selectedTier.maxPoints != null
+                      ? 'Yêu cầu: ${_formatNumber(selectedTier.minPoints)} – ${_formatNumber(selectedTier.maxPoints!)} điểm'
+                      : 'Yêu cầu: Từ ${_formatNumber(selectedTier.minPoints)} điểm trở lên',
+                ),
+                style: GoogleFonts.beVietnamPro(
+                  fontSize: 12,
+                  color: LumiAdaptive.color(LumiStyle.muted),
+                ),
+              ),
+              const Divider(height: 20),
+              ...selectedTier.benefits.map((benefit) => _perkItem(benefit)),
             ],
           ),
         ),
-      ),
+      ],
     );
   }
 
-  Widget _tierBenefitsCard(
-    ({String name, IconData icon, List<String> benefits}) tier, {
-    required bool isCurrentTier,
-  }) => _card(
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Icon(tier.icon, color: LumiStyle.rose),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                tier.name,
-                style: LumiStyle.body(
-                  size: 17,
-                  color: LumiStyle.plum,
-                ).copyWith(fontWeight: FontWeight.w700),
-              ),
-            ),
-            if (isCurrentTier)
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 5,
-                ),
-                decoration: BoxDecoration(
-                  color: LumiStyle.blushSurface,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  'Hạng hiện tại',
-                  style: LumiStyle.body(size: 11, color: LumiStyle.rose),
-                ),
-              ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        for (final benefit in tier.benefits)
-          Padding(
-            padding: const EdgeInsets.only(top: 7),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Icon(
-                  Icons.check_rounded,
-                  size: 17,
-                  color: LumiStyle.rose,
-                ),
-                const SizedBox(width: 8),
-                Expanded(child: Text(benefit, style: LumiStyle.body(size: 13))),
-              ],
-            ),
-          ),
-      ],
-    ),
-  );
-
-  Widget _benefit(IconData icon, String text) {
-    final background = icon == Icons.spa_outlined
-        ? const Color(0xFFFBE7DC)
-        : icon == Icons.event_available_outlined
-        ? const Color(0xFFE6F1F5)
-        : const Color(0xFFEDF1E5);
-
-    final foreground = icon == Icons.spa_outlined
-        ? const Color(0xFFA5553E)
-        : icon == Icons.event_available_outlined
-        ? const Color(0xFF406779)
-        : const Color(0xFF526442);
-
+  Widget _perkItem(String benefit) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
+      padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 46,
-            height: 46,
+            margin: const EdgeInsets.only(top: 2),
+            padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
-              color: LumiAdaptive.color(background, surface: true),
-              borderRadius: BorderRadius.circular(15),
+              color: AppColors.dustyRose.withValues(alpha: 0.15),
+              shape: BoxShape.circle,
             ),
-            child: Icon(icon, size: 25, color: LumiAdaptive.color(foreground)),
+            child: const Icon(
+              Icons.check_rounded,
+              size: 14,
+              color: AppColors.dustyRose,
+            ),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 10),
           Expanded(
             child: Text(
-              LumiAdaptive.text(text),
-              style: LumiAdaptive.style(
-                LumiStyle.body(
-                  size: 17,
-                  color: LumiAdaptive.color(LumiStyle.ink, surface: true),
-                ).copyWith(fontWeight: FontWeight.w500),
+              LumiAdaptive.text(benefit),
+              style: GoogleFonts.beVietnamPro(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: LumiAdaptive.color(LumiStyle.plum),
+                height: 1.35,
               ),
             ),
           ),
@@ -570,24 +1290,29 @@ class _MembershipScreenState extends State<MembershipScreen> {
   }) => _card(
     child: Column(
       children: [
-        Icon(icon, size: 32, color: LumiAdaptive.color(LumiStyle.rose)),
-        const SizedBox(height: 8),
+        Icon(icon, size: 36, color: LumiAdaptive.color(LumiStyle.rose)),
+        const SizedBox(height: 10),
         Text(
           LumiAdaptive.text(title),
-          style: LumiAdaptive.style(
-            LumiStyle.body(
-              size: 15,
-              color: LumiAdaptive.color(LumiStyle.plum, surface: true),
-            ),
+          style: GoogleFonts.beVietnamPro(
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+            color: LumiAdaptive.color(LumiStyle.plum),
           ),
         ),
         const SizedBox(height: 6),
         Text(
           LumiAdaptive.text(message),
           textAlign: TextAlign.center,
-          style: LumiAdaptive.style(LumiStyle.body()),
+          style: GoogleFonts.beVietnamPro(
+            fontSize: 13,
+            color: LumiAdaptive.color(LumiStyle.ink),
+          ),
         ),
-        ?action,
+        if (action != null) ...[
+          const SizedBox(height: 12),
+          action,
+        ],
       ],
     ),
   );
@@ -597,11 +1322,89 @@ class _MembershipScreenState extends State<MembershipScreen> {
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
           color: LumiAdaptive.color(background, surface: true),
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: LumiAdaptive.color(const Color(0xFFEDE4DB)),
+            color: LumiAdaptive.isDark
+                ? const Color(0xFF334155)
+                : const Color(0xFFEDE4DB),
           ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.03),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: child,
       );
+
+  List<LumiTierInfo> _defaultTiers() => const [
+    LumiTierInfo(
+      id: 'member',
+      name: 'Member',
+      label: 'Thành viên',
+      minPoints: 0,
+      maxPoints: 999,
+      minSpent: 0,
+      discountPercent: 0,
+      color: '#C5A880',
+      badge: 'Bronze',
+      benefits: [
+        'Tích lũy 1 điểm cho mỗi 1.000 VNĐ chi tiêu',
+        'Quà tặng chào mừng: Voucher 5% cho đơn đầu tiên',
+        'Cập nhật ưu đãi & sự kiện sớm nhất',
+        'Tư vấn da chuyên sâu 1:1 miễn phí',
+      ],
+    ),
+    LumiTierInfo(
+      id: 'silver',
+      name: 'Silver',
+      label: 'Hạng Bạc',
+      minPoints: 1000,
+      maxPoints: 4999,
+      minSpent: 1000000,
+      discountPercent: 5,
+      color: '#94A3B8',
+      badge: 'Silver',
+      benefits: [
+        'Giảm 5% trực tiếp trên mọi dịch vụ & mỹ phẩm',
+        'Tặng Voucher sinh nhật 100.000 đ',
+        'Ưu tiên chọn khung giờ hẹn & chuyên viên yêu thích',
+      ],
+    ),
+    LumiTierInfo(
+      id: 'gold',
+      name: 'Gold',
+      label: 'Hạng Vàng',
+      minPoints: 5000,
+      maxPoints: 14999,
+      minSpent: 5000000,
+      discountPercent: 10,
+      color: '#F59E0B',
+      badge: 'Gold',
+      benefits: [
+        'Giảm 10% trực tiếp trên mọi dịch vụ & mỹ phẩm',
+        'Miễn phí vận chuyển (Freeship) toàn quốc',
+        'Voucher sinh nhật cao cấp 300.000 đ',
+        'Miễn phí ngâm chân thảo mộc & thức uống cao cấp',
+      ],
+    ),
+    LumiTierInfo(
+      id: 'diamond',
+      name: 'Diamond',
+      label: 'Kim Cương',
+      minPoints: 15000,
+      minSpent: 15000000,
+      discountPercent: 15,
+      color: '#38BDF8',
+      badge: 'Diamond',
+      benefits: [
+        'Giảm 15% VIP trọn đời trên mọi dịch vụ & mỹ phẩm',
+        'Tặng 01 liệu trình chăm sóc da mặt miễn phí tháng sinh nhật',
+        'Phòng dịch vụ VIP riêng biệt & Master KTV',
+        'Chuyên viên hỗ trợ 24/7',
+      ],
+    ),
+  ];
 }

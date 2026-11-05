@@ -87,7 +87,7 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
           'Duyệt đơn hàng?',
-          style: GoogleFonts.dmSans(
+          style: GoogleFonts.beVietnamPro(
             fontSize: 22,
             fontWeight: FontWeight.w700,
             color: LumiStyle.plum,
@@ -95,14 +95,14 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
         ),
         content: Text(
           'Xác nhận duyệt đơn hàng #${order.id} của khách ${order.customerName} (${order.displayTotal})?\nHệ thống sẽ tự động gửi email xác nhận và thông báo cho khách hàng.',
-          style: GoogleFonts.dmSans(fontSize: 13, height: 1.5),
+          style: GoogleFonts.beVietnamPro(fontSize: 13, height: 1.5),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
             child: Text(
               'HỦY',
-              style: GoogleFonts.dmSans(color: LumiStyle.muted),
+              style: GoogleFonts.beVietnamPro(color: LumiStyle.muted),
             ),
           ),
           FilledButton(
@@ -110,7 +110,7 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
             style: FilledButton.styleFrom(backgroundColor: LumiStyle.rose),
             child: Text(
               'DUYỆT & GỬI EMAIL',
-              style: GoogleFonts.dmSans(fontWeight: FontWeight.w700),
+              style: GoogleFonts.beVietnamPro(fontWeight: FontWeight.w700),
             ),
           ),
         ],
@@ -136,6 +136,13 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
           ),
           backgroundColor: Colors.green.shade800,
           behavior: SnackBarBehavior.floating,
+          action: SnackBarAction(
+            label: 'XEM ĐÃ DUYỆT',
+            textColor: Colors.white,
+            onPressed: () {
+              if (mounted) setState(() => _selectedFilter = 2);
+            },
+          ),
         ),
       );
       if (_fallbackApiOrders != null) {
@@ -205,6 +212,7 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
     String newStatus, {
     String? reason,
   }) async {
+    final prevFilter = _selectedFilter;
     try {
       await AdminOrderRepository.instance.updateOrderStatus(
         order: order,
@@ -214,13 +222,34 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
       if (!mounted) {
         return;
       }
+
+      // Khi chuyển sang Đang giao (shipping) từ tab Đã duyệt (tab 2):
+      // Tự động chuyển view sang tab 3 (Đang giao) để admin lập tức thấy đơn tại tab tương ứng,
+      // không cần phải qua tab "Tất cả" tìm kiếm!
+      if (newStatus == 'shipping' && _selectedFilter == 2) {
+        setState(() => _selectedFilter = 3);
+      }
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            '✅ Đã chuyển trạng thái đơn #${order.id} sang "$newStatus"',
+            newStatus == 'shipping'
+                ? '🚚 Đã chuyển đơn #${order.id} sang "Đang giao hàng"!'
+                : '✅ Đã chuyển trạng thái đơn #${order.id} sang "$newStatus"',
           ),
-          backgroundColor: Colors.green.shade800,
+          backgroundColor: newStatus == 'shipping'
+              ? const Color(0xFF2563EB)
+              : Colors.green.shade800,
           behavior: SnackBarBehavior.floating,
+          action: (newStatus == 'shipping' && prevFilter == 2)
+              ? SnackBarAction(
+                  label: 'QUAY LẠI ĐÃ DUYỆT',
+                  textColor: Colors.white,
+                  onPressed: () {
+                    if (mounted) setState(() => _selectedFilter = 2);
+                  },
+                )
+              : null,
         ),
       );
       if (_fallbackApiOrders != null) {
@@ -262,43 +291,21 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
 
     switch (_selectedFilter) {
       case 0: // Chờ duyệt
-        result = result
-            .where((o) => o.status.toLowerCase() == 'pending')
-            .toList();
+        result = result.where((o) => o.isPending).toList();
         break;
       case 1: // Tất cả
         break;
       case 2: // Đã duyệt
-        result = result
-            .where(
-              (o) =>
-                  o.status.toLowerCase() == 'confirmed' ||
-                  o.status.toLowerCase() == 'processing',
-            )
-            .toList();
+        result = result.where((o) => o.isConfirmed).toList();
         break;
       case 3: // Đang giao
-        result = result
-            .where(
-              (o) =>
-                  o.status.toLowerCase() == 'shipping' ||
-                  o.status.toLowerCase() == 'delivering',
-            )
-            .toList();
+        result = result.where((o) => o.isShipping).toList();
         break;
-      case 4: // Đã giao
-        result = result
-            .where((o) => o.status.toLowerCase() == 'completed')
-            .toList();
+      case 4: // Hoàn thành
+        result = result.where((o) => o.isCompleted).toList();
         break;
       case 5: // Đã hủy
-        result = result
-            .where(
-              (o) =>
-                  o.status.toLowerCase() == 'cancelled' ||
-                  o.status.toLowerCase() == 'rejected',
-            )
-            .toList();
+        result = result.where((o) => o.isCancelled).toList();
         break;
     }
 
@@ -312,6 +319,13 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
             o.itemsSummary.toLowerCase().contains(query);
       }).toList();
     }
+
+    // Luôn sắp xếp đơn hàng theo ngày giờ từ gần đến xa (mới nhất lên đầu)
+    result.sort((a, b) {
+      final dateA = a.createdAt ?? DateTime(0);
+      final dateB = b.createdAt ?? DateTime(0);
+      return dateB.compareTo(dateA);
+    });
 
     return result;
   }
@@ -339,7 +353,7 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
               children: [
                 Text(
                   'Đang đồng bộ đơn hàng qua Backend API (Port 3000)',
-                  style: GoogleFonts.dmSans(
+                  style: GoogleFonts.beVietnamPro(
                     fontWeight: FontWeight.w700,
                     fontSize: 13,
                     color: const Color(0xFF92400E),
@@ -348,7 +362,7 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
                 const SizedBox(height: 2),
                 Text(
                   'Firestore Security Rules hiện chặn quyền đọc trực tiếp từ máy khách.',
-                  style: GoogleFonts.dmSans(
+                  style: GoogleFonts.beVietnamPro(
                     fontSize: 12,
                     color: const Color(0xFFB45309),
                   ),
@@ -366,7 +380,7 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
             ),
             child: Text(
               'Kiểm tra quyền',
-              style: GoogleFonts.dmSans(
+              style: GoogleFonts.beVietnamPro(
                 fontWeight: FontWeight.w700,
                 fontSize: 11,
                 color: const Color(0xFF92400E),
@@ -413,7 +427,7 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
                     const SizedBox(height: 16),
                     Text(
                       'Phát hiện lỗi Firestore Rules. Đang chuyển sang nạp qua Backend API...',
-                      style: GoogleFonts.dmSans(
+                      style: GoogleFonts.beVietnamPro(
                         fontSize: 13,
                         color: LumiStyle.muted,
                       ),
@@ -437,7 +451,7 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
                     const SizedBox(height: 12),
                     Text(
                       'Lỗi kết nối đơn hàng Firestore',
-                      style: GoogleFonts.dmSans(
+                      style: GoogleFonts.beVietnamPro(
                         fontSize: 22,
                         fontWeight: FontWeight.w700,
                         color: LumiStyle.plum,
@@ -447,7 +461,7 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
                     Text(
                       '${snapshot.error}',
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.dmSans(
+                      style: GoogleFonts.beVietnamPro(
                         fontSize: 12,
                         color: LumiStyle.muted,
                       ),
@@ -467,7 +481,7 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
                           ),
                           label: Text(
                             'Tải qua Backend API',
-                            style: GoogleFonts.dmSans(),
+                            style: GoogleFonts.beVietnamPro(),
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -476,7 +490,7 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
                           icon: const Icon(Icons.security_rounded, size: 16),
                           label: Text(
                             'Kiểm tra quyền',
-                            style: GoogleFonts.dmSans(),
+                            style: GoogleFonts.beVietnamPro(),
                           ),
                         ),
                       ],
@@ -492,23 +506,11 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
 
         final filteredOrders = _filterOrders(allOrders);
 
-        final pendingCount = allOrders
-            .where((o) => o.status.toLowerCase() == 'pending')
-            .length;
-        final confirmedCount = allOrders
-            .where(
-              (o) =>
-                  o.status.toLowerCase() == 'confirmed' ||
-                  o.status.toLowerCase() == 'processing',
-            )
-            .length;
-        final shippingCount = allOrders
-            .where(
-              (o) =>
-                  o.status.toLowerCase() == 'shipping' ||
-                  o.status.toLowerCase() == 'delivering',
-            )
-            .length;
+        final pendingCount = allOrders.where((o) => o.isPending).length;
+        final confirmedCount = allOrders.where((o) => o.isConfirmed).length;
+        final shippingCount = allOrders.where((o) => o.isShipping).length;
+        final completedCount = allOrders.where((o) => o.isCompleted).length;
+        final cancelledCount = allOrders.where((o) => o.isCancelled).length;
 
         return LayoutBuilder(
           builder: (context, constraints) {
@@ -568,7 +570,7 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
                                 onChanged: (_) => setState(() {}),
                                 decoration: InputDecoration(
                                   hintText: 'Tìm kiếm mã đơn, khách hàng, số điện thoại hoặc sản phẩm...',
-                                  hintStyle: GoogleFonts.dmSans(
+                                  hintStyle: GoogleFonts.beVietnamPro(
                                     fontSize: 13,
                                     color: LumiStyle.muted,
                                   ),
@@ -663,28 +665,8 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
                               _buildFilterChip(1, 'Tất cả', allOrders.length),
                               _buildFilterChip(2, 'Đã duyệt', confirmedCount),
                               _buildFilterChip(3, 'Đang giao', shippingCount),
-                              _buildFilterChip(
-                                4,
-                                'Hoàn thành',
-                                allOrders
-                                    .where(
-                                      (o) =>
-                                          o.status.toLowerCase() == 'completed',
-                                    )
-                                    .length,
-                              ),
-                              _buildFilterChip(
-                                5,
-                                'Đã hủy',
-                                allOrders
-                                    .where(
-                                      (o) =>
-                                          o.status.toLowerCase() ==
-                                              'cancelled' ||
-                                          o.status.toLowerCase() == 'rejected',
-                                    )
-                                    .length,
-                              ),
+                              _buildFilterChip(4, 'Hoàn thành', completedCount),
+                              _buildFilterChip(5, 'Đã hủy', cancelledCount),
                             ],
                           ),
                         ),
@@ -712,7 +694,7 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
                             const SizedBox(height: 16),
                             Text(
                               'Không có đơn hàng nào phù hợp',
-                              style: GoogleFonts.dmSans(
+                              style: GoogleFonts.beVietnamPro(
                                 fontSize: 20,
                                 fontWeight: FontWeight.w700,
                                 color: LumiStyle.plum,
@@ -721,7 +703,7 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
                             const SizedBox(height: 6),
                             Text(
                               'Thử thay đổi bộ lọc trạng thái hoặc từ khóa tìm kiếm.',
-                              style: GoogleFonts.dmSans(
+                              style: GoogleFonts.beVietnamPro(
                                 fontSize: 13,
                                 color: LumiStyle.muted,
                               ),
@@ -834,7 +816,7 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
                     fit: BoxFit.scaleDown,
                     child: Text(
                       '$count',
-                      style: GoogleFonts.dmSans(
+                      style: GoogleFonts.beVietnamPro(
                         fontSize: 28,
                         height: 1,
                         fontWeight: FontWeight.w800,
@@ -849,7 +831,7 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
           const SizedBox(height: 10),
           Text(
             title,
-            style: GoogleFonts.dmSans(
+            style: GoogleFonts.beVietnamPro(
               fontSize: 12,
               height: 1.4,
               fontWeight: FontWeight.w600,
@@ -876,7 +858,7 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
         selectedColor: LumiStyle.plum,
         backgroundColor: Colors.white,
         side: BorderSide(color: isSelected ? LumiStyle.plum : LumiStyle.line),
-        labelStyle: GoogleFonts.dmSans(
+        labelStyle: GoogleFonts.beVietnamPro(
           fontSize: 12,
           fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
           color: isSelected ? Colors.white : LumiStyle.plum,

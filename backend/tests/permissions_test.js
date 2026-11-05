@@ -65,7 +65,7 @@ const adminPaths = [
   ['get','/api/admin-bookings'], ['post','/api/admin-bookings/x/status'], ['patch','/api/admin-bookings/x/status'],
   ['patch','/api/admin/bookings/x/confirm'], ['patch','/api/admin/bookings/x/reject'],
   ['get','/api/admin-orders'], ['get','/api/admin-orders/x'], ['post','/api/admin-orders/x/status'], ['patch','/api/admin-orders/x/status'],
-  ['post','/api/orders/x/notify-status'], ['get','/api/admin-users'], ['post','/api/admin-dev/clear-test-data'],
+  ['post','/api/orders/x/notify-status'], ['get','/api/admin-users'], ['patch','/api/admin-users/x/address'], ['post','/api/admin-users/x/address'], ['post','/api/admin-dev/clear-test-data'],
 ];
 test('every admin route and alias rejects missing/forged/customer/non-boolean admin tokens', async () => {
   const h = harness();
@@ -232,4 +232,35 @@ test('legacy approve/reject aliases use canonical resource-lock transaction',asy
     assert.equal(h.records.get(`bookings/${id}`).status,status==='approved'?'confirmed':'cancelled');
     if(status==='rejected')assert.equal(h.records.has(`resource_slots/${id}`),false);
   }
+});
+test('coupons endpoint returns available vouchers and checkout applies discount correctly', async () => {
+  const h = harness();
+  // 1. GET /api/orders/coupons
+  const listRes = await request(h.app)
+    .get('/api/orders/coupons')
+    .set('Authorization', 'Bearer customer');
+  assert.equal(listRes.status, 200);
+  assert.equal(listRes.body.success, true);
+  assert.ok(listRes.body.data.length >= 6);
+  assert.ok(listRes.body.data.some(c => c.code === 'LUMI50K'));
+
+  // 2. Checkout with coupon LUMI50K (min order 300.000, 50k discount)
+  h.records.set('products/p1', { name: 'Serum', price: 350000, stock: 10, isActive: true });
+  const orderRes = await request(h.app)
+    .post('/api/orders')
+    .set('Authorization', 'Bearer customer')
+    .send({
+      items: [{ productId: 'p1', quantity: 1 }],
+      shippingAddress: '123 Le Loi, Q1, TP.HCM',
+      phone: '0901234567',
+      customerName: 'Alice',
+      couponCode: 'LUMI50K',
+    });
+  assert.equal(orderRes.status, 201);
+  assert.equal(orderRes.body.data.subtotal, 350000);
+  assert.equal(orderRes.body.data.discount, 50000);
+  assert.equal(orderRes.body.data.couponCode, 'LUMI50K');
+  // Subtotal < 500k so shippingFee = 30000. Total = 350000 - 50000 + 30000 = 330000
+  assert.equal(orderRes.body.data.total, 330000);
+  assert.ok(orderRes.body.data.id.startsWith('LUMI-'));
 });

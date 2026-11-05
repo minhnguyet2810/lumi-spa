@@ -54,7 +54,7 @@ class _AdminRejectReasonDialogState extends State<AdminRejectReasonDialog> {
           Expanded(
             child: Text(
               'Từ chối lịch hẹn',
-              style: GoogleFonts.cormorantGaramond(
+              style: GoogleFonts.beVietnamPro(
                 fontSize: 22,
                 fontWeight: FontWeight.w700,
                 color: LumiStyle.plum,
@@ -70,7 +70,7 @@ class _AdminRejectReasonDialogState extends State<AdminRejectReasonDialog> {
           children: [
             Text(
               'Đơn của khách: ${widget.booking.contactName} (${widget.booking.contactPhone})',
-              style: GoogleFonts.dmSans(
+              style: GoogleFonts.beVietnamPro(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
                 color: LumiStyle.plum,
@@ -78,12 +78,12 @@ class _AdminRejectReasonDialogState extends State<AdminRejectReasonDialog> {
             ),
             Text(
               'Dịch vụ: ${widget.booking.serviceName} - ${widget.booking.formattedDateTime}',
-              style: GoogleFonts.dmSans(fontSize: 12, color: LumiStyle.muted),
+              style: GoogleFonts.beVietnamPro(fontSize: 12, color: LumiStyle.muted),
             ),
             const SizedBox(height: 16),
             Text(
               'Chọn lý do từ chối nhanh:',
-              style: GoogleFonts.dmSans(
+              style: GoogleFonts.beVietnamPro(
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
                 color: LumiStyle.plum,
@@ -95,7 +95,7 @@ class _AdminRejectReasonDialogState extends State<AdminRejectReasonDialog> {
               runSpacing: 6,
               children: _quickReasons.map((r) {
                 return ActionChip(
-                  label: Text(r, style: GoogleFonts.dmSans(fontSize: 11)),
+                  label: Text(r, style: GoogleFonts.beVietnamPro(fontSize: 11)),
                   backgroundColor: Colors.white,
                   side: BorderSide(color: LumiStyle.line),
                   onPressed: () {
@@ -108,10 +108,10 @@ class _AdminRejectReasonDialogState extends State<AdminRejectReasonDialog> {
             TextField(
               controller: _reasonController,
               maxLines: 3,
-              style: GoogleFonts.dmSans(fontSize: 13),
+              style: GoogleFonts.beVietnamPro(fontSize: 13),
               decoration: InputDecoration(
                 hintText: 'Nhập lý do gửi đến khách hàng...',
-                hintStyle: GoogleFonts.dmSans(
+                hintStyle: GoogleFonts.beVietnamPro(
                   fontSize: 12,
                   color: LumiStyle.muted,
                 ),
@@ -136,7 +136,7 @@ class _AdminRejectReasonDialogState extends State<AdminRejectReasonDialog> {
           onPressed: () => Navigator.of(context).pop(null),
           child: Text(
             'HỦY BỎ',
-            style: GoogleFonts.dmSans(
+            style: GoogleFonts.beVietnamPro(
               color: LumiStyle.muted,
               fontWeight: FontWeight.w600,
             ),
@@ -149,7 +149,7 @@ class _AdminRejectReasonDialogState extends State<AdminRejectReasonDialog> {
           icon: const Icon(Icons.close_rounded, size: 16),
           label: Text(
             'XÁC NHẬN TỪ CHỐI',
-            style: GoogleFonts.dmSans(fontWeight: FontWeight.w700),
+            style: GoogleFonts.beVietnamPro(fontWeight: FontWeight.w700),
           ),
           style: FilledButton.styleFrom(
             backgroundColor: Colors.red.shade700,

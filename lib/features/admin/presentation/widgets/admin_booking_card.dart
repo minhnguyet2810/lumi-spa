@@ -92,7 +92,7 @@ class AdminBookingCard extends StatelessWidget {
                         const SizedBox(width: 8),
                         Text(
                           'MÃ: #${booking.id.length > 8 ? booking.id.substring(0, 8).toUpperCase() : booking.id.toUpperCase()}',
-                          style: GoogleFonts.dmSans(
+                          style: GoogleFonts.beVietnamPro(
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
                             letterSpacing: 0.5,
@@ -115,7 +115,7 @@ class AdminBookingCard extends StatelessWidget {
                       ),
                       child: Text(
                         badgeTitle,
-                        style: GoogleFonts.dmSans(
+                        style: GoogleFonts.beVietnamPro(
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
                           color: badgeText,
@@ -140,7 +140,7 @@ class AdminBookingCard extends StatelessWidget {
                         booking.contactName.isNotEmpty
                             ? booking.contactName
                             : 'Khách hàng LUMI',
-                        style: GoogleFonts.dmSans(
+                        style: GoogleFonts.beVietnamPro(
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
                           color: LumiStyle.plum,
@@ -159,7 +159,7 @@ class AdminBookingCard extends StatelessWidget {
                         ),
                         child: Text(
                           booking.contactPhone,
-                          style: GoogleFonts.dmSans(
+                          style: GoogleFonts.beVietnamPro(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
                             color: LumiStyle.plum,
@@ -182,7 +182,7 @@ class AdminBookingCard extends StatelessWidget {
                     Expanded(
                       child: Text(
                         booking.serviceName,
-                        style: GoogleFonts.dmSans(
+                        style: GoogleFonts.beVietnamPro(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
                           color: LumiStyle.plum,
@@ -191,7 +191,7 @@ class AdminBookingCard extends StatelessWidget {
                     ),
                     Text(
                       booking.formattedPrice,
-                      style: GoogleFonts.dmSans(
+                      style: GoogleFonts.beVietnamPro(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
                         color: LumiStyle.rose,
@@ -212,7 +212,7 @@ class AdminBookingCard extends StatelessWidget {
                     const SizedBox(width: 8),
                     Text(
                       booking.formattedDateTime,
-                      style: GoogleFonts.dmSans(
+                      style: GoogleFonts.beVietnamPro(
                         fontSize: 12,
                         color: LumiStyle.muted,
                         fontWeight: FontWeight.w500,
@@ -221,7 +221,7 @@ class AdminBookingCard extends StatelessWidget {
                     const SizedBox(width: 8),
                     Text(
                       '(${booking.durationMinutes} phút)',
-                      style: GoogleFonts.dmSans(
+                      style: GoogleFonts.beVietnamPro(
                         fontSize: 11,
                         color: LumiStyle.muted,
                       ),
@@ -240,7 +240,7 @@ class AdminBookingCard extends StatelessWidget {
                           icon: const Icon(Icons.close_rounded, size: 16),
                           label: Text(
                             'TỪ CHỐI',
-                            style: GoogleFonts.dmSans(
+                            style: GoogleFonts.beVietnamPro(
                               fontWeight: FontWeight.w700,
                               fontSize: 12,
                             ),
@@ -262,7 +262,7 @@ class AdminBookingCard extends StatelessWidget {
                           icon: const Icon(Icons.check_rounded, size: 16),
                           label: Text(
                             'DUYỆT ĐƠN',
-                            style: GoogleFonts.dmSans(
+                            style: GoogleFonts.beVietnamPro(
                               fontWeight: FontWeight.w700,
                               fontSize: 12,
                             ),

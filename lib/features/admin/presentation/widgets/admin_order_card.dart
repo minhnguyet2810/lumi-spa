@@ -65,8 +65,8 @@ class AdminOrderCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      '#${order.id}',
-                      style: GoogleFonts.dmSans(
+                      order.displayId,
+                      style: GoogleFonts.beVietnamPro(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
                         color: LumiStyle.plum,
@@ -88,7 +88,7 @@ class AdminOrderCard extends StatelessWidget {
                   ),
                   child: Text(
                     order.statusLabel,
-                    style: GoogleFonts.dmSans(
+                    style: GoogleFonts.beVietnamPro(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
                       color: order.statusColor,
@@ -111,7 +111,7 @@ class AdminOrderCard extends StatelessWidget {
                 Expanded(
                   child: Text(
                     order.customerName,
-                    style: GoogleFonts.dmSans(
+                    style: GoogleFonts.beVietnamPro(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
                       color: LumiStyle.plum,
@@ -127,8 +127,8 @@ class AdminOrderCard extends StatelessWidget {
                   const SizedBox(width: 4),
                   Text(
                     order.phone,
-                    style: GoogleFonts.dmSans(
-                      fontSize: 12.5,
+                    style: GoogleFonts.beVietnamPro(
+                      fontSize: 12,
                       color: LumiStyle.plum,
                     ),
                   ),
@@ -152,8 +152,8 @@ class AdminOrderCard extends StatelessWidget {
                     order.shippingAddress,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.dmSans(
-                      fontSize: 12.5,
+                    style: GoogleFonts.beVietnamPro(
+                      fontSize: 12,
                       color: LumiStyle.muted,
                     ),
                   ),
@@ -182,7 +182,7 @@ class AdminOrderCard extends StatelessWidget {
                       order.itemsSummary,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.dmSans(
+                      style: GoogleFonts.beVietnamPro(
                         fontSize: 12,
                         color: LumiStyle.plum,
                       ),
@@ -202,14 +202,14 @@ class AdminOrderCard extends StatelessWidget {
                   children: [
                     Text(
                       'Tổng thanh toán',
-                      style: GoogleFonts.dmSans(
+                      style: GoogleFonts.beVietnamPro(
                         fontSize: 11,
                         color: LumiStyle.muted,
                       ),
                     ),
                     Text(
                       order.displayTotal,
-                      style: GoogleFonts.dmSans(
+                      style: GoogleFonts.beVietnamPro(
                         fontSize: 16,
                         fontWeight: FontWeight.w800,
                         color: LumiStyle.rose,
@@ -222,7 +222,7 @@ class AdminOrderCard extends StatelessWidget {
                   children: [
                     Text(
                       order.paymentMethod,
-                      style: GoogleFonts.dmSans(
+                      style: GoogleFonts.beVietnamPro(
                         fontSize: 11,
                         color: LumiStyle.plum,
                         fontWeight: FontWeight.w600,
@@ -230,7 +230,7 @@ class AdminOrderCard extends StatelessWidget {
                     ),
                     Text(
                       order.formattedCreatedAt,
-                      style: GoogleFonts.dmSans(
+                      style: GoogleFonts.beVietnamPro(
                         fontSize: 11,
                         color: LumiStyle.muted,
                       ),
@@ -260,13 +260,13 @@ class AdminOrderCard extends StatelessWidget {
                 const Spacer(),
 
                 // Khi status == pending: Duyệt và Hủy
-                if (order.status == 'pending') ...[
+                if (order.isPending) ...[
                   TextButton.icon(
                     onPressed: onCancel,
                     icon: const Icon(Icons.close, size: 15, color: Colors.red),
                     label: Text(
                       'Hủy',
-                      style: GoogleFonts.dmSans(
+                      style: GoogleFonts.beVietnamPro(
                         color: Colors.red.shade700,
                         fontWeight: FontWeight.w600,
                       ),
@@ -287,9 +287,8 @@ class AdminOrderCard extends StatelessWidget {
                   ),
                 ],
 
-                // Khi status == confirmed: Giao hàng
-                if (order.status == 'confirmed' ||
-                    order.status == 'processing') ...[
+                // Khi status == confirmed / approved: Giao hàng
+                if (order.isConfirmed) ...[
                   FilledButton.icon(
                     onPressed: () => onUpdateStatus('shipping'),
                     icon: const Icon(Icons.local_shipping_outlined, size: 15),
@@ -302,8 +301,7 @@ class AdminOrderCard extends StatelessWidget {
                 ],
 
                 // Khi status == shipping: Đang giao hàng (Chỉ khách hàng mới có thể nhấn hoàn thành)
-                if (order.status == 'shipping' ||
-                    order.status == 'delivering') ...[
+                if (order.isShipping) ...[
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 10,
@@ -325,8 +323,8 @@ class AdminOrderCard extends StatelessWidget {
                         const SizedBox(width: 4),
                         Text(
                           'Đang giao hàng (Chờ khách nhận)',
-                          style: GoogleFonts.dmSans(
-                            fontSize: 11.5,
+                          style: GoogleFonts.beVietnamPro(
+                            fontSize: 12,
                             fontWeight: FontWeight.w600,
                             color: const Color(0xFF1D4ED8),
                           ),

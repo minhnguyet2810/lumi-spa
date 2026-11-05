@@ -168,7 +168,7 @@ router.post('/', async (req, res) => {
       startAt.getTime() <= now ||
       startAt.getTime() > now + 60 * 24 * 60 * 60 * 1000
     ) {
-      return fail(res, 400, 'Chỉ được đặt lịch trong 60 ngày tới.');
+      return fail(res, 400, startAt.getTime() <= now ? 'Khung giờ này đã qua. Vui lòng chọn khung giờ khác.' : 'Chỉ được đặt lịch trước tối đa 60 ngày.');
     }
 
     const serviceDoc = await db.collection('services').doc(serviceId).get();
@@ -276,13 +276,19 @@ router.patch('/:id/cancel', async (req, res) => {
 
         const data = booking.data();
 
-        if (!['pending', 'confirmed'].includes(data.status)) {
+        if (!['pending', 'confirmed', 'approved'].includes(data.status)) {
           const error = new Error('Lịch hẹn không thể hủy.');
           error.code = 'INVALID_STATUS';
           throw error;
         }
 
-        if (data.startAt.toMillis() <= Date.now()) {
+        const startMs = typeof data.startAt?.toMillis === 'function'
+          ? data.startAt.toMillis()
+          : (typeof data.startAt?.toDate === 'function'
+              ? data.startAt.toDate().getTime()
+              : new Date(data.startAt).getTime());
+
+        if (startMs <= Date.now()) {
           const error = new Error('Không thể hủy lịch đã bắt đầu.');
           error.code = 'INVALID_STATUS';
           throw error;

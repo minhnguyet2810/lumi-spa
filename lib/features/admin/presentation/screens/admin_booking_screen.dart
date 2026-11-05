@@ -90,7 +90,7 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
           'Duyệt lịch hẹn?',
-          style: GoogleFonts.dmSans(
+          style: GoogleFonts.beVietnamPro(
             fontSize: 22,
             fontWeight: FontWeight.w700,
             color: LumiStyle.plum,
@@ -98,14 +98,14 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
         ),
         content: Text(
           'Xác nhận duyệt lịch hẹn "${booking.serviceName}" của khách ${booking.contactName} vào ${booking.formattedDateTime}?',
-          style: GoogleFonts.dmSans(fontSize: 13, height: 1.5),
+          style: GoogleFonts.beVietnamPro(fontSize: 13, height: 1.5),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
             child: Text(
               'HỦY',
-              style: GoogleFonts.dmSans(color: LumiStyle.muted),
+              style: GoogleFonts.beVietnamPro(color: LumiStyle.muted),
             ),
           ),
           FilledButton(
@@ -113,7 +113,7 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
             style: FilledButton.styleFrom(backgroundColor: LumiStyle.rose),
             child: Text(
               'DUYỆT NGAY',
-              style: GoogleFonts.dmSans(fontWeight: FontWeight.w700),
+              style: GoogleFonts.beVietnamPro(fontWeight: FontWeight.w700),
             ),
           ),
         ],
@@ -200,6 +200,37 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
     }
   }
 
+  Future<void> _handleComplete(BookingItem booking) async {
+    try {
+      await AdminBookingRepository.instance.completeBooking(booking);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '✅ Đã hoàn tất liệu trình và tích điểm cho khách hàng.',
+              style: GoogleFonts.beVietnamPro(),
+            ),
+            backgroundColor: const Color(0xFF16A34A),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '❌ Lỗi khi hoàn tất liệu trình: $e',
+              style: GoogleFonts.beVietnamPro(),
+            ),
+            backgroundColor: Colors.red.shade700,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
+
   void _showDetail(BookingItem booking) {
     showDialog(
       context: context,
@@ -212,6 +243,9 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
         onReject: () {
           Navigator.of(context).pop();
           _handleReject(booking);
+        },
+        onComplete: () {
+          _handleComplete(booking);
         },
       ),
     );
@@ -240,7 +274,7 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
               children: [
                 Text(
                   'Đang đồng bộ dữ liệu qua Backend API (Port 3000)',
-                  style: GoogleFonts.dmSans(
+                  style: GoogleFonts.beVietnamPro(
                     fontWeight: FontWeight.w700,
                     fontSize: 13,
                     color: const Color(0xFF92400E),
@@ -249,7 +283,7 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
                 const SizedBox(height: 2),
                 Text(
                   'Firestore Security Rules hiện chặn quyền đọc trực tiếp từ máy khách.',
-                  style: GoogleFonts.dmSans(
+                  style: GoogleFonts.beVietnamPro(
                     fontSize: 12,
                     color: const Color(0xFFB45309),
                   ),
@@ -267,7 +301,7 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
             ),
             child: Text(
               'Kiểm tra quyền',
-              style: GoogleFonts.dmSans(
+              style: GoogleFonts.beVietnamPro(
                 fontWeight: FontWeight.w700,
                 fontSize: 11,
                 color: const Color(0xFF92400E),
@@ -308,7 +342,7 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
                   const SizedBox(width: 10),
                   Text(
                     'LUMI SPA — Portal Quản Trị',
-                    style: GoogleFonts.dmSans(
+                    style: GoogleFonts.beVietnamPro(
                       fontSize: 22,
                       fontWeight: FontWeight.w700,
                       color: LumiStyle.plum,
@@ -371,7 +405,7 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
                       const SizedBox(height: 16),
                       Text(
                         'Phát hiện lỗi Firestore Rules. Đang chuyển sang nạp qua Backend API...',
-                        style: GoogleFonts.dmSans(
+                        style: GoogleFonts.beVietnamPro(
                           fontSize: 13,
                           color: LumiStyle.muted,
                         ),
@@ -395,7 +429,7 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
                       const SizedBox(height: 12),
                       Text(
                         'Lỗi kết nối Firestore',
-                        style: GoogleFonts.dmSans(
+                        style: GoogleFonts.beVietnamPro(
                           fontSize: 22,
                           fontWeight: FontWeight.w700,
                         ),
@@ -404,7 +438,7 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
                       Text(
                         snapshot.error.toString(),
                         textAlign: TextAlign.center,
-                        style: GoogleFonts.dmSans(
+                        style: GoogleFonts.beVietnamPro(
                           fontSize: 12,
                           color: LumiStyle.muted,
                         ),
@@ -424,7 +458,7 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
                             ),
                             label: Text(
                               'Tải qua Backend API',
-                              style: GoogleFonts.dmSans(),
+                              style: GoogleFonts.beVietnamPro(),
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -433,7 +467,7 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
                             icon: const Icon(Icons.security_rounded, size: 16),
                             label: Text(
                               'Kiểm tra quyền',
-                              style: GoogleFonts.dmSans(),
+                              style: GoogleFonts.beVietnamPro(),
                             ),
                           ),
                         ],
@@ -539,7 +573,7 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
                       const SizedBox(height: 12),
                       Text(
                         'Không có lịch hẹn trong bộ lọc này',
-                        style: GoogleFonts.dmSans(
+                        style: GoogleFonts.beVietnamPro(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
                           color: LumiStyle.muted,
@@ -665,8 +699,8 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
               const Spacer(),
               Text(
                 '$count',
-                style: GoogleFonts.dmSans(
-                  fontSize: 29,
+                style: GoogleFonts.beVietnamPro(
+                  fontSize: 28,
                   height: 1,
                   fontWeight: FontWeight.w800,
                   color: const Color(0xFF403735),
@@ -677,7 +711,7 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
           const SizedBox(height: 12),
           Text(
             title,
-            style: GoogleFonts.dmSans(
+            style: GoogleFonts.beVietnamPro(
               fontSize: 12,
               fontWeight: FontWeight.w600,
               color: const Color(0xFF756863),
@@ -703,7 +737,7 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
           decoration: InputDecoration(
             hintText:
                 'Tìm kiếm theo tên khách, SĐT, dịch vụ hoặc mã lịch hẹn...',
-            hintStyle: GoogleFonts.dmSans(fontSize: 13, color: LumiStyle.muted),
+            hintStyle: GoogleFonts.beVietnamPro(fontSize: 13, color: LumiStyle.muted),
             prefixIcon: const Icon(
               Icons.search,
               color: LumiStyle.rose,
@@ -802,7 +836,7 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
             const SizedBox(width: 6),
             Text(
               label,
-              style: GoogleFonts.dmSans(
+              style: GoogleFonts.beVietnamPro(
                 fontSize: 12,
                 fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
                 color: selected ? Colors.white : LumiStyle.plum,

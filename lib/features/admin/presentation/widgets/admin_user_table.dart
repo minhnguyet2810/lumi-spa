@@ -27,7 +27,7 @@ class AdminUserTable extends StatelessWidget {
               const SizedBox(height: 12),
               Text(
                 'Không có người dùng nào',
-                style: GoogleFonts.cormorantGaramond(
+                style: GoogleFonts.beVietnamPro(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
                   color: LumiStyle.muted,
@@ -67,7 +67,7 @@ class AdminUserTable extends StatelessWidget {
               DataColumn(
                 label: Text(
                   'NGƯỜI DÙNG',
-                  style: GoogleFonts.dmSans(
+                  style: GoogleFonts.beVietnamPro(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 0.5,
@@ -78,7 +78,7 @@ class AdminUserTable extends StatelessWidget {
               DataColumn(
                 label: Text(
                   'EMAIL',
-                  style: GoogleFonts.dmSans(
+                  style: GoogleFonts.beVietnamPro(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 0.5,
@@ -89,7 +89,18 @@ class AdminUserTable extends StatelessWidget {
               DataColumn(
                 label: Text(
                   'SỐ ĐIỆN THOẠI',
-                  style: GoogleFonts.dmSans(
+                  style: GoogleFonts.beVietnamPro(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.5,
+                    color: LumiStyle.plum,
+                  ),
+                ),
+              ),
+              DataColumn(
+                label: Text(
+                  'ĐỊA CHỈ',
+                  style: GoogleFonts.beVietnamPro(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 0.5,
@@ -100,7 +111,7 @@ class AdminUserTable extends StatelessWidget {
               DataColumn(
                 label: Text(
                   'VAI TRÒ',
-                  style: GoogleFonts.dmSans(
+                  style: GoogleFonts.beVietnamPro(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 0.5,
@@ -111,7 +122,7 @@ class AdminUserTable extends StatelessWidget {
               DataColumn(
                 label: Text(
                   'HOẠT ĐỘNG',
-                  style: GoogleFonts.dmSans(
+                  style: GoogleFonts.beVietnamPro(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 0.5,
@@ -122,7 +133,7 @@ class AdminUserTable extends StatelessWidget {
               DataColumn(
                 label: Text(
                   'NGÀY THAM GIA',
-                  style: GoogleFonts.dmSans(
+                  style: GoogleFonts.beVietnamPro(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 0.5,
@@ -133,7 +144,7 @@ class AdminUserTable extends StatelessWidget {
               DataColumn(
                 label: Text(
                   'THAO TÁC',
-                  style: GoogleFonts.dmSans(
+                  style: GoogleFonts.beVietnamPro(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 0.5,
@@ -156,10 +167,11 @@ class AdminUserTable extends StatelessWidget {
                               user.photoUrl != null && user.photoUrl!.isNotEmpty
                               ? NetworkImage(user.photoUrl!)
                               : null,
+                  onBackgroundImageError: (user.photoUrl != null && user.photoUrl!.trim().isNotEmpty) ? (error, stackTrace) {} : null,
                           child: user.photoUrl == null || user.photoUrl!.isEmpty
                               ? Text(
                                   user.initials,
-                                  style: GoogleFonts.cormorantGaramond(
+                                  style: GoogleFonts.beVietnamPro(
                                     fontSize: 13,
                                     fontWeight: FontWeight.w700,
                                     color: Colors.white,
@@ -174,7 +186,7 @@ class AdminUserTable extends StatelessWidget {
                           children: [
                             Text(
                               user.displayName,
-                              style: GoogleFonts.dmSans(
+                              style: GoogleFonts.beVietnamPro(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w700,
                                 color: LumiStyle.plum,
@@ -182,7 +194,7 @@ class AdminUserTable extends StatelessWidget {
                             ),
                             Text(
                               'ID: ${user.id.length > 8 ? user.id.substring(0, 8) : user.id}...',
-                              style: GoogleFonts.dmSans(
+                              style: GoogleFonts.beVietnamPro(
                                 fontSize: 10,
                                 color: LumiStyle.muted,
                               ),
@@ -197,7 +209,7 @@ class AdminUserTable extends StatelessWidget {
                   DataCell(
                     Text(
                       user.email.isNotEmpty ? user.email : '—',
-                      style: GoogleFonts.dmSans(
+                      style: GoogleFonts.beVietnamPro(
                         fontSize: 12,
                         color: LumiStyle.plum,
                       ),
@@ -208,9 +220,25 @@ class AdminUserTable extends StatelessWidget {
                   DataCell(
                     Text(
                       user.phone.isNotEmpty ? user.phone : '—',
-                      style: GoogleFonts.dmSans(
+                      style: GoogleFonts.beVietnamPro(
                         fontSize: 12,
                         color: LumiStyle.plum,
+                      ),
+                    ),
+                  ),
+
+                  // Địa chỉ
+                  DataCell(
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 180),
+                      child: Text(
+                        user.address.isNotEmpty ? user.address : '—',
+                        style: GoogleFonts.beVietnamPro(
+                          fontSize: 12,
+                          color: LumiStyle.plum,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ),
@@ -228,7 +256,7 @@ class AdminUserTable extends StatelessWidget {
                       ),
                       child: Text(
                         user.roleLabel,
-                        style: GoogleFonts.dmSans(
+                        style: GoogleFonts.beVietnamPro(
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
                           color: user.roleColor,
@@ -241,7 +269,7 @@ class AdminUserTable extends StatelessWidget {
                   DataCell(
                     Text(
                       '${user.bookingCount} lịch · ${user.orderCount} đơn',
-                      style: GoogleFonts.dmSans(
+                      style: GoogleFonts.beVietnamPro(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                       ),
@@ -252,7 +280,7 @@ class AdminUserTable extends StatelessWidget {
                   DataCell(
                     Text(
                       user.formattedCreatedAt,
-                      style: GoogleFonts.dmSans(
+                      style: GoogleFonts.beVietnamPro(
                         fontSize: 11,
                         color: LumiStyle.muted,
                       ),

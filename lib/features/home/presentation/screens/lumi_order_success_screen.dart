@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'lumi_my_orders_screen.dart';
+import '../../../../core/data/lumi_order_store.dart';
 
 class LumiOrderSuccessScreen extends StatelessWidget {
   const LumiOrderSuccessScreen({
@@ -17,12 +18,12 @@ class LumiOrderSuccessScreen extends StatelessWidget {
   final num total;
   final String paymentMethod;
 
-  static const rose = Color(0xFFB56F86);
-  static const ink = Color(0xFF503B42);
-  static const muted = Color(0xFF78676B);
-  static const cream = Color(0xFFFFFAF8);
-  static const blush = Color(0xFFF4E4E8);
-  static const blue = Color(0xFFDDECEF);
+  static const rose = Color(0xFFA5553E); // Brand Terracotta Brown
+  static const ink = Color(0xFF403735);  // Deep Warm Brown
+  static const muted = Color(0xFF756863);// Warm Muted Gray
+  static const cream = Color(0xFFFFF8EF);// Warm Cream / Ivory
+  static const blush = Color(0xFFFBE7DC);// Soft Warm Peach
+  static const blue = Color(0xFFE1EFF5); // Soft Blue-Gray
 
   String _money(num value) {
     final digits = value.toInt().toString();
@@ -53,7 +54,7 @@ class LumiOrderSuccessScreen extends StatelessWidget {
         title: Text(
           LumiAdaptive.text('Đặt hàng thành công'),
           style: LumiAdaptive.style(
-            GoogleFonts.dmSans(
+            GoogleFonts.beVietnamPro(
               color: LumiAdaptive.color(ink),
               fontWeight: FontWeight.w700,
             ),
@@ -84,7 +85,7 @@ class LumiOrderSuccessScreen extends StatelessWidget {
                   LumiAdaptive.text('Cảm ơn bạn đã\nmua sắm tại LUMI'),
                   textAlign: TextAlign.center,
                   style: LumiAdaptive.style(
-                    GoogleFonts.cormorantGaramond(
+                    GoogleFonts.beVietnamPro(
                       color: LumiAdaptive.color(ink),
                       fontSize: 36,
                       height: 1.05,
@@ -100,7 +101,7 @@ class LumiOrderSuccessScreen extends StatelessWidget {
                   ),
                   textAlign: TextAlign.center,
                   style: LumiAdaptive.style(
-                    GoogleFonts.dmSans(
+                    GoogleFonts.beVietnamPro(
                       color: LumiAdaptive.color(muted),
                       fontSize: 15,
                       height: 1.5,
@@ -118,7 +119,10 @@ class LumiOrderSuccessScreen extends StatelessWidget {
                   ),
                   child: Column(
                     children: [
-                      _infoRow('Mã đơn hàng', orderId),
+                      _infoRow(
+                        'Mã đơn hàng',
+                        LumiOrderStore.formatOrderId(orderId),
+                      ),
                       const Divider(height: 25),
                       _infoRow('Tổng thanh toán', _money(total)),
                       const Divider(height: 25),
@@ -152,7 +156,7 @@ class LumiOrderSuccessScreen extends StatelessWidget {
                             'Vui lòng giữ điện thoại để nhận cuộc gọi xác nhận.',
                           ),
                           style: LumiAdaptive.style(
-                            GoogleFonts.dmSans(
+                            GoogleFonts.beVietnamPro(
                               color: LumiAdaptive.color(ink),
                               fontSize: 13,
                               height: 1.5,
@@ -173,7 +177,7 @@ class LumiOrderSuccessScreen extends StatelessWidget {
                     label: Text(
                       LumiAdaptive.text('XEM ĐƠN HÀNG'),
                       style: LumiAdaptive.style(
-                        GoogleFonts.dmSans(
+                        GoogleFonts.beVietnamPro(
                           fontWeight: FontWeight.w700,
                           letterSpacing: .6,
                         ),
@@ -211,7 +215,7 @@ class LumiOrderSuccessScreen extends StatelessWidget {
                     child: Text(
                       LumiAdaptive.text('TIẾP TỤC MUA SẮM'),
                       style: LumiAdaptive.style(
-                        GoogleFonts.dmSans(
+                        GoogleFonts.beVietnamPro(
                           fontWeight: FontWeight.w700,
                           letterSpacing: .6,
                         ),
@@ -225,7 +229,7 @@ class LumiOrderSuccessScreen extends StatelessWidget {
                   child: Text(
                     LumiAdaptive.text('Về trang chủ'),
                     style: LumiAdaptive.style(
-                      GoogleFonts.dmSans(
+                      GoogleFonts.beVietnamPro(
                         color: LumiAdaptive.color(rose),
                         fontWeight: FontWeight.w600,
                       ),
@@ -247,7 +251,7 @@ class LumiOrderSuccessScreen extends StatelessWidget {
         Text(
           LumiAdaptive.text(label),
           style: LumiAdaptive.style(
-            GoogleFonts.dmSans(color: LumiAdaptive.color(muted), fontSize: 14),
+            GoogleFonts.beVietnamPro(color: LumiAdaptive.color(muted), fontSize: 14),
           ),
         ),
         Flexible(
@@ -255,7 +259,7 @@ class LumiOrderSuccessScreen extends StatelessWidget {
             LumiAdaptive.text(value),
             textAlign: TextAlign.right,
             style: LumiAdaptive.style(
-              GoogleFonts.dmSans(
+              GoogleFonts.beVietnamPro(
                 color: LumiAdaptive.color(ink),
                 fontSize: 14,
                 fontWeight: FontWeight.w700,

@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import '../../../../core/data/lumi_order_store.dart';
 
 class AdminOrderItem {
   const AdminOrderItem({
@@ -36,16 +37,24 @@ class AdminOrderItem {
   final DateTime? updatedAt;
   final String? cancelReason;
 
+  String get displayId => LumiOrderStore.formatOrderId(id);
+
   String get displayTotal {
-    if (formattedTotal != null && formattedTotal!.isNotEmpty) {
-      return formattedTotal!;
-    }
-    final p = total.toInt().toString().replaceAllMapped(
-      RegExp(r'\B(?=(\d{3})+(?!\d))'),
-      (match) => '.',
-    );
-    return '$p đ';
+    return LumiOrderStore.formatCurrency(formattedTotal ?? total);
   }
+
+  bool get isPending => status.toLowerCase() == 'pending';
+  bool get isConfirmed =>
+      status.toLowerCase() == 'confirmed' ||
+      status.toLowerCase() == 'processing' ||
+      status.toLowerCase() == 'approved';
+  bool get isShipping =>
+      status.toLowerCase() == 'shipping' ||
+      status.toLowerCase() == 'delivering';
+  bool get isCompleted => status.toLowerCase() == 'completed';
+  bool get isCancelled =>
+      status.toLowerCase() == 'cancelled' ||
+      status.toLowerCase() == 'rejected';
 
   String get statusLabel {
     switch (status.toLowerCase()) {

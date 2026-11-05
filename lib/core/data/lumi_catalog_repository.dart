@@ -12,11 +12,11 @@ class LumiCatalogRepository {
     'spa003': 'https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?w=900&auto=format&fit=crop',
     'spa004': 'https://images.unsplash.com/photo-1519823551278-64ac92734fb1?w=900&auto=format&fit=crop',
     'spa005': 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=900&auto=format&fit=crop',
-    'spa006': 'https://images.unsplash.com/photo-1512290903671-17adc81fcd90?w=900&auto=format&fit=crop',
+    'spa006': 'https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?w=900&auto=format&fit=crop',
     'spa007': 'https://images.unsplash.com/photo-1560750588-73207b1ef5b8?w=900&auto=format&fit=crop',
     'spa008': 'https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?w=900&auto=format&fit=crop',
     'spa009': 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=900&auto=format&fit=crop',
-    'spa010': 'https://images.unsplash.com/photo-1519824145371-296894a0dc91?w=900&auto=format&fit=crop',
+    'spa010': 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=900&auto=format&fit=crop',
     'spa011': 'https://images.unsplash.com/photo-1560750588-73207b1ef5b8?w=900&auto=format&fit=crop',
     'spa012': 'https://images.unsplash.com/photo-1519823551278-64ac92734fb1?w=900&auto=format&fit=crop',
     'spa013': 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=900&auto=format&fit=crop',
@@ -32,9 +32,9 @@ class LumiCatalogRepository {
 
     // Làm sạch & Cân bằng (lumi-001 to lumi-010)
     'lumi-001': 'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=900&auto=format&fit=crop',
-    'lumi-002': 'https://images.unsplash.com/photo-1608248597359-00f7243c2c19?w=900&auto=format&fit=crop',
-    'lumi-003': 'https://images.unsplash.com/photo-1556228722-d0b5de75d776?w=900&auto=format&fit=crop',
-    'lumi-004': 'https://images.unsplash.com/photo-1567928815116-24ba00508dc2?w=900&auto=format&fit=crop',
+    'lumi-002': 'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=900&auto=format&fit=crop',
+    'lumi-003': 'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=900&auto=format&fit=crop',
+    'lumi-004': 'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=900&auto=format&fit=crop',
     'lumi-005': 'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=900&auto=format&fit=crop',
     'lumi-006': 'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?w=900&auto=format&fit=crop',
     'lumi-007': 'https://images.unsplash.com/photo-1617897903246-719242758050?w=900&auto=format&fit=crop',
@@ -49,7 +49,7 @@ class LumiCatalogRepository {
     'lumi-014': 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=900&auto=format&fit=crop',
     'lumi-015': 'https://images.unsplash.com/photo-1556229010-6c3f2c9ca5f8?w=900&auto=format&fit=crop',
     'lumi-016': 'https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?w=900&auto=format&fit=crop',
-    'lumi-017': 'https://images.unsplash.com/photo-1608248597359-00f7243c2c19?w=900&auto=format&fit=crop',
+    'lumi-017': 'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=900&auto=format&fit=crop',
     'lumi-018': 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=900&auto=format&fit=crop',
     'lumi-019': 'https://images.unsplash.com/photo-1616683693504-3ea7e9ad6fec?w=900&auto=format&fit=crop',
     'lumi-020': 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=900&auto=format&fit=crop',
@@ -57,18 +57,18 @@ class LumiCatalogRepository {
     // Dưỡng ẩm & Khóa dưỡng (lumi-021 to lumi-030)
     'lumi-021': 'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=900&auto=format&fit=crop',
     'lumi-022': 'https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?w=900&auto=format&fit=crop',
-    'lumi-023': 'https://images.unsplash.com/photo-1556228722-d0b5de75d776?w=900&auto=format&fit=crop',
+    'lumi-023': 'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=900&auto=format&fit=crop',
     'lumi-024': 'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=900&auto=format&fit=crop',
     'lumi-025': 'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?w=900&auto=format&fit=crop',
     'lumi-026': 'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=900&auto=format&fit=crop',
     'lumi-027': 'https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?w=900&auto=format&fit=crop',
-    'lumi-028': 'https://images.unsplash.com/photo-1608248597359-00f7243c2c19?w=900&auto=format&fit=crop',
+    'lumi-028': 'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=900&auto=format&fit=crop',
     'lumi-029': 'https://images.unsplash.com/photo-1556229010-6c3f2c9ca5f8?w=900&auto=format&fit=crop',
     'lumi-030': 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=900&auto=format&fit=crop',
 
     // Mặt nạ chăm sóc chuyên sâu (lumi-031 to lumi-035)
     'lumi-031': 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=900&auto=format&fit=crop',
-    'lumi-032': 'https://images.unsplash.com/photo-1567928815116-24ba00508dc2?w=900&auto=format&fit=crop',
+    'lumi-032': 'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=900&auto=format&fit=crop',
     'lumi-033': 'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=900&auto=format&fit=crop',
     'lumi-034': 'https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?w=900&auto=format&fit=crop',
     'lumi-035': 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=900&auto=format&fit=crop',
@@ -82,9 +82,9 @@ class LumiCatalogRepository {
 
     // Chăm sóc cơ thể & Dưỡng sinh (lumi-041 to lumi-050)
     'lumi-041': 'https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?w=900&auto=format&fit=crop',
-    'lumi-042': 'https://images.unsplash.com/photo-1556228722-d0b5de75d776?w=900&auto=format&fit=crop',
+    'lumi-042': 'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=900&auto=format&fit=crop',
     'lumi-043': 'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=900&auto=format&fit=crop',
-    'lumi-044': 'https://images.unsplash.com/photo-1608248597359-00f7243c2c19?w=900&auto=format&fit=crop',
+    'lumi-044': 'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=900&auto=format&fit=crop',
     'lumi-045': 'https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?w=900&auto=format&fit=crop',
     'lumi-046': 'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=900&auto=format&fit=crop',
     'lumi-047': 'https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?w=900&auto=format&fit=crop',
@@ -99,7 +99,7 @@ class LumiCatalogRepository {
     'Dưỡng ẩm & Khóa dưỡng': 'https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?w=900&auto=format&fit=crop',
     'Mặt nạ chăm sóc chuyên sâu': 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=900&auto=format&fit=crop',
     'Chống nắng & Bảo vệ quang học': 'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=900&auto=format&fit=crop',
-    'Chăm sóc cơ thể & Dưỡng sinh': 'https://images.unsplash.com/photo-1556228722-d0b5de75d776?w=900&auto=format&fit=crop',
+    'Chăm sóc cơ thể & Dưỡng sinh': 'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=900&auto=format&fit=crop',
   };
 
   static const String defaultProductImage =

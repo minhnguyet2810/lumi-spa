@@ -8,6 +8,7 @@ class AdminUserItem {
   final String phone;
   final String? photoUrl;
   final String role;
+  final String address;
   final DateTime? createdAt;
   final DateTime? updatedAt;
   final int bookingCount;
@@ -21,6 +22,7 @@ class AdminUserItem {
     required this.phone,
     this.photoUrl,
     this.role = 'user',
+    this.address = '',
     this.createdAt,
     this.updatedAt,
     this.bookingCount = 0,
@@ -97,6 +99,10 @@ class AdminUserItem {
     final photoUrl =
         data['photoUrl']?.toString() ?? data['avatarUrl']?.toString();
     final role = data['role']?.toString() ?? 'user';
+    final address = data['address']?.toString() ??
+        data['shippingAddress']?.toString() ??
+        data['fullAddress']?.toString() ??
+        '';
 
     return AdminUserItem(
       id: id,
@@ -105,6 +111,7 @@ class AdminUserItem {
       phone: phone,
       photoUrl: photoUrl,
       role: role,
+      address: address,
       createdAt: parseDate(data['createdAt']),
       updatedAt: parseDate(data['updatedAt']),
       bookingCount: (data['bookingCount'] as num?)?.toInt() ?? 0,
@@ -120,6 +127,7 @@ class AdminUserItem {
     String? phone,
     String? photoUrl,
     String? role,
+    String? address,
     DateTime? createdAt,
     DateTime? updatedAt,
     int? bookingCount,
@@ -133,6 +141,7 @@ class AdminUserItem {
       phone: phone ?? this.phone,
       photoUrl: photoUrl ?? this.photoUrl,
       role: role ?? this.role,
+      address: address ?? this.address,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       bookingCount: bookingCount ?? this.bookingCount,

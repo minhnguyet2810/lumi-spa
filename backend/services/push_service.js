@@ -1,3 +1,21 @@
+function formatOrderId(raw) {
+  if (!raw) return 'LUMI - 000000';
+  const str = String(raw).trim();
+  if (!str) return 'LUMI - 000000';
+  if (/^LUMI\s*-\s*[A-Za-z0-9]+$/i.test(str)) {
+    return str.replace(/^LUMI\s*-\s*([A-Za-z0-9]+)$/i, (_, code) => `LUMI - ${code.toUpperCase()}`);
+  }
+  if (str.toUpperCase().startsWith('LUMI-')) {
+    return `LUMI - ${str.substring(5).trim().toUpperCase()}`;
+  }
+  if (str.toUpperCase().startsWith('LUMI -')) {
+    return `LUMI - ${str.substring(6).trim().toUpperCase()}`;
+  }
+  const clean = str.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+  const short = clean.length > 6 ? clean.substring(0, 6) : clean.padEnd(6, '0');
+  return `LUMI - ${short}`;
+}
+
 const db = require('../firebase');
 const { getMessaging } = require('firebase-admin/messaging');
 
@@ -182,13 +200,14 @@ async function sendBookingConfirmedPush({ userId, bookingId, serviceName, date, 
  */
 async function sendOrderSuccessPush({ userId, orderId, itemCount, totalAmount }) {
   const formattedTotal = Number(totalAmount || 0).toLocaleString('vi-VN');
+  const displayId = formatOrderId(orderId);
   return sendPushToUser({
     userId,
     title: '🛍️ Đặt hàng thành công!',
-    body: `Đơn hàng #${(orderId || '').slice(-6).toUpperCase()} (${itemCount} sản phẩm - ${formattedTotal}đ) đã được tạo thành công.`,
+    body: `Đơn hàng #${displayId} (${itemCount} sản phẩm - ${formattedTotal}đ) đã được tạo thành công.`,
     data: {
       type: 'order',
-      orderId: orderId || '',
+      orderId: displayId,
       status: 'pending',
     },
   });
@@ -199,21 +218,22 @@ async function sendOrderSuccessPush({ userId, orderId, itemCount, totalAmount })
  * Push thông báo trạng thái đơn hàng thay đổi
  */
 async function sendOrderStatusUpdatedPush({ userId, orderId, status, statusText }) {
+  const displayId = formatOrderId(orderId);
   let title = '🛍️ Cập nhật đơn hàng!';
-  let body = `Đơn hàng #${(orderId || '').slice(-6).toUpperCase()} ${statusText || 'đã được cập nhật.'}`;
+  let body = `Đơn hàng #${displayId} ${statusText || 'đã được cập nhật.'}`;
 
   if (status === 'confirmed' || status === 'processing') {
     title = '📦 Đơn hàng đã được duyệt!';
-    body = `Đơn hàng #${(orderId || '').slice(-6).toUpperCase()} đã được duyệt và đang chuẩn bị đóng gói.`;
+    body = `Đơn hàng #${displayId} đã được duyệt và đang chuẩn bị đóng gói.`;
   } else if (status === 'shipping' || status === 'delivering') {
     title = '🚚 Đơn hàng đang được giao!';
-    body = `Đơn hàng #${(orderId || '').slice(-6).toUpperCase()} đang trên đường vận chuyển đến bạn.`;
+    body = `Đơn hàng #${displayId} đang trên đường vận chuyển đến bạn.`;
   } else if (status === 'completed') {
     title = '🎉 Giao hàng thành công!';
-    body = `Đơn hàng #${(orderId || '').slice(-6).toUpperCase()} đã được giao thành công. Cảm ơn bạn!`;
+    body = `Đơn hàng #${displayId} đã được giao thành công. Cảm ơn bạn!`;
   } else if (status === 'cancelled' || status === 'rejected') {
     title = '⚠️ Đơn hàng đã bị hủy';
-    body = `Đơn hàng #${(orderId || '').slice(-6).toUpperCase()} đã bị hủy. Nhấn để xem chi tiết.`;
+    body = `Đơn hàng #${displayId} đã bị hủy. Nhấn để xem chi tiết.`;
   }
 
   return sendPushToUser({
@@ -222,13 +242,14 @@ async function sendOrderStatusUpdatedPush({ userId, orderId, status, statusText 
     body,
     data: {
       type: 'order',
-      orderId: orderId || '',
+      orderId: displayId,
       status: status || '',
     },
   });
 }
 
 module.exports = {
+  formatOrderId,
   getUserTokens,
   sendPushToUser,
   sendBookingCreatedPush,

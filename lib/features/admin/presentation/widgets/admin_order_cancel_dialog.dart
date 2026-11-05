@@ -65,15 +65,15 @@ class _AdminOrderCancelDialogState extends State<AdminOrderCancelDialog> {
                       children: [
                         Text(
                           'Hủy Đơn Hàng',
-                          style: GoogleFonts.cormorantGaramond(
+                          style: GoogleFonts.beVietnamPro(
                             fontSize: 24,
                             fontWeight: FontWeight.w700,
                             color: LumiStyle.plum,
                           ),
                         ),
                         Text(
-                          'Mã đơn: #${widget.order.id} · ${widget.order.customerName}',
-                          style: GoogleFonts.dmSans(
+                          'Mã đơn: ${widget.order.displayId} · ${widget.order.customerName}',
+                          style: GoogleFonts.beVietnamPro(
                             fontSize: 12,
                             color: LumiStyle.muted,
                           ),
@@ -86,7 +86,7 @@ class _AdminOrderCancelDialogState extends State<AdminOrderCancelDialog> {
               const SizedBox(height: 18),
               Text(
                 'Lý do hủy đơn (sẽ được gửi qua Gmail và Thông báo cho khách):',
-                style: GoogleFonts.dmSans(
+                style: GoogleFonts.beVietnamPro(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                   color: LumiStyle.plum,
@@ -117,7 +117,7 @@ class _AdminOrderCancelDialogState extends State<AdminOrderCancelDialog> {
                     side: BorderSide(
                       color: isSelected ? Colors.red.shade700 : LumiStyle.line,
                     ),
-                    labelStyle: GoogleFonts.dmSans(
+                    labelStyle: GoogleFonts.beVietnamPro(
                       fontSize: 11,
                       color: isSelected ? Colors.red.shade900 : LumiStyle.plum,
                       fontWeight: isSelected
@@ -131,11 +131,11 @@ class _AdminOrderCancelDialogState extends State<AdminOrderCancelDialog> {
               TextField(
                 controller: _reasonController,
                 maxLines: 3,
-                style: GoogleFonts.dmSans(fontSize: 13, color: LumiStyle.plum),
+                style: GoogleFonts.beVietnamPro(fontSize: 13, color: LumiStyle.plum),
                 decoration: InputDecoration(
                   hintText:
                       'Nhập lý do cụ thể hoặc ghi chú thêm cho khách hàng...',
-                  hintStyle: GoogleFonts.dmSans(
+                  hintStyle: GoogleFonts.beVietnamPro(
                     fontSize: 12,
                     color: LumiStyle.muted,
                   ),
@@ -159,7 +159,7 @@ class _AdminOrderCancelDialogState extends State<AdminOrderCancelDialog> {
                     onPressed: () => Navigator.of(context).pop(),
                     child: Text(
                       'QUAY LẠI',
-                      style: GoogleFonts.dmSans(
+                      style: GoogleFonts.beVietnamPro(
                         fontWeight: FontWeight.w600,
                         color: LumiStyle.muted,
                       ),
@@ -178,7 +178,7 @@ class _AdminOrderCancelDialogState extends State<AdminOrderCancelDialog> {
                     icon: const Icon(Icons.check, size: 18),
                     label: Text(
                       'XÁC NHẬN HỦY',
-                      style: GoogleFonts.dmSans(fontWeight: FontWeight.w700),
+                      style: GoogleFonts.beVietnamPro(fontWeight: FontWeight.w700),
                     ),
                     style: FilledButton.styleFrom(
                       backgroundColor: Colors.red.shade700,

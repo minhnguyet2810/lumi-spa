@@ -1,3 +1,4 @@
+import '../../../../core/widgets/lumi_catalog_image.dart';
 import 'lumi_order_ui.dart';
 import '../../../../core/theme/lumi_adaptive.dart';
 
@@ -110,17 +111,19 @@ class _LumiOrderDetailScreenState extends State<LumiOrderDetailScreen> {
           LumiOrderUi.badge(context, currentStatus),
           const SizedBox(height: 16),
           Text(
-            widget.order['id'] ?? '',
-            style: GoogleFonts.dmSans(
-              fontSize: 23,
+            LumiOrderStore.formatOrderId(
+              widget.order['displayId'] ?? widget.order['id'],
+            ),
+            style: GoogleFonts.beVietnamPro(
+              fontSize: 22,
               fontWeight: FontWeight.w700,
               color: colors.onSurface,
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            widget.order['total'] ?? '',
-            style: GoogleFonts.dmSans(
+            LumiOrderStore.formatCurrency(widget.order['total']),
+            style: GoogleFonts.beVietnamPro(
               fontSize: 32,
               fontWeight: FontWeight.w700,
               color: colors.primary,
@@ -128,6 +131,13 @@ class _LumiOrderDetailScreenState extends State<LumiOrderDetailScreen> {
           ),
           const SizedBox(height: 16),
           _infoRow('Ngày đặt', widget.order['date'] ?? ''),
+          if ((widget.order['couponCode'] ?? '').isNotEmpty)
+            _infoRow('Mã giảm giá', widget.order['couponCode']!),
+          if ((widget.order['discount'] ?? '').isNotEmpty)
+            _infoRow(
+              'Giảm giá',
+              '- ${LumiOrderStore.formatCurrency(widget.order['discount'])}',
+            ),
           _infoRow(
             'Thanh toán',
             widget.order['paymentMethod'] ?? 'Thanh toán khi nhận hàng',
@@ -177,17 +187,15 @@ class _LumiOrderDetailScreenState extends State<LumiOrderDetailScreen> {
       ),
       child: Row(
         children: [
-          Container(
-            width: 52,
-            height: 52,
-            decoration: BoxDecoration(
-              color: LumiAdaptive.color(blue, surface: true),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(
-              Icons.spa_outlined,
-              color: LumiAdaptive.color(rose),
-              size: 27,
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: SizedBox(
+              width: 52,
+              height: 52,
+              child: LumiCatalogImage(
+                item: item,
+                fit: BoxFit.cover,
+              ),
             ),
           ),
           const SizedBox(width: 12),
@@ -200,7 +208,7 @@ class _LumiOrderDetailScreenState extends State<LumiOrderDetailScreen> {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: LumiAdaptive.style(
-                    GoogleFonts.dmSans(
+                    GoogleFonts.beVietnamPro(
                       color: LumiAdaptive.color(ink),
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
@@ -211,7 +219,7 @@ class _LumiOrderDetailScreenState extends State<LumiOrderDetailScreen> {
                 Text(
                   LumiAdaptive.text('Số lượng: $quantity'),
                   style: LumiAdaptive.style(
-                    GoogleFonts.dmSans(
+                    GoogleFonts.beVietnamPro(
                       color: LumiAdaptive.color(muted),
                       fontSize: 15,
                     ),
@@ -221,7 +229,7 @@ class _LumiOrderDetailScreenState extends State<LumiOrderDetailScreen> {
                 Text(
                   LumiAdaptive.text('Đơn giá: ${_money(price)}'),
                   style: LumiAdaptive.style(
-                    GoogleFonts.dmSans(
+                    GoogleFonts.beVietnamPro(
                       color: LumiAdaptive.color(muted),
                       fontSize: 14,
                     ),
@@ -234,7 +242,7 @@ class _LumiOrderDetailScreenState extends State<LumiOrderDetailScreen> {
           Text(
             LumiAdaptive.text(_money(total)),
             style: LumiAdaptive.style(
-              GoogleFonts.dmSans(
+              GoogleFonts.beVietnamPro(
                 color: LumiAdaptive.color(rose),
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
@@ -266,7 +274,7 @@ class _LumiOrderDetailScreenState extends State<LumiOrderDetailScreen> {
             child: Text(
               LumiAdaptive.text('Thông tin sản phẩm chưa được cập nhật.'),
               style: LumiAdaptive.style(
-                GoogleFonts.dmSans(
+                GoogleFonts.beVietnamPro(
                   color: LumiAdaptive.color(muted),
                   fontSize: 14,
                 ),
@@ -459,7 +467,7 @@ class _LumiOrderDetailScreenState extends State<LumiOrderDetailScreen> {
         Text(
           LumiAdaptive.text('Nhấn xác nhận khi bạn đã nhận và kiểm tra gói hàng.'),
           textAlign: TextAlign.center,
-          style: GoogleFonts.dmSans(
+          style: GoogleFonts.beVietnamPro(
             fontSize: 12,
             color: LumiAdaptive.color(muted),
           ),
@@ -507,7 +515,7 @@ class _LumiOrderDetailScreenState extends State<LumiOrderDetailScreen> {
         title: Text(
           LumiAdaptive.text('Chi tiết đơn hàng'),
           style: LumiAdaptive.style(
-            GoogleFonts.dmSans(
+            GoogleFonts.beVietnamPro(
               color: LumiAdaptive.color(ink),
               fontWeight: FontWeight.w700,
             ),
@@ -540,7 +548,7 @@ class _LumiOrderDetailScreenState extends State<LumiOrderDetailScreen> {
                   child: Text(
                     LumiAdaptive.text(_statusMessage()),
                     style: LumiAdaptive.style(
-                      GoogleFonts.dmSans(
+                      GoogleFonts.beVietnamPro(
                         color: LumiAdaptive.color(ink),
                         fontSize: 15,
                         height: 1.5,

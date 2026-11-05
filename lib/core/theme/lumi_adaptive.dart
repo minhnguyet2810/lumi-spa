@@ -1,3 +1,4 @@
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/material.dart';
 
 import '../settings/app_preferences.dart';
@@ -45,22 +46,22 @@ abstract final class LumiAdaptive {
     int? replacement;
     if (surface) {
       replacement = switch (rgb) {
-        0xFFFFFF || 0xFFFDFA => 0x343D44,
-        0xFFF8EF || 0xFAF7F4 || 0xFBF4F5 || 0xFFF9F5 => 0x262D32,
-        0xEAF3F7 || 0xE8F2F6 || 0xE4EFF2 || 0xE1EFF5 => 0x344E5B,
-        0xFBE7DC || 0xF8D5C2 || 0xF5BEA5 || 0xFBE4D6 || 0xFFE0D6 => 0x624B40,
-        0xA9CEDD => 0x3B5A69,
-        0xEADFD5 || 0xEFE4E6 || 0xE5DCDA || 0xDDD3C8 => 0x62717B,
-        0x403735 || 0x302825 => 0x66584F,
+        0xFFFFFF || 0xFFFDFA => 0x1E293B,
+        0xFFF8EF || 0xFAF7F4 || 0xFBF4F5 || 0xFFF9F5 => 0x0F172A,
+        0xEAF3F7 || 0xE8F2F6 || 0xE4EFF2 || 0xE1EFF5 => 0x1F2937,
+        0xFBE7DC || 0xF8D5C2 || 0xF5BEA5 || 0xFBE4D6 || 0xFFE0D6 => 0x2E2522,
+        0xA9CEDD => 0x1E3A47,
+        0xEADFD5 || 0xEFE4E6 || 0xE5DCDA || 0xDDD3C8 => 0x334155,
+        0x403735 || 0x302825 => 0x1E293B,
         _ => null,
       };
       if (replacement == null && original.computeLuminance() > 0.72) {
-        replacement = 0x3D484D;
+        replacement = 0x1E293B;
       }
     } else {
       replacement = switch (rgb) {
-        0x403735 || 0x302825 || 0x000000 || 0x3B3030 => 0xF5EFE8,
-        0x756863 || 0x6F625D || 0x5F5550 || 0x8F8F8F || 0x666666 => 0xD1C9C0,
+        0x403735 || 0x302825 || 0x000000 || 0x3B3030 || 0x1E293B => 0xF8FAFC,
+        0x756863 || 0x6F625D || 0x5F5550 || 0x8F8F8F || 0x666666 || 0x64748B => 0x94A3B8,
         0xA5553E || 0x557C90 => 0xF5BEA5,
         0xEADFD5 || 0xEFE4E6 || 0xE5DCDA => 0x687782,
         _ => null,
@@ -68,17 +69,21 @@ abstract final class LumiAdaptive {
       if (replacement == null &&
           rgb != 0xFFFFFF &&
           original.computeLuminance() < 0.12) {
-        replacement = 0xE8DAD0;
+        replacement = 0xF8FAFC;
       }
     }
     return replacement == null ? original : Color((alpha << 24) | replacement);
   }
 
   static T style<T>(T original) {
-    if (original is! TextStyle || original.color == null) {
+    if (original is! TextStyle) {
       return original;
     }
-    return original.copyWith(color: color(original.color!)) as T;
+    final targetColor = original.color != null ? color(original.color!) : null;
+    return GoogleFonts.beVietnamPro(
+      textStyle: original,
+      color: targetColor,
+    ) as T;
   }
 
   static String? optionalText(String? original) =>
@@ -622,6 +627,84 @@ abstract final class LumiAdaptive {
     "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.":
         "Your session has expired. Please sign in again.",
     "Tài khoản đã được tạo, nhưng hồ sơ chưa cập nhật hoàn tất. Bạn vui lòng đăng nhập lại để tiếp tục.": "Your account was created, but your profile is not complete yet. Please sign in again to continue.",
+    // Địa chỉ nhận hàng & sổ địa chỉ
+    "Địa chỉ nhận hàng": "Shipping address",
+    "Địa chỉ nhận hàng (Shopee)": "Shipping address",
+    "Sổ địa chỉ giao nhận (chuẩn Shopee)": "Address book",
+    "Chọn từ sổ địa chỉ nhận hàng": "Choose from address book",
+    "Chọn địa chỉ nhận hàng": "Select shipping address",
+    "Sổ địa chỉ": "Address book",
+    "Địa chỉ mặc định": "Default address",
+    "Mặc định": "Default",
+    "Thay đổi": "Change",
+    "Thiết lập làm địa chỉ mặc định": "Set as default address",
+    "Đã đặt làm địa chỉ mặc định.": "Set as default address successfully.",
+    "Thêm địa chỉ mới": "Add new address",
+    "Sửa địa chỉ": "Edit address",
+    "Xóa địa chỉ": "Delete address",
+    "Xóa địa chỉ?": "Delete address?",
+    "Bạn có chắc muốn xóa địa chỉ này không?": "Are you sure you want to delete this address?",
+    "Đã xóa địa chỉ thành công.": "Address deleted successfully.",
+    "Không thể tải danh sách địa chỉ.": "Could not load address list.",
+    "Lưu địa chỉ này vào sổ địa chỉ nhận hàng của tôi": "Save to my address book",
+    "Họ và tên người nhận": "Recipient's full name",
+    "Tỉnh / Thành phố": "Province / City",
+    "Quận / Huyện": "District",
+    "Phường / Xã": "Ward",
+    "Tên đường, Tòa nhà, Số nhà": "Street name, building, house number",
+    "Chi tiết địa chỉ": "Address details",
+    "Loại địa chỉ": "Address type",
+    "Nhà riêng": "Home",
+    "Văn phòng": "Office",
+    "Lưu địa chỉ": "Save address",
+    "Đang lưu...": "Saving...",
+    "Chưa cập nhật địa chỉ": "No address provided",
+    // Thời gian
+    "Hôm nay": "Today",
+    "Ngày mai": "Tomorrow",
+    "Ngày kia": "Day after tomorrow",
+    "Hôm qua": "Yesterday",
+    // Trạng thái đơn hàng & thao tác
+    "Đang chuẩn bị": "Preparing",
+    "Đã nhận hàng": "Received",
+    "Xác nhận đã nhận hàng": "Confirm receipt",
+    "Để sau": "Later",
+    // Mã giảm giá / Voucher
+    "Mã giảm giá": "Promo code",
+    "Mã giảm giá / Voucher": "Promo code / Voucher",
+    "Nhập mã giảm giá": "Enter promo code",
+    "Áp dụng": "Apply",
+    "Đã áp dụng": "Applied",
+    "Gỡ bỏ": "Remove",
+    "Giảm giá": "Discount",
+    "Giảm giá (Voucher)": "Discount (Voucher)",
+    "Voucher LUMI": "LUMI Voucher",
+    "Chọn voucher": "Select voucher",
+    "Xem mã giảm giá có sẵn": "View available vouchers",
+    "Mã giảm giá LUMI": "LUMI Vouchers",
+    "Đơn tối thiểu": "Min order",
+    "Đã áp dụng mã giảm giá thành công!": "Promo code applied successfully!",
+    "Mã giảm giá không hợp lệ": "Invalid promo code",
+    "Đơn hàng chưa đạt giá trị tối thiểu để dùng mã này.": "Order does not meet minimum amount for this code.",
+    // Địa chỉ mở rộng
+    "Thêm Địa Chỉ Mới": "Add New Address",
+    "Chưa có địa chỉ nhận hàng nào": "No shipping addresses saved yet",
+    "Lưu địa chỉ nhận hàng để đặt mua mỹ phẩm và nhận sản phẩm nhanh chóng hơn.": "Save your shipping address for faster beauty product checkout.",
+    "Đặt làm địa chỉ mặc định": "Set as default address",
+    "Tự động chọn khi đặt dịch vụ và thanh toán đơn hàng": "Automatically select during booking & checkout",
+    "Xóa địa chỉ này": "Delete this address",
+    "Đang xóa...": "Deleting...",
+    "Hoàn thành": "Done",
+    "Thiết lập": "Settings",
+    "Xem voucher": "View vouchers",
+    "Dùng": "Apply",
+    "Đã dùng": "Applied",
+    "Dùng ngay": "Use now",
+    "Đơn tối thiểu:": "Min order:",
+    "Nhập mã voucher (VD: LUMISPA10)": "Enter promo code (e.g. LUMISPA10)",
+    "Áp dụng mã": "Apply code",
+    "Mã giảm giá không tồn tại": "Promo code does not exist",
+    "Vui lòng nhập mã giảm giá": "Please enter a promo code",
   };
   static String text(String original) {
     if (!AppPreferences.instance.isEnglish) {
@@ -714,5 +797,10 @@ abstract final class LumiAdaptive {
       RegExp(r'^Chưa có đơn hàng ở trạng thái "(.+)"$'),
       (m) => 'No orders with status "${text(m[1]!)}"',
     ),
+    (RegExp(r'^LUMI\s*-\s*(.+)$'), (m) => 'LUMI - ${m[1]}'),
+    (RegExp(r'^Mã đơn:\s*(.+)$'), (m) => 'Order ID: ${m[1]}'),
+    (RegExp(r'^Mã giảm giá:\s*(.+)$'), (m) => 'Promo code: ${m[1]}'),
+    (RegExp(r'^Giảm:\s*(.+)$'), (m) => 'Discount: ${m[1]}'),
+    (RegExp(r'^Đơn tối thiểu\s*(.+)$'), (m) => 'Min order ${m[1]}'),
   ];
 }

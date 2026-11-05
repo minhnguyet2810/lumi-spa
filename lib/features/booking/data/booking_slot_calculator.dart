@@ -40,7 +40,9 @@ class BookingSlotCalculator {
 
     // Lọc các booking có hiệu lực (chưa hủy)
     final activeBookings = existingBookings.where((b) {
-      return b.status == 'pending' || b.status == 'confirmed';
+      return b.status == 'pending' ||
+          b.status == 'confirmed' ||
+          b.status == 'approved';
     }).toList();
 
     return standardHours.map((h) {

@@ -109,8 +109,8 @@ class _WelcomeBackScreenState extends State<WelcomeBackScreen>
                     LumiAdaptive.text('Khám phá LUMI'),
                     textAlign: TextAlign.center,
                     style: LumiAdaptive.style(
-                      GoogleFonts.dmSans(
-                        fontSize: 17,
+                      GoogleFonts.beVietnamPro(
+                        fontSize: 16,
                         height: 1.3,
                         fontWeight: FontWeight.w700,
                         color: LumiAdaptive.color(_ink),
@@ -217,8 +217,8 @@ class _WelcomeBackScreenState extends State<WelcomeBackScreen>
                                         child: Text(
                                           LumiAdaptive.text('LUMI'),
                                           style: LumiAdaptive.style(
-                                            GoogleFonts.dmSans(
-                                              fontSize: 23,
+                                            GoogleFonts.beVietnamPro(
+                                              fontSize: 22,
                                               fontWeight: FontWeight.w700,
                                               letterSpacing: 1,
                                               color: LumiAdaptive.color(_ink),
@@ -267,7 +267,7 @@ class _WelcomeBackScreenState extends State<WelcomeBackScreen>
                                   Text(
                                     LumiAdaptive.text('Một chút\nbình yên.'),
                                     style: LumiAdaptive.style(
-                                      GoogleFonts.lora(
+                                      GoogleFonts.beVietnamPro(
                                         fontSize: 43,
                                         height: 1.16,
                                         fontWeight: FontWeight.w500,
@@ -317,8 +317,8 @@ class _WelcomeBackScreenState extends State<WelcomeBackScreen>
                                                 : 'Chào $_name.',
                                           ),
                                           style: LumiAdaptive.style(
-                                            GoogleFonts.dmSans(
-                                              fontSize: 27,
+                                            GoogleFonts.beVietnamPro(
+                                              fontSize: 28,
                                               height: 1.25,
                                               fontWeight: FontWeight.w600,
                                               letterSpacing: 0,
@@ -333,8 +333,8 @@ class _WelcomeBackScreenState extends State<WelcomeBackScreen>
                                             'chăm sóc mình nhé.',
                                           ),
                                           style: LumiAdaptive.style(
-                                            GoogleFonts.dmSans(
-                                              fontSize: 17,
+                                            GoogleFonts.beVietnamPro(
+                                              fontSize: 16,
                                               height: 1.5,
                                               letterSpacing: 0,
                                               color: LumiAdaptive.color(_muted),

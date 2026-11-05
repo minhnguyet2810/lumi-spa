@@ -133,7 +133,7 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
               children: [
                 Text(
                   'Đang đồng bộ người dùng qua Backend API (Port 3000)',
-                  style: GoogleFonts.dmSans(
+                  style: GoogleFonts.beVietnamPro(
                     fontWeight: FontWeight.w700,
                     fontSize: 13,
                     color: const Color(0xFF92400E),
@@ -142,7 +142,7 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
                 const SizedBox(height: 2),
                 Text(
                   'Firestore Security Rules hiện chặn quyền đọc trực tiếp từ máy khách.',
-                  style: GoogleFonts.dmSans(
+                  style: GoogleFonts.beVietnamPro(
                     fontSize: 12,
                     color: const Color(0xFFB45309),
                   ),
@@ -160,7 +160,7 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
             ),
             child: Text(
               'Kiểm tra quyền',
-              style: GoogleFonts.dmSans(
+              style: GoogleFonts.beVietnamPro(
                 fontWeight: FontWeight.w700,
                 fontSize: 11,
                 color: const Color(0xFF92400E),
@@ -207,7 +207,7 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
                     const SizedBox(height: 16),
                     Text(
                       'Phát hiện lỗi Firestore Rules. Đang chuyển sang nạp qua Backend API...',
-                      style: GoogleFonts.dmSans(
+                      style: GoogleFonts.beVietnamPro(
                         fontSize: 13,
                         color: LumiStyle.muted,
                       ),
@@ -231,7 +231,7 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
                     const SizedBox(height: 12),
                     Text(
                       'Lỗi kết nối người dùng Firestore',
-                      style: GoogleFonts.dmSans(
+                      style: GoogleFonts.beVietnamPro(
                         fontSize: 22,
                         fontWeight: FontWeight.w700,
                         color: LumiStyle.plum,
@@ -241,7 +241,7 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
                     Text(
                       '${snapshot.error}',
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.dmSans(
+                      style: GoogleFonts.beVietnamPro(
                         fontSize: 12,
                         color: LumiStyle.muted,
                       ),
@@ -261,7 +261,7 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
                           ),
                           label: Text(
                             'Tải qua Backend API',
-                            style: GoogleFonts.dmSans(),
+                            style: GoogleFonts.beVietnamPro(),
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -270,7 +270,7 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
                           icon: const Icon(Icons.security_rounded, size: 16),
                           label: Text(
                             'Kiểm tra quyền',
-                            style: GoogleFonts.dmSans(),
+                            style: GoogleFonts.beVietnamPro(),
                           ),
                         ),
                       ],
@@ -349,7 +349,7 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
                                 onChanged: (_) => setState(() {}),
                                 decoration: InputDecoration(
                                   hintText: 'Tìm kiếm theo tên khách, email, số điện thoại hoặc User ID...',
-                                  hintStyle: GoogleFonts.dmSans(
+                                  hintStyle: GoogleFonts.beVietnamPro(
                                     fontSize: 13,
                                     color: LumiStyle.muted,
                                   ),
@@ -470,7 +470,7 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
                             const SizedBox(height: 16),
                             Text(
                               'Không tìm thấy người dùng nào',
-                              style: GoogleFonts.dmSans(
+                              style: GoogleFonts.beVietnamPro(
                                 fontSize: 20,
                                 fontWeight: FontWeight.w700,
                                 color: LumiStyle.plum,
@@ -479,7 +479,7 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
                             const SizedBox(height: 6),
                             Text(
                               'Thử thay đổi từ khóa tìm kiếm hoặc bộ lọc vai trò.',
-                              style: GoogleFonts.dmSans(
+                              style: GoogleFonts.beVietnamPro(
                                 fontSize: 13,
                                 color: LumiStyle.muted,
                               ),
@@ -584,7 +584,7 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
                     fit: BoxFit.scaleDown,
                     child: Text(
                       '$count',
-                      style: GoogleFonts.dmSans(
+                      style: GoogleFonts.beVietnamPro(
                         fontSize: 28,
                         height: 1,
                         fontWeight: FontWeight.w800,
@@ -599,7 +599,7 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
           const SizedBox(height: 10),
           Text(
             title,
-            style: GoogleFonts.dmSans(
+            style: GoogleFonts.beVietnamPro(
               fontSize: 12,
               height: 1.4,
               fontWeight: FontWeight.w600,
@@ -626,7 +626,7 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
         selectedColor: LumiStyle.plum,
         backgroundColor: Colors.white,
         side: BorderSide(color: isSelected ? LumiStyle.plum : LumiStyle.line),
-        labelStyle: GoogleFonts.dmSans(
+        labelStyle: GoogleFonts.beVietnamPro(
           fontSize: 12,
           fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
           color: isSelected ? Colors.white : LumiStyle.plum,

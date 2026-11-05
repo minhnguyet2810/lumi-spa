@@ -5,6 +5,7 @@ const { requireAuth, requireAdmin } = require('../admin_auth');
 const { devBookings } = require('../dev_store');
 const mailService = require('../services/mail_service');
 const pushService = require('../services/push_service');
+const { awardPointsInTransaction, sendPointsNotification } = require('../services/membership_service');
 
 const router = express.Router();
 
@@ -225,6 +226,96 @@ router.patch('/bookings/:id/confirm', async (req, res) => {
       success: false,
       message: 'Không thể xác nhận lịch hẹn.',
     });
+  }
+});
+
+// PATCH /api/admin/bookings/:id/complete
+router.patch('/bookings/:id/complete', async (req, res) => {
+  try {
+    if (!db.hasCredentials) {
+      return res.json({ success: true, message: 'Đã hoàn tất lịch hẹn.' });
+    }
+    const bookingRef = db.collection('bookings').doc(req.params.id);
+    let completedBooking = null;
+    let pointsResult = null;
+
+    await db.runTransaction(async tx => {
+      const snapshot = await tx.get(bookingRef);
+      if (!snapshot.exists) {
+        const error = new Error('Không tìm thấy lịch hẹn.');
+        error.code = 'NOT_FOUND';
+        throw error;
+      }
+      const booking = snapshot.data();
+      if (!['confirmed', 'approved', 'pending'].includes(booking.status)) {
+        const error = new Error('Chỉ có thể hoàn tất lịch hẹn đang chờ hoặc đã xác nhận.');
+        error.code = 'INVALID_STATUS';
+        throw error;
+      }
+
+      const bookingPrice = Number(booking.price) || 0;
+      if (booking.userId && booking.pointsAwarded !== true && bookingPrice > 0) {
+        pointsResult = await awardPointsInTransaction(tx, db, {
+          userId: booking.userId,
+          amount: bookingPrice,
+          sourceId: snapshot.id,
+          sourceType: 'booking',
+        });
+      }
+
+      if (Array.isArray(booking.resourceSlotIds) && booking.resourceSlotIds.length > 0) {
+        const slotRefs = booking.resourceSlotIds.map(id => db.collection('resource_slots').doc(id));
+        const slots = await tx.getAll(...slotRefs);
+        slots.forEach((slot, index) => {
+          if (slot.exists && slot.data().bookingId === bookingRef.id) {
+            tx.delete(slotRefs[index]);
+          }
+        });
+      }
+
+      tx.update(bookingRef, {
+        status: 'completed',
+        completedAt: FieldValue.serverTimestamp(),
+        completedBy: req.user.uid,
+        pointsAwarded: true,
+        earnedPoints: pointsResult?.pointsAwarded ?? 0,
+        resourceSlotIds: [],
+        updatedAt: FieldValue.serverTimestamp(),
+      });
+
+      completedBooking = { id: snapshot.id, ...booking, status: 'completed' };
+    });
+
+    if (completedBooking?.userId) {
+      db.collection('notifications').add({
+        userId: completedBooking.userId,
+        title: 'Liệu trình hoàn tất ✨',
+        message: 'Lịch hẹn "' + (completedBooking.serviceName || 'Dịch vụ Spa') + '" đã được hoàn tất thành công. Cảm ơn bạn đã trải nghiệm dịch vụ tại LUMI SPA!',
+        type: 'appointment',
+        isRead: false,
+        createdAt: FieldValue.serverTimestamp(),
+      }).catch(err => console.warn('Booking complete notif error:', err.message));
+
+      if (pointsResult && pointsResult.pointsAwarded > 0) {
+        sendPointsNotification(db, {
+          userId: completedBooking.userId,
+          pointsAwarded: pointsResult.pointsAwarded,
+          newPoints: pointsResult.newPoints,
+          newTier: pointsResult.newTier,
+          newTierLabel: pointsResult.newTierLabel,
+          upgraded: pointsResult.upgraded,
+          sourceId: completedBooking.id,
+          sourceType: 'booking',
+        }).catch(err => console.warn('Booking points notification error:', err.message));
+      }
+    }
+
+    return res.json({ success: true, message: 'Đã hoàn tất lịch hẹn và tích điểm cho khách hàng.' });
+  } catch (error) {
+    if (error.code === 'NOT_FOUND') return res.status(404).json({ success: false, message: error.message });
+    if (error.code === 'INVALID_STATUS') return res.status(409).json({ success: false, message: error.message });
+    console.error('Admin complete booking error:', error);
+    return res.status(500).json({ success: false, message: 'Không thể hoàn tất lịch hẹn.' });
   }
 });
 

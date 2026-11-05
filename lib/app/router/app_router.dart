@@ -5,16 +5,12 @@ import '../../features/onboarding/presentation/screens/welcome_screen.dart';
 import '../../features/onboarding/presentation/screens/welcome_back_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
-import '../../features/spa/presentation/screens/spa_screen.dart';
 import '../../features/home/presentation/screens/notifications_screen.dart';
 import '../../features/profile/presentation/screens/edit_profile_screen.dart';
 import '../../features/profile/presentation/screens/membership_screen.dart';
 import '../../features/profile/presentation/screens/settings_screen.dart';
-<<<<<<< HEAD
 import '../../features/profile/presentation/screens/notification_settings_screen.dart';
-=======
 import '../../features/profile/presentation/screens/addresses_screen.dart';
->>>>>>> f69fef543243a3b629319035f2b9c062ba0b8aab
 
 abstract final class AppRouter {
   static final router = GoRouter(
@@ -34,7 +30,6 @@ abstract final class AppRouter {
         builder: (context, state) => const WelcomeBackScreen(),
       ),
       GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
-      GoRoute(path: '/spa', builder: (context, state) => const SpaScreen()),
       GoRoute(
         path: '/notifications',
         builder: (context, state) => const NotificationsScreen(),

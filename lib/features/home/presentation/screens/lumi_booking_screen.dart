@@ -1,3 +1,4 @@
+import '../../../../core/data/lumi_order_store.dart';
 import '../../../../core/widgets/lumi_catalog_image.dart';
 import '../../../../core/theme/lumi_adaptive.dart';
 
@@ -9,6 +10,7 @@ import 'package:lumi_spa/core/theme/lumi_style.dart';
 import 'package:lumi_spa/features/booking/data/booking_repository.dart';
 import 'package:lumi_spa/features/booking/data/models/booking_item.dart';
 import 'package:lumi_spa/features/booking/data/models/slot_availability.dart';
+import 'package:lumi_spa/features/booking/data/booking_slot_calculator.dart';
 
 class LumiBookingScreen extends StatefulWidget {
   const LumiBookingScreen({super.key, required this.service});
@@ -24,7 +26,15 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
   static const plum = LumiStyle.plum;
   static const blush = LumiStyle.softPink;
 
-  DateTime _date = DateUtils.dateOnly(DateTime.now());
+  static DateTime _computeInitialDate() {
+    final now = DateTime.now();
+    if (now.hour >= 17) {
+      return DateUtils.dateOnly(now.add(const Duration(days: 1)));
+    }
+    return DateUtils.dateOnly(now);
+  }
+
+  late DateTime _date = _computeInitialDate();
   int? _hour;
   bool _busy = false;
   bool _loadingSlots = false;
@@ -34,6 +44,17 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
 
   final _contactNameController = TextEditingController();
   final _contactPhoneController = TextEditingController();
+
+  List<SlotAvailability> get _effectiveSlots {
+    if (_slots.isNotEmpty) return _slots;
+    return BookingSlotCalculator.calculateSlots(
+      date: _date,
+      durationMinutes: _durationMinutes,
+      categoryId: _categoryId,
+      existingBookings: const [],
+      currentUserId: FirebaseAuth.instance.currentUser?.uid,
+    );
+  }
 
   String get _name => (widget.service['name'] ?? 'Dịch vụ LUMI').toString();
   String get _serviceId => (widget.service['id'] ?? '').toString();
@@ -51,11 +72,24 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
   String get _price {
     final n = _rawPrice;
     if (n <= 0) return 'Liên hệ';
-    return '${n.toInt().toString().replaceAllMapped(RegExp(r'\B(?=(\d{3})+(?!\d))'), (m) => '.')} đ';
+    return LumiOrderStore.formatCurrency(n);
   }
 
-  String _dateText(DateTime d) =>
-      '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
+  String _dateText(DateTime d) {
+    final now = DateUtils.dateOnly(DateTime.now());
+    final tomorrow = now.add(const Duration(days: 1));
+    final dateOnlyD = DateUtils.dateOnly(d);
+    final formatted =
+        '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
+    if (dateOnlyD == now) {
+      return '$formatted (Hôm nay)';
+    } else if (dateOnlyD == tomorrow) {
+      return '$formatted (Ngày mai)';
+    }
+    return formatted;
+  }
+
+
   String _hourText(int hour) => '${hour.toString().padLeft(2, '0')}:00';
 
   @override
@@ -173,7 +207,7 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
             Text(
               LumiAdaptive.text('Yêu cầu đăng nhập'),
               style: LumiAdaptive.style(
-                GoogleFonts.cormorantGaramond(
+                GoogleFonts.beVietnamPro(
                   fontSize: 26,
                   fontWeight: FontWeight.w700,
                   color: LumiAdaptive.color(plum),
@@ -187,7 +221,7 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
               ),
               textAlign: TextAlign.center,
               style: LumiAdaptive.style(
-                GoogleFonts.dmSans(
+                GoogleFonts.beVietnamPro(
                   fontSize: 14,
                   color: LumiAdaptive.color(plum.withValues(alpha: 0.7)),
                 ),
@@ -210,7 +244,7 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
                 child: Text(
                   LumiAdaptive.text('ĐĂNG NHẬP NGAY'),
                   style: LumiAdaptive.style(
-                    GoogleFonts.dmSans(fontWeight: FontWeight.w700),
+                    GoogleFonts.beVietnamPro(fontWeight: FontWeight.w700),
                   ),
                 ),
               ),
@@ -269,7 +303,7 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
       return;
     }
 
-    final selectedSlot = _slots.firstWhere(
+    final selectedSlot = _effectiveSlots.firstWhere(
       (s) => s.hour == _hour,
       orElse: () => const SlotAvailability(hour: -1, status: SlotStatus.past),
     );
@@ -348,7 +382,7 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
         title: Text(
           LumiAdaptive.text('LUMI · Đặt lịch'),
           style: LumiAdaptive.style(
-            GoogleFonts.dmSans(fontWeight: FontWeight.w600),
+            GoogleFonts.beVietnamPro(fontWeight: FontWeight.w600),
           ),
         ),
       ),
@@ -387,10 +421,10 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
                         ),
                         const SizedBox(height: 24),
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             _heading('02', 'Chọn khung giờ'),
-                            if (_loadingSlots)
+                            if (_loadingSlots) ...[
+                              const SizedBox(width: 10),
                               SizedBox(
                                 width: 16,
                                 height: 16,
@@ -399,6 +433,7 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
                                   color: LumiAdaptive.color(rose),
                                 ),
                               ),
+                            ],
                           ],
                         ),
                         const SizedBox(height: 6),
@@ -407,7 +442,7 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
                             'Spa mở cửa 09:00 – 18:00. Hiển thị trạng thái slot còn trống theo thời gian thực.',
                           ),
                           style: LumiAdaptive.style(
-                            GoogleFonts.dmSans(
+                            GoogleFonts.beVietnamPro(
                               color: LumiAdaptive.color(
                                 plum.withValues(alpha: .7),
                               ),
@@ -427,7 +462,7 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
                           decoration: InputDecoration(
                             labelText: LumiAdaptive.optionalText('Họ và tên *'),
                             labelStyle: LumiAdaptive.style(
-                              GoogleFonts.dmSans(
+                              GoogleFonts.beVietnamPro(
                                 color: LumiAdaptive.color(
                                   plum.withValues(alpha: 0.7),
                                 ),
@@ -456,7 +491,7 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
                               'Số điện thoại liên hệ *',
                             ),
                             labelStyle: LumiAdaptive.style(
-                              GoogleFonts.dmSans(
+                              GoogleFonts.beVietnamPro(
                                 color: LumiAdaptive.color(
                                   plum.withValues(alpha: 0.7),
                                 ),
@@ -504,7 +539,7 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
                                   child: Text(
                                     LumiAdaptive.text(_error!),
                                     style: LumiAdaptive.style(
-                                      GoogleFonts.dmSans(
+                                      GoogleFonts.beVietnamPro(
                                         color: LumiAdaptive.color(
                                           Colors.red.shade800,
                                         ),
@@ -559,7 +594,7 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
                             : Text(
                                 LumiAdaptive.text('XÁC NHẬN LỊCH HẸN'),
                                 style: LumiAdaptive.style(
-                                  GoogleFonts.dmSans(
+                                  GoogleFonts.beVietnamPro(
                                     fontWeight: FontWeight.w700,
                                     letterSpacing: .7,
                                     fontSize: 14,
@@ -586,119 +621,188 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
     }
 
     // Nếu chưa load xong từ Firestore thì fallback standard
-    final slotsList = _slots.isNotEmpty
-        ? _slots
-        : [9, 10, 11, 12, 13, 14, 15, 16, 17].map((h) {
-            final slotTime = DateTime(_date.year, _date.month, _date.day, h);
-            final isPast = slotTime.isBefore(DateTime.now());
-            final isClosed = h * 60 + _durationMinutes > 18 * 60;
-            return SlotAvailability(
-              hour: h,
-              status: isClosed
-                  ? SlotStatus.closedExceeded
-                  : (isPast ? SlotStatus.past : SlotStatus.available),
-              remainingCapacity: isClosed || isPast ? 0 : 2,
-            );
-          }).toList();
+    final slotsList = _effectiveSlots;
+    final allUnavailable = slotsList.every((s) => !s.isAvailable);
+    final isToday =
+        DateUtils.dateOnly(_date) == DateUtils.dateOnly(DateTime.now());
+
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Wrap(
-          spacing: 8,
-          runSpacing: 10,
-          children: slotsList.map((slot) {
-            final isSelected = _hour == slot.hour;
-            final isAvail = slot.isAvailable;
-
-            Color bgColor;
-            Color borderColor;
-            Color textColor;
-
-            if (isSelected) {
-              bgColor = blush;
-              borderColor = rose;
-              textColor = plum;
-            } else if (isAvail) {
-              bgColor = Colors.white;
-              borderColor = const Color(0xFFE5DCDA);
-              textColor = plum;
-            } else if (slot.status == SlotStatus.userConflict) {
-              bgColor = const Color(0xFFFFF3CD);
-              borderColor = const Color(0xFFFFEEBA);
-              textColor = const Color(0xFF856404);
-            } else {
-              bgColor = Colors.black.withValues(alpha: 0.03);
-              borderColor = Colors.black.withValues(alpha: 0.05);
-              textColor = Colors.grey.shade500;
-            }
-
-            return InkWell(
-              onTap: () => _onSlotTapped(slot),
-              borderRadius: BorderRadius.circular(12),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 180),
-                width: 100,
-                padding: const EdgeInsets.symmetric(
-                  vertical: 10,
-                  horizontal: 8,
+        if (allUnavailable) ...[
+          Container(
+            padding: const EdgeInsets.all(14),
+            margin: const EdgeInsets.only(bottom: 14),
+            decoration: BoxDecoration(
+              color: LumiAdaptive.color(
+                const Color(0xFFFFF7ED),
+                surface: true,
+              ),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: LumiAdaptive.color(const Color(0xFFFFEDD5)),
+              ),
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.info_outline_rounded,
+                  color: Color(0xFFEA580C),
+                  size: 22,
                 ),
-                decoration: BoxDecoration(
-                  color: LumiAdaptive.color(bgColor, surface: true),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: LumiAdaptive.color(isSelected ? rose : borderColor),
-                    width: isSelected ? 1.8 : 1,
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    isToday
+                        ? LumiAdaptive.text(
+                            'Hôm nay spa đã hết khung giờ khả dụng. Quý khách vui lòng chọn ngày mai hoặc ngày tiếp theo.',
+                          )
+                        : LumiAdaptive.text(
+                            'Ngày đã chọn hiện đã kín lịch. Quý khách vui lòng chọn ngày khác.',
+                          ),
+                    style: GoogleFonts.beVietnamPro(
+                      fontSize: 13,
+                      color: const Color(0xFF9A3412),
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      LumiAdaptive.text(slot.timeText),
-                      style: LumiAdaptive.style(
-                        GoogleFonts.dmSans(
-                          fontSize: 14,
-                          fontWeight: isSelected
-                              ? FontWeight.w700
-                              : FontWeight.w600,
-                          color: LumiAdaptive.color(textColor),
-                        ),
-                      ),
+                if (isToday) ...[
+                  const SizedBox(width: 8),
+                  FilledButton.tonal(
+                    onPressed: () {
+                      setState(() {
+                        _date = DateUtils.dateOnly(
+                          DateTime.now().add(const Duration(days: 1)),
+                        );
+                        _hour = null;
+                        _error = null;
+                      });
+                      _loadSlots();
+                    },
+                    style: FilledButton.styleFrom(
+                      visualDensity: VisualDensity.compact,
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
                     ),
-                    const SizedBox(height: 3),
-                    Text(
-                      LumiAdaptive.text(slot.statusBadge),
-                      textAlign: TextAlign.center,
-                      style: LumiAdaptive.style(
-                        GoogleFonts.dmSans(
-                          fontSize: 10,
-                          fontWeight: isAvail
-                              ? FontWeight.w600
-                              : FontWeight.normal,
+                    child: Text(LumiAdaptive.text('Chọn ngày mai')),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+        LayoutBuilder(
+          builder: (context, constraints) {
+            const crossAxisCount = 3;
+            const spacing = 10.0;
+            final itemWidth =
+                (constraints.maxWidth - spacing * (crossAxisCount - 1)) /
+                crossAxisCount;
+
+            return Wrap(
+              spacing: spacing,
+              runSpacing: 10,
+              children: slotsList.map((slot) {
+                final isSelected = _hour == slot.hour;
+                final isAvail = slot.isAvailable;
+
+                Color bgColor;
+                Color borderColor;
+                Color textColor;
+
+                if (isSelected) {
+                  bgColor = blush;
+                  borderColor = rose;
+                  textColor = plum;
+                } else if (isAvail) {
+                  bgColor = Colors.white;
+                  borderColor = const Color(0xFFE5DCDA);
+                  textColor = plum;
+                } else if (slot.status == SlotStatus.userConflict) {
+                  bgColor = const Color(0xFFFFF3CD);
+                  borderColor = const Color(0xFFFFEEBA);
+                  textColor = const Color(0xFF856404);
+                } else {
+                  bgColor = Colors.black.withValues(alpha: 0.03);
+                  borderColor = Colors.black.withValues(alpha: 0.05);
+                  textColor = Colors.grey.shade500;
+                }
+
+                return SizedBox(
+                  width: itemWidth,
+                  child: InkWell(
+                    onTap: () => _onSlotTapped(slot),
+                    borderRadius: BorderRadius.circular(12),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 180),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 12,
+                        horizontal: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: LumiAdaptive.color(bgColor, surface: true),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
                           color: LumiAdaptive.color(
-                            isAvail
-                                ? const Color(0xFF2E7D32)
-                                : (slot.status == SlotStatus.userConflict
-                                      ? const Color(0xFF856404)
-                                      : Colors.grey.shade500),
+                            isSelected ? rose : borderColor,
                           ),
+                          width: isSelected ? 1.8 : 1,
                         ),
                       ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            LumiAdaptive.text(slot.timeText),
+                            style: LumiAdaptive.style(
+                              GoogleFonts.beVietnamPro(
+                                fontSize: 14,
+                                fontWeight: isSelected
+                                    ? FontWeight.w700
+                                    : FontWeight.w600,
+                                color: LumiAdaptive.color(textColor),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            LumiAdaptive.text(slot.statusBadge),
+                            textAlign: TextAlign.center,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: LumiAdaptive.style(
+                              GoogleFonts.beVietnamPro(
+                                fontSize: 10,
+                                fontWeight: isAvail
+                                    ? FontWeight.w600
+                                    : FontWeight.normal,
+                                color: LumiAdaptive.color(
+                                  isAvail
+                                      ? const Color(0xFF2E7D32)
+                                      : (slot.status == SlotStatus.userConflict
+                                            ? const Color(0xFF856404)
+                                            : Colors.grey.shade500),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ],
-                ),
-              ),
+                  ),
+                );
+              }).toList(),
             );
-          }).toList(),
+          },
         ),
         const SizedBox(height: 10),
-        Row(
+        Wrap(
+          spacing: 14,
+          runSpacing: 6,
           children: [
             _legendItem(const Color(0xFF2E7D32), 'Còn trống'),
-            const SizedBox(width: 14),
             _legendItem(const Color(0xFF856404), 'Trùng lịch'),
-            const SizedBox(width: 14),
             _legendItem(Colors.grey.shade500, 'Hết chỗ / Đã qua'),
           ],
         ),
@@ -722,7 +826,7 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
         Text(
           LumiAdaptive.text(label),
           style: LumiAdaptive.style(
-            GoogleFonts.dmSans(
+            GoogleFonts.beVietnamPro(
               fontSize: 11,
               color: LumiAdaptive.color(plum.withValues(alpha: 0.65)),
             ),
@@ -769,7 +873,7 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
               children: [
                 Text(
                   LumiAdaptive.text('YOUR LUMI MOMENT'),
-                  style: GoogleFonts.dmSans(
+                  style: GoogleFonts.beVietnamPro(
                     color: colors.primary,
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
@@ -778,7 +882,7 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
                 const SizedBox(height: 10),
                 Text(
                   LumiAdaptive.text('Một khoảng lặng\nchỉ dành cho bạn.'),
-                  style: GoogleFonts.dmSans(
+                  style: GoogleFonts.beVietnamPro(
                     fontSize: 28,
                     height: 1.2,
                     fontWeight: FontWeight.w700,
@@ -788,7 +892,7 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
                 const SizedBox(height: 20),
                 Text(
                   LumiAdaptive.text('LIỆU TRÌNH ĐÃ CHỌN'),
-                  style: GoogleFonts.dmSans(
+                  style: GoogleFonts.beVietnamPro(
                     fontSize: 14,
                     color: colors.primary,
                     fontWeight: FontWeight.w700,
@@ -797,7 +901,7 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
                 const SizedBox(height: 7),
                 Text(
                   _name,
-                  style: GoogleFonts.dmSans(
+                  style: GoogleFonts.beVietnamPro(
                     fontSize: 21,
                     height: 1.35,
                     fontWeight: FontWeight.w700,
@@ -842,13 +946,15 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
   Widget _heading(String number, String title) {
     final colors = Theme.of(context).colorScheme;
     return Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         CircleAvatar(
           radius: 18,
           backgroundColor: colors.secondaryContainer,
           child: Text(
             number,
-            style: GoogleFonts.dmSans(
+            style: GoogleFonts.beVietnamPro(
               color: colors.onSecondaryContainer,
               fontSize: 14,
               fontWeight: FontWeight.w700,
@@ -856,15 +962,13 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
           ),
         ),
         const SizedBox(width: 12),
-        Expanded(
-          child: Text(
-            LumiAdaptive.text(title),
-            style: GoogleFonts.dmSans(
-              fontSize: 21,
-              height: 1.3,
-              color: colors.onSurface,
-              fontWeight: FontWeight.w700,
-            ),
+        Text(
+          LumiAdaptive.text(title),
+          style: GoogleFonts.beVietnamPro(
+            fontSize: 21,
+            height: 1.3,
+            color: colors.onSurface,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ],
@@ -899,7 +1003,7 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
               LumiAdaptive.text('Đặt lịch thành công'),
               textAlign: TextAlign.center,
               style: LumiAdaptive.style(
-                GoogleFonts.cormorantGaramond(
+                GoogleFonts.beVietnamPro(
                   color: LumiAdaptive.color(plum),
                   fontSize: 32,
                   fontWeight: FontWeight.w700,
@@ -922,7 +1026,7 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
               child: Text(
                 LumiAdaptive.text('ĐANG CHỜ LUMI XÁC NHẬN'),
                 style: LumiAdaptive.style(
-                  GoogleFonts.dmSans(
+                  GoogleFonts.beVietnamPro(
                     color: LumiAdaptive.color(const Color(0xFF856404)),
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
@@ -981,7 +1085,7 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
               ),
               textAlign: TextAlign.center,
               style: LumiAdaptive.style(
-                GoogleFonts.dmSans(
+                GoogleFonts.beVietnamPro(
                   color: LumiAdaptive.color(plum.withValues(alpha: .7)),
                   fontSize: 13,
                   height: 1.5,
@@ -1007,7 +1111,7 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
                 child: Text(
                   LumiAdaptive.text('HOÀN TẤT & VỀ TRANG CHỦ'),
                   style: LumiAdaptive.style(
-                    GoogleFonts.dmSans(fontWeight: FontWeight.w700),
+                    GoogleFonts.beVietnamPro(fontWeight: FontWeight.w700),
                   ),
                 ),
               ),
@@ -1025,7 +1129,7 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
         Text(
           LumiAdaptive.text(label),
           style: LumiAdaptive.style(
-            GoogleFonts.dmSans(
+            GoogleFonts.beVietnamPro(
               color: LumiAdaptive.color(plum.withValues(alpha: 0.6)),
               fontSize: 13,
             ),
@@ -1037,7 +1141,7 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
             LumiAdaptive.text(value),
             textAlign: TextAlign.right,
             style: LumiAdaptive.style(
-              GoogleFonts.dmSans(
+              GoogleFonts.beVietnamPro(
                 color: LumiAdaptive.color(plum),
                 fontWeight: FontWeight.w600,
                 fontSize: 13,

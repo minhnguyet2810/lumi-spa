@@ -2,6 +2,7 @@ import '../../../../core/widgets/lumi_catalog_image.dart';
 import '../../../../core/theme/lumi_adaptive.dart';
 
 import 'package:flutter/material.dart';
+import 'package:lumi_spa/features/experience/experience_widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class LumiSpaServiceDetailScreen extends StatelessWidget {
@@ -40,6 +41,7 @@ class LumiSpaServiceDetailScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: LumiAdaptive.color(cream, surface: true),
       appBar: AppBar(
+        actions: [LumiCatalogActions(type: 'service', item: service)],
         backgroundColor: LumiAdaptive.color(cream, surface: true),
         foregroundColor: LumiAdaptive.color(ink),
         surfaceTintColor: Colors.transparent,

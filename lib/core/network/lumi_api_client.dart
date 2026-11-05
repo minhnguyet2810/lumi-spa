@@ -27,10 +27,8 @@ class LumiApiClient {
     Map<String, dynamic>? body,
   }) => _request('POST', path, body: body);
 
-  Future<Map<String, dynamic>> put(
-    String path, {
-    Map<String, dynamic>? body,
-  }) => _request('PUT', path, body: body);
+  Future<Map<String, dynamic>> put(String path, {Map<String, dynamic>? body}) =>
+      _request('PUT', path, body: body);
 
   Future<Map<String, dynamic>> delete(
     String path, {
@@ -113,7 +111,9 @@ class LumiApiClient {
       payload = decoded;
     } on FormatException {
       throw LumiApiException(
-        'Máy chủ trả về dữ liệu không hợp lệ.',
+        response.statusCode == 404
+            ? 'Máy chủ chưa có chức năng này. Khởi động lại backend mới và kiểm tra địa chỉ kết nối.'
+            : 'Máy chủ trả về HTTP ${response.statusCode}, không phải dữ liệu API. Vui lòng kiểm tra backend.',
         statusCode: response.statusCode,
       );
     }

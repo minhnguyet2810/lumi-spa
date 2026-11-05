@@ -43,7 +43,11 @@
 					<string>$(PRODUCT_MODULE_NAME).SceneDelegate</string>
 					<key>UISceneStoryboardFile</key>
 					<string>Main</string>
-				</dict>
+					<key>NSCameraUsageDescription</key>
+	<string>LUMI uses your camera to take a photo you choose to send for cosmetic appearance feedback.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>LUMI lets you select a photo to preview and optionally send to its AI assistant.</string>
+</dict>
 			</array>
 		</dict>
 	</dict>

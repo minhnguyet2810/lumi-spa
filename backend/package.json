@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "node --test tests/permissions_test.js tests/dependency_compat_test.js tests/membership_test.js tests/admin_v2_customer_test.js tests/admin_v2_hrm_test.js tests/admin_v2_marketing_analytics_test.js tests/admin_v2_services_test.js",
+    "test": "node --test tests/permissions_test.js tests/dependency_compat_test.js tests/membership_test.js tests/admin_v2_customer_test.js tests/admin_v2_hrm_test.js tests/admin_v2_marketing_analytics_test.js tests/admin_v2_services_test.js tests/ai_test.js tests/experience_test.js",
     "test:permissions": "node --test tests/permissions_test.js",
     "test:membership": "node --test tests/membership_test.js",
     "test:admin_v2": "node --test tests/admin_v2_services_test.js tests/admin_v2_customer_test.js tests/admin_v2_hrm_test.js tests/admin_v2_marketing_analytics_test.js",

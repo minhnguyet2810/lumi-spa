@@ -2,6 +2,7 @@ import '../../../../core/widgets/lumi_catalog_image.dart';
 import '../../../../core/theme/lumi_adaptive.dart';
 
 import 'package:flutter/material.dart';
+import 'package:lumi_spa/features/experience/experience_widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/data/lumi_catalog_repository.dart';
@@ -259,9 +260,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
           color: LumiAdaptive.color(
-            _isFilterExpanded
-                ? rose.withValues(alpha: 0.35)
-                : blush,
+            _isFilterExpanded ? rose.withValues(alpha: 0.35) : blush,
           ),
         ),
         boxShadow: [
@@ -994,15 +993,26 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
                                       : Image.network(
                                           _imageUrl(line.product)!,
                                           fit: BoxFit.cover,
-                                          loadingBuilder: (context, child, progress) => progress == null
+                                          loadingBuilder:
+                                              (
+                                                context,
+                                                child,
+                                                progress,
+                                              ) => progress == null
                                               ? child
                                               : ColoredBox(
-                                                  color: LumiAdaptive.color(blush, surface: true),
+                                                  color: LumiAdaptive.color(
+                                                    blush,
+                                                    surface: true,
+                                                  ),
                                                   child: const Center(
                                                     child: SizedBox(
                                                       width: 16,
                                                       height: 16,
-                                                      child: CircularProgressIndicator(strokeWidth: 2),
+                                                      child:
+                                                          CircularProgressIndicator(
+                                                            strokeWidth: 2,
+                                                          ),
                                                     ),
                                                   ),
                                                 ),
@@ -1188,6 +1198,7 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
             backgroundColor: LumiAdaptive.color(cream, surface: true),
             appBar: AppBar(
               title: Text(LumiAdaptive.text('Chi tiết sản phẩm')),
+              actions: [LumiCatalogActions(type: 'product', item: item)],
               backgroundColor: LumiAdaptive.color(cream, surface: true),
               foregroundColor: LumiAdaptive.color(ink),
             ),
@@ -1493,7 +1504,10 @@ class _LumiShopCatalogState extends State<LumiShopCatalog> {
             controller: search,
             onChanged: (_) => setState(() {}),
             style: LumiAdaptive.style(
-              GoogleFonts.beVietnamPro(fontSize: 16, color: LumiAdaptive.color(ink)),
+              GoogleFonts.beVietnamPro(
+                fontSize: 16,
+                color: LumiAdaptive.color(ink),
+              ),
             ),
             decoration: InputDecoration(
               hintText: LumiAdaptive.optionalText(

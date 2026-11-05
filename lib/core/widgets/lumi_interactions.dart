@@ -179,25 +179,39 @@ class LumiPressFeedback extends StatefulWidget {
 }
 
 class _LumiPressFeedbackState extends State<LumiPressFeedback> {
-  bool _pressed = false;
+  bool _pressed = false, _hovered = false;
   void _set(bool value) {
-    if (value != _pressed) {
+    if (value != _pressed && mounted) {
       setState(() => _pressed = value);
     }
   }
 
   @override
-  Widget build(BuildContext context) => Listener(
-    onPointerDown: (_) => _set(true),
-    onPointerUp: (_) => _set(false),
-    onPointerCancel: (_) => _set(false),
-    child: AnimatedScale(
-      scale: _pressed ? 0.97 : 1,
-      duration: Duration(
-        milliseconds: MediaQuery.disableAnimationsOf(context) ? 0 : 130,
+  Widget build(BuildContext context) {
+    final reduce = MediaQuery.disableAnimationsOf(context);
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() {
+        _hovered = false;
+        _pressed = false;
+      }),
+      child: Listener(
+        onPointerDown: (_) => _set(true),
+        onPointerUp: (_) => _set(false),
+        onPointerCancel: (_) => _set(false),
+        child: AnimatedScale(
+          scale: reduce
+              ? 1
+              : _pressed
+              ? .965
+              : _hovered
+              ? 1.015
+              : 1,
+          duration: Duration(milliseconds: reduce ? 0 : 160),
+          curve: Curves.easeOutCubic,
+          child: widget.child,
+        ),
       ),
-      curve: Curves.easeOutCubic,
-      child: widget.child,
-    ),
-  );
+    );
+  }
 }

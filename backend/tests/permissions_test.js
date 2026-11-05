@@ -22,7 +22,7 @@ function harness() {
       limit() { return this; },
       async get() {
         const docs = [...records].filter(([k, v]) => k.startsWith(`${name}/`) && filters.every(f => f(v))).map(([k]) => snap(this.doc(k.slice(name.length + 1))));
-        return { docs, size: docs.length, empty: !docs.length };
+        return { docs, size: docs.length, empty: !docs.length, forEach: callback => docs.forEach(callback) };
       },
       async add(data) { const ref = this.doc(); records.set(ref.path, data); return ref; },
     };
@@ -31,6 +31,11 @@ function harness() {
     const writes = [];
     const result = await fn({ get: async ref => snap(ref), getAll: async (...refs) => refs.map(snap),
       create: (ref, data) => writes.push(() => records.set(ref.path, data)),
+      set: (ref, data, options) => writes.push(() => {
+        const old = records.get(ref.path) || {};
+        const values = Object.fromEntries(Object.entries(data).map(([k, v]) => [k, v?.inc !== undefined ? (old[k] || 0) + v.inc : v]));
+        records.set(ref.path, { ...(options?.merge ? old : {}), ...values });
+      }),
       update: (ref, data) => writes.push(() => {
         const old = records.get(ref.path) || {};
         const values = Object.fromEntries(Object.entries(data).map(([k, v]) => [k, v?.inc !== undefined ? (old[k] || 0) + v.inc : v]));
@@ -61,6 +66,7 @@ function harness() {
   return { app: load(path.resolve(__dirname, '../server.js')), records, db };
 }
 const adminPaths = [
+  ['get','/api/experience/dashboard'],
   ['get','/api/admin/health'], ['get','/api/admin/bookings'], ['get','/api/admin/orders'], ['get','/api/admin/users'],
   ['get','/api/admin-bookings'], ['post','/api/admin-bookings/x/status'], ['patch','/api/admin-bookings/x/status'],
   ['patch','/api/admin/bookings/x/confirm'], ['patch','/api/admin/bookings/x/reject'],
@@ -241,7 +247,7 @@ test('coupons endpoint returns available vouchers and checkout applies discount 
     .set('Authorization', 'Bearer customer');
   assert.equal(listRes.status, 200);
   assert.equal(listRes.body.success, true);
-  assert.ok(listRes.body.data.length >= 6);
+  assert.deepEqual(listRes.body.data.filter(c => c.source === 'system' || ['FREESHIP','LUMISPA10','LUMI50K'].includes(c.code)).map(c => c.code).sort(), ['FREESHIP','LUMI50K','LUMISPA10']);
   assert.ok(listRes.body.data.some(c => c.code === 'LUMI50K'));
 
   // 2. Checkout with coupon LUMI50K (min order 300.000, 50k discount)

@@ -1,3 +1,6 @@
+import 'package:lumi_spa/core/settings/app_preferences.dart';
+import 'package:lumi_spa/core/widgets/lumi_signature.dart';
+
 import '../../../../core/data/lumi_order_store.dart';
 import '../../../../core/widgets/lumi_catalog_image.dart';
 import '../../../../core/theme/lumi_adaptive.dart';
@@ -88,7 +91,6 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
     }
     return formatted;
   }
-
 
   String _hourText(int hour) => '${hour.toString().padLeft(2, '0')}:00';
 
@@ -626,7 +628,6 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
     final isToday =
         DateUtils.dateOnly(_date) == DateUtils.dateOnly(DateTime.now());
 
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -635,10 +636,7 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
             padding: const EdgeInsets.all(14),
             margin: const EdgeInsets.only(bottom: 14),
             decoration: BoxDecoration(
-              color: LumiAdaptive.color(
-                const Color(0xFFFFF7ED),
-                surface: true,
-              ),
+              color: LumiAdaptive.color(const Color(0xFFFFF7ED), surface: true),
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
                 color: LumiAdaptive.color(const Color(0xFFFFEDD5)),
@@ -836,112 +834,51 @@ class _LumiBookingScreenState extends State<LumiBookingScreen> {
     );
   }
 
-  Widget _bookingIntro() {
-    final colors = Theme.of(context).colorScheme;
-    return Container(
-      clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: Theme.of(context).brightness == Brightness.dark
-              ? [const Color(0xFF604A3D), const Color(0xFF344E5B)]
-              : [
-                  const Color(0xFFF8D5C2),
-                  const Color(0xFFF3E7D9),
-                  const Color(0xFFDCECF1),
-                ],
+  Widget _bookingIntro() => LumiSignatureHeader(
+    eyebrow: 'YOUR LUMI MOMENT',
+    title: context.lumiText(
+      'Hẹn một khoảng\nthảnh thơi.',
+      'Make room\nfor yourself.',
+    ),
+    description: _name,
+    icon: Icons.calendar_month_rounded,
+    footer: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: LumiCatalogImage(item: widget.service, height: 155),
         ),
-        borderRadius: BorderRadius.circular(27),
-        border: Border.all(color: colors.outlineVariant),
-        boxShadow: [
-          BoxShadow(
-            color: colors.primary.withValues(alpha: 0.08),
-            blurRadius: 22,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          LumiCatalogImage(item: widget.service, height: 155),
-          Padding(
-            padding: const EdgeInsets.all(22),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  LumiAdaptive.text('YOUR LUMI MOMENT'),
-                  style: GoogleFonts.beVietnamPro(
-                    color: colors.primary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  LumiAdaptive.text('Một khoảng lặng\nchỉ dành cho bạn.'),
-                  style: GoogleFonts.beVietnamPro(
-                    fontSize: 28,
-                    height: 1.2,
-                    fontWeight: FontWeight.w700,
-                    color: colors.onSurface,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  LumiAdaptive.text('LIỆU TRÌNH ĐÃ CHỌN'),
-                  style: GoogleFonts.beVietnamPro(
-                    fontSize: 14,
-                    color: colors.primary,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 7),
-                Text(
-                  _name,
-                  style: GoogleFonts.beVietnamPro(
-                    fontSize: 21,
-                    height: 1.35,
-                    fontWeight: FontWeight.w700,
-                    color: colors.onSurface,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Wrap(
-                  spacing: 10,
-                  runSpacing: 10,
-                  children: [
-                    Chip(
-                      avatar: Icon(
-                        Icons.schedule_rounded,
-                        size: 18,
-                        color: colors.primary,
-                      ),
-                      label: Text(LumiAdaptive.text(_duration)),
-                      backgroundColor: colors.surface,
-                      side: BorderSide.none,
-                    ),
-                    Chip(
-                      avatar: Icon(
-                        Icons.spa_outlined,
-                        size: 18,
-                        color: colors.primary,
-                      ),
-                      label: Text(_price),
-                      backgroundColor: colors.surface,
-                      side: BorderSide.none,
-                    ),
-                  ],
-                ),
-              ],
+        const SizedBox(height: 14),
+        Wrap(
+          spacing: 10,
+          runSpacing: 8,
+          children: [
+            Chip(
+              avatar: const Icon(Icons.schedule_rounded, size: 18),
+              label: Text(LumiAdaptive.text(_duration)),
             ),
+            Chip(
+              avatar: const Icon(Icons.spa_outlined, size: 18),
+              label: Text(_price),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Text(
+          context.lumiText(
+            '01 · Chọn ngày     02 · Chọn giờ     03 · Xác nhận',
+            '01 · Date     02 · Time     03 · Confirm',
           ),
-        ],
-      ),
-    );
-  }
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
+            fontSize: 12,
+            height: 1.6,
+          ),
+        ),
+      ],
+    ),
+  );
 
   Widget _heading(String number, String title) {
     final colors = Theme.of(context).colorScheme;

@@ -7,7 +7,9 @@ import '../../data/models/admin_financial_analytics_model.dart';
 import '../../data/admin_analytics_repository.dart';
 
 class AdminFinancialAnalyticsScreen extends StatefulWidget {
-  const AdminFinancialAnalyticsScreen({super.key});
+  const AdminFinancialAnalyticsScreen({super.key, this.showAppBar = true});
+
+  final bool showAppBar;
 
   @override
   State<AdminFinancialAnalyticsScreen> createState() => _AdminFinancialAnalyticsScreenState();
@@ -48,11 +50,64 @@ class _AdminFinancialAnalyticsScreenState extends State<AdminFinancialAnalyticsS
 
   @override
   Widget build(BuildContext context) {
+    final bodyContent = RefreshIndicator(
+      onRefresh: _loadReport,
+      color: AdminColors.primary,
+      backgroundColor: AdminColors.cardSurface,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Thanh lọc Thời Gian & Chi Nhánh
+            _buildFilterHeader(),
+            const SizedBox(height: 20),
+
+            if (_isLoading)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 60),
+                  child: CircularProgressIndicator(color: AdminColors.primary),
+                ),
+              )
+            else if (_reportData == null)
+              _buildErrorState()
+            else ...[
+              // 4 Thẻ KPI Tài Chính
+              _buildKpiSummarySection(_reportData!.summary),
+              const SizedBox(height: 24),
+
+              // Cơ Cấu Doanh Thu: Mỹ Phẩm vs Spa Services
+              _buildRevenueBreakdownSection(_reportData!.summary),
+              const SizedBox(height: 24),
+
+              // Biểu Đồ Xu Hướng Hàng Ngày (Bar & Trend Chart)
+              _buildDailyTrendChartSection(_reportData!.dailyTrend),
+              const SizedBox(height: 24),
+
+              // Top Performers: Mỹ phẩm & Liệu trình Spa
+              _buildTopPerformersSection(_reportData!.topProducts, _reportData!.topServices),
+              const SizedBox(height: 32),
+            ],
+          ],
+        ),
+      ),
+    );
+
+    if (!widget.showAppBar) {
+      return Container(
+        color: AdminColors.background,
+        child: bodyContent,
+      );
+    }
+
     return Scaffold(
       backgroundColor: AdminColors.background,
       appBar: AppBar(
-        backgroundColor: AdminColors.deepTeal,
+        backgroundColor: AdminColors.background,
         elevation: 0,
+        surfaceTintColor: Colors.transparent,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AdminColors.textPrimary, size: 20),
           onPressed: () => Navigator.of(context).pop(),
@@ -62,10 +117,11 @@ class _AdminFinancialAnalyticsScreenState extends State<AdminFinancialAnalyticsS
             Container(
               padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
-                color: AdminColors.goldAccent.withValues(alpha: 0.15),
+                color: AdminColors.peach,
                 borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AdminColors.border),
               ),
-              child: const Icon(Icons.insights_rounded, color: AdminColors.goldAccent, size: 20),
+              child: const Icon(Icons.insights_rounded, color: AdminColors.primary, size: 20),
             ),
             const SizedBox(width: 12),
             Text(
@@ -80,57 +136,14 @@ class _AdminFinancialAnalyticsScreenState extends State<AdminFinancialAnalyticsS
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh_rounded, color: AdminColors.goldAccent),
+            icon: const Icon(Icons.refresh_rounded, color: AdminColors.primary),
             tooltip: 'Tải lại dữ liệu',
             onPressed: _loadReport,
           ),
           const SizedBox(width: 12),
         ],
       ),
-      body: RefreshIndicator(
-        onRefresh: _loadReport,
-        color: AdminColors.goldAccent,
-        backgroundColor: AdminColors.deepTeal,
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Thanh lọc Thời Gian & Chi Nhánh
-              _buildFilterHeader(),
-              const SizedBox(height: 20),
-
-              if (_isLoading)
-                const Center(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 60),
-                    child: CircularProgressIndicator(color: AdminColors.goldAccent),
-                  ),
-                )
-              else if (_reportData == null)
-                _buildErrorState()
-              else ...[
-                // 4 Thẻ KPI Tài Chính
-                _buildKpiSummarySection(_reportData!.summary),
-                const SizedBox(height: 24),
-
-                // Cơ Cấu Doanh Thu: Mỹ Phẩm vs Spa Services
-                _buildRevenueBreakdownSection(_reportData!.summary),
-                const SizedBox(height: 24),
-
-                // Biểu Đồ Xu Hướng Hàng Ngày (Bar & Trend Chart)
-                _buildDailyTrendChartSection(_reportData!.dailyTrend),
-                const SizedBox(height: 24),
-
-                // Top Performers: Mỹ phẩm & Liệu trình Spa
-                _buildTopPerformersSection(_reportData!.topProducts, _reportData!.topServices),
-                const SizedBox(height: 32),
-              ],
-            ],
-          ),
-        ),
-      ),
+      body: bodyContent,
     );
   }
 
@@ -306,13 +319,7 @@ class _AdminFinancialAnalyticsScreenState extends State<AdminFinancialAnalyticsS
         color: AdminColors.cardSurface,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: AdminColors.border),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.15),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
-        ],
+        boxShadow: AdminColors.cardShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

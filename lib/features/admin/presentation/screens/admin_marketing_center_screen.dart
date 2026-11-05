@@ -9,7 +9,9 @@ import '../widgets/admin_voucher_form_dialog.dart';
 import '../widgets/admin_broadcast_push_dialog.dart';
 
 class AdminMarketingCenterScreen extends StatefulWidget {
-  const AdminMarketingCenterScreen({super.key});
+  const AdminMarketingCenterScreen({super.key, this.showAppBar = true});
+
+  final bool showAppBar;
 
   @override
   State<AdminMarketingCenterScreen> createState() => _AdminMarketingCenterScreenState();
@@ -104,11 +106,54 @@ class _AdminMarketingCenterScreenState extends State<AdminMarketingCenterScreen>
 
   @override
   Widget build(BuildContext context) {
+    final bodyContent = RefreshIndicator(
+      onRefresh: _loadData,
+      color: AdminColors.primary,
+      backgroundColor: AdminColors.cardSurface,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 4 Thẻ KPI Marketing
+            _buildKpiSection(),
+            const SizedBox(height: 24),
+
+            // Thanh điều khiển & nút tác vụ
+            _buildControlBar(),
+            const SizedBox(height: 20),
+
+            // Danh sách Voucher Cards
+            if (_isLoading)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 48),
+                  child: CircularProgressIndicator(color: AdminColors.primary),
+                ),
+              )
+            else if (_vouchers.isEmpty)
+              _buildEmptyState()
+            else
+              _buildVoucherGrid(),
+          ],
+        ),
+      ),
+    );
+
+    if (!widget.showAppBar) {
+      return Container(
+        color: AdminColors.background,
+        child: bodyContent,
+      );
+    }
+
     return Scaffold(
       backgroundColor: AdminColors.background,
       appBar: AppBar(
-        backgroundColor: AdminColors.deepTeal,
+        backgroundColor: AdminColors.background,
         elevation: 0,
+        surfaceTintColor: Colors.transparent,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AdminColors.textPrimary, size: 20),
           onPressed: () => Navigator.of(context).pop(),
@@ -118,10 +163,11 @@ class _AdminMarketingCenterScreenState extends State<AdminMarketingCenterScreen>
             Container(
               padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
-                color: AdminColors.goldAccent.withValues(alpha: 0.15),
+                color: AdminColors.peach,
                 borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AdminColors.border),
               ),
-              child: const Icon(Icons.loyalty_rounded, color: AdminColors.goldAccent, size: 20),
+              child: const Icon(Icons.loyalty_rounded, color: AdminColors.primary, size: 20),
             ),
             const SizedBox(width: 12),
             Text(
@@ -136,47 +182,14 @@ class _AdminMarketingCenterScreenState extends State<AdminMarketingCenterScreen>
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh_rounded, color: AdminColors.goldAccent),
+            icon: const Icon(Icons.refresh_rounded, color: AdminColors.primary),
             tooltip: 'Tải lại',
             onPressed: _loadData,
           ),
           const SizedBox(width: 12),
         ],
       ),
-      body: RefreshIndicator(
-        onRefresh: _loadData,
-        color: AdminColors.goldAccent,
-        backgroundColor: AdminColors.deepTeal,
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 4 Thẻ KPI Marketing
-              _buildKpiSection(),
-              const SizedBox(height: 24),
-
-              // Thanh điều khiển & nút tác vụ
-              _buildControlBar(),
-              const SizedBox(height: 20),
-
-              // Danh sách Voucher Cards
-              if (_isLoading)
-                const Center(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 48),
-                    child: CircularProgressIndicator(color: AdminColors.goldAccent),
-                  ),
-                )
-              else if (_vouchers.isEmpty)
-                _buildEmptyState()
-              else
-                _buildVoucherGrid(),
-            ],
-          ),
-        ),
-      ),
+      body: bodyContent,
     );
   }
 
@@ -251,13 +264,7 @@ class _AdminMarketingCenterScreenState extends State<AdminMarketingCenterScreen>
         color: AdminColors.cardSurface,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: AdminColors.border),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.15),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
-        ],
+        boxShadow: AdminColors.cardShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -383,8 +390,8 @@ class _AdminMarketingCenterScreenState extends State<AdminMarketingCenterScreen>
                 icon: const Icon(Icons.add_rounded, size: 20),
                 label: Text('Tạo Voucher Mới', style: GoogleFonts.beVietnamPro(fontWeight: FontWeight.w700)),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AdminColors.goldAccent,
-                  foregroundColor: Colors.black,
+                  backgroundColor: AdminColors.primary,
+                  foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
@@ -479,13 +486,7 @@ class _AdminMarketingCenterScreenState extends State<AdminMarketingCenterScreen>
         border: Border.all(
           color: v.isActive ? AdminColors.border : AdminColors.border.withValues(alpha: 0.5),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.12),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
-        ],
+        boxShadow: AdminColors.cardShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

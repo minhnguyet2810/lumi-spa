@@ -9,7 +9,9 @@ import '../widgets/admin_shift_action_dialog.dart';
 import '../widgets/admin_staff_list_dialog.dart';
 
 class AdminStaffRosterScreen extends StatefulWidget {
-  const AdminStaffRosterScreen({super.key});
+  const AdminStaffRosterScreen({super.key, this.showAppBar = true});
+
+  final bool showAppBar;
 
   @override
   State<AdminStaffRosterScreen> createState() => _AdminStaffRosterScreenState();
@@ -140,6 +142,37 @@ class _AdminStaffRosterScreenState extends State<AdminStaffRosterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final bodyContent = Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 1600),
+        child: Column(
+          children: [
+            // 1. Top KPI Metrics bar
+            _buildKpiMetricsBar(),
+
+            // 2. Navigation & Week Selector Toolbar
+            _buildNavigationToolbar(),
+
+            // 3. Interactive Weekly Schedule Roster Matrix
+            Expanded(
+              child: _loading
+                  ? const Center(child: CircularProgressIndicator(color: AdminColors.primary))
+                  : _error != null
+                      ? _buildErrorView()
+                      : _buildWeeklyRosterMatrix(),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (!widget.showAppBar) {
+      return Container(
+        color: AdminColors.background,
+        child: bodyContent,
+      );
+    }
+
     return Scaffold(
       backgroundColor: AdminColors.background,
       appBar: AppBar(
@@ -147,7 +180,7 @@ class _AdminStaffRosterScreenState extends State<AdminStaffRosterScreen> {
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 18),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AdminColors.textPrimary, size: 18),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Row(
@@ -155,11 +188,11 @@ class _AdminStaffRosterScreenState extends State<AdminStaffRosterScreen> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: AdminColors.gold.withValues(alpha: 0.15),
+                color: AdminColors.peach,
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: AdminColors.gold.withValues(alpha: 0.4)),
+                border: Border.all(color: AdminColors.border),
               ),
-              child: const Icon(Icons.calendar_view_week_rounded, color: AdminColors.gold, size: 20),
+              child: const Icon(Icons.calendar_view_week_rounded, color: AdminColors.primary, size: 20),
             ),
             const SizedBox(width: 12),
             Column(
@@ -171,12 +204,12 @@ class _AdminStaffRosterScreenState extends State<AdminStaffRosterScreen> {
                     fontSize: 15,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 1.1,
-                    color: Colors.white,
+                    color: AdminColors.textPrimary,
                   ),
                 ),
                 Text(
                   'Lịch phân ca làm việc, chấm công thực tế & duyệt nghỉ phép đa chi nhánh',
-                  style: GoogleFonts.beVietnamPro(fontSize: 10, color: Colors.white60),
+                  style: GoogleFonts.beVietnamPro(fontSize: 10, color: AdminColors.textSecondary),
                 ),
               ],
             ),
@@ -185,35 +218,13 @@ class _AdminStaffRosterScreenState extends State<AdminStaffRosterScreen> {
         actions: [
           IconButton(
             tooltip: 'Làm mới lịch trực',
-            icon: const Icon(Icons.refresh_rounded, color: AdminColors.gold),
+            icon: const Icon(Icons.refresh_rounded, color: AdminColors.primary),
             onPressed: _fetchData,
           ),
           const SizedBox(width: 8),
         ],
       ),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 1500),
-          child: Column(
-            children: [
-              // 1. Top KPI Metrics bar
-              _buildKpiMetricsBar(),
-
-              // 2. Navigation & Week Selector Toolbar
-              _buildNavigationToolbar(),
-
-              // 3. Interactive Weekly Schedule Roster Matrix
-              Expanded(
-                child: _loading
-                    ? const Center(child: CircularProgressIndicator(color: AdminColors.gold))
-                    : _error != null
-                        ? _buildErrorView()
-                        : _buildWeeklyRosterMatrix(),
-              ),
-            ],
-          ),
-        ),
-      ),
+      body: bodyContent,
     );
   }
 
@@ -222,16 +233,10 @@ class _AdminStaffRosterScreenState extends State<AdminStaffRosterScreen> {
       margin: const EdgeInsets.fromLTRB(16, 12, 16, 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AdminColors.deepTeal,
+        color: AdminColors.cardSurface,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFF165B52)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.25),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        border: Border.all(color: AdminColors.border),
+        boxShadow: AdminColors.cardShadow,
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
@@ -246,7 +251,7 @@ class _AdminStaffRosterScreenState extends State<AdminStaffRosterScreen> {
                 value: '${_stats.totalStaff}',
                 subtitle: '${_staffMembers.length} hồ sơ nhân viên',
                 icon: Icons.badge_rounded,
-                color: const Color(0xFF38BDF8),
+                color: const Color(0xFF0284C7),
                 width: isCompact ? constraints.maxWidth / 2 - 12 : 200,
               ),
               _kpiCard(
@@ -254,7 +259,7 @@ class _AdminStaffRosterScreenState extends State<AdminStaffRosterScreen> {
                 value: '${_stats.onDutyToday}',
                 subtitle: '${_stats.completedToday} ca đã hoàn tất',
                 icon: Icons.how_to_reg_rounded,
-                color: const Color(0xFF1ABC9C),
+                color: AdminColors.emerald,
                 width: isCompact ? constraints.maxWidth / 2 - 12 : 200,
               ),
               _kpiCard(
@@ -262,7 +267,7 @@ class _AdminStaffRosterScreenState extends State<AdminStaffRosterScreen> {
                 value: '${_shifts.length}',
                 subtitle: 'Khung giờ sáng & chiều',
                 icon: Icons.event_available_rounded,
-                color: AdminColors.gold,
+                color: AdminColors.primary,
                 width: isCompact ? constraints.maxWidth / 2 - 12 : 200,
               ),
               _kpiCard(
@@ -270,7 +275,7 @@ class _AdminStaffRosterScreenState extends State<AdminStaffRosterScreen> {
                 value: '${_stats.pendingLeaveCount}',
                 subtitle: 'Cần quản trị phê duyệt',
                 icon: Icons.pending_actions_rounded,
-                color: const Color(0xFFF59E0B),
+                color: AdminColors.statusPending,
                 width: isCompact ? constraints.maxWidth / 2 - 12 : 200,
               ),
             ],
@@ -292,16 +297,16 @@ class _AdminStaffRosterScreenState extends State<AdminStaffRosterScreen> {
       width: width,
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: AdminColors.slateTeal,
+        color: AdminColors.elevatedSurface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFF1E6B60)),
+        border: Border.all(color: AdminColors.border),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.15),
+              color: color.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(icon, color: color, size: 22),
@@ -312,19 +317,19 @@ class _AdminStaffRosterScreenState extends State<AdminStaffRosterScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(title, style: GoogleFonts.beVietnamPro(fontSize: 10, color: Colors.white60)),
+                Text(title, style: GoogleFonts.beVietnamPro(fontSize: 10, color: AdminColors.textSecondary, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 2),
                 Text(
                   value,
                   style: GoogleFonts.beVietnamPro(
                     fontSize: 16,
                     fontWeight: FontWeight.w800,
-                    color: Colors.white,
+                    color: AdminColors.textPrimary,
                   ),
                 ),
                 Text(
                   subtitle,
-                  style: GoogleFonts.beVietnamPro(fontSize: 9, color: color),
+                  style: GoogleFonts.beVietnamPro(fontSize: 9, color: color, fontWeight: FontWeight.w600),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -345,9 +350,10 @@ class _AdminStaffRosterScreenState extends State<AdminStaffRosterScreen> {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AdminColors.deepTeal,
+        color: AdminColors.cardSurface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF165B52)),
+        border: Border.all(color: AdminColors.border),
+        boxShadow: AdminColors.softShadow,
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
@@ -362,28 +368,28 @@ class _AdminStaffRosterScreenState extends State<AdminStaffRosterScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.chevron_left_rounded, color: AdminColors.gold),
+                    icon: const Icon(Icons.chevron_left_rounded, color: AdminColors.primary),
                     tooltip: 'Tuần trước',
                     onPressed: _previousWeek,
                   ),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                     decoration: BoxDecoration(
-                      color: AdminColors.slateTeal,
+                      color: AdminColors.peachLight,
                       borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: const Color(0xFF1E6B60)),
+                      border: Border.all(color: AdminColors.border),
                     ),
                     child: Text(
                       rangeText,
                       style: GoogleFonts.beVietnamPro(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
-                        color: Colors.white,
+                        color: AdminColors.textPrimary,
                       ),
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.chevron_right_rounded, color: AdminColors.gold),
+                    icon: const Icon(Icons.chevron_right_rounded, color: AdminColors.primary),
                     tooltip: 'Tuần kế tiếp',
                     onPressed: _nextWeek,
                   ),
@@ -391,8 +397,8 @@ class _AdminStaffRosterScreenState extends State<AdminStaffRosterScreen> {
                   OutlinedButton(
                     onPressed: _jumpToCurrentWeek,
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: AdminColors.gold,
-                      side: const BorderSide(color: AdminColors.gold),
+                      foregroundColor: AdminColors.primary,
+                      side: const BorderSide(color: AdminColors.primary),
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),
@@ -408,9 +414,9 @@ class _AdminStaffRosterScreenState extends State<AdminStaffRosterScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     _roleFilterChip('all', 'Tất cả (${_staffMembers.length})'),
-                    _roleFilterChip('specialist', 'Kỹ thuật viên', color: const Color(0xFF2ECC71)),
-                    _roleFilterChip('receptionist', 'Lễ tân', color: const Color(0xFF38BDF8)),
-                    _roleFilterChip('branch_manager', 'Quản lý', color: AdminColors.gold),
+                    _roleFilterChip('specialist', 'Kỹ thuật viên', color: const Color(0xFF16A34A)),
+                    _roleFilterChip('receptionist', 'Lễ tân', color: const Color(0xFF0284C7)),
+                    _roleFilterChip('branch_manager', 'Quản lý', color: AdminColors.primary),
                   ],
                 ),
               ),
@@ -422,20 +428,20 @@ class _AdminStaffRosterScreenState extends State<AdminStaffRosterScreen> {
                   OutlinedButton.icon(
                     onPressed: _openStaffListDialog,
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      side: const BorderSide(color: Colors.white38),
+                      foregroundColor: AdminColors.textPrimary,
+                      side: const BorderSide(color: AdminColors.border),
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     ),
-                    icon: const Icon(Icons.badge_rounded, size: 16),
+                    icon: const Icon(Icons.badge_rounded, size: 16, color: AdminColors.primary),
                     label: Text('Nhân sự (${_staffMembers.length})', style: GoogleFonts.beVietnamPro(fontSize: 11, fontWeight: FontWeight.w700)),
                   ),
                   const SizedBox(width: 8),
                   FilledButton.icon(
                     onPressed: () => _openCreateShiftDialog(),
                     style: FilledButton.styleFrom(
-                      backgroundColor: AdminColors.gold,
-                      foregroundColor: const Color(0xFF08201D),
+                      backgroundColor: AdminColors.primary,
+                      foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     ),
@@ -456,7 +462,7 @@ class _AdminStaffRosterScreenState extends State<AdminStaffRosterScreen> {
 
   Widget _roleFilterChip(String key, String label, {Color? color}) {
     final isSelected = _selectedRoleFilter == key;
-    final chipColor = color ?? AdminColors.gold;
+    final chipColor = color ?? AdminColors.primary;
 
     return Padding(
       padding: const EdgeInsets.only(right: 6),
@@ -466,14 +472,14 @@ class _AdminStaffRosterScreenState extends State<AdminStaffRosterScreen> {
         onSelected: (val) {
           if (val) setState(() => _selectedRoleFilter = key);
         },
-        selectedColor: chipColor.withValues(alpha: 0.25),
-        backgroundColor: Colors.white.withValues(alpha: 0.05),
+        selectedColor: AdminColors.peach,
+        backgroundColor: AdminColors.cardSurface,
         labelStyle: GoogleFonts.beVietnamPro(
           fontSize: 11,
           fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-          color: isSelected ? chipColor : Colors.white70,
+          color: isSelected ? chipColor : AdminColors.textSecondary,
         ),
-        side: BorderSide(color: isSelected ? chipColor : Colors.white12),
+        side: BorderSide(color: isSelected ? chipColor : AdminColors.border),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
     );
@@ -491,13 +497,13 @@ class _AdminStaffRosterScreenState extends State<AdminStaffRosterScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.badge_outlined, size: 54, color: Colors.white30),
+              const Icon(Icons.badge_outlined, size: 54, color: AdminColors.textMuted),
               const SizedBox(height: 12),
-              Text('Chưa có nhân viên nào trong danh mục này.', style: GoogleFonts.beVietnamPro(fontSize: 14, color: Colors.white60)),
+              Text('Chưa có nhân viên nào trong danh mục này.', style: GoogleFonts.beVietnamPro(fontSize: 14, color: AdminColors.textSecondary)),
               const SizedBox(height: 16),
               FilledButton(
                 onPressed: _openStaffListDialog,
-                style: FilledButton.styleFrom(backgroundColor: AdminColors.gold, foregroundColor: Colors.black87),
+                style: FilledButton.styleFrom(backgroundColor: AdminColors.primary, foregroundColor: Colors.white),
                 child: const Text('Thêm nhân viên ngay'),
               ),
             ],
@@ -516,9 +522,10 @@ class _AdminStaffRosterScreenState extends State<AdminStaffRosterScreen> {
               constraints: BoxConstraints(minWidth: constraints.maxWidth),
               child: Container(
                 decoration: BoxDecoration(
-                  color: AdminColors.deepTeal,
+                  color: AdminColors.cardSurface,
                   borderRadius: BorderRadius.circular(18),
-                  border: Border.all(color: const Color(0xFF165B52)),
+                  border: Border.all(color: AdminColors.border),
+                  boxShadow: AdminColors.cardShadow,
                 ),
                 child: Column(
                   children: [
@@ -526,8 +533,9 @@ class _AdminStaffRosterScreenState extends State<AdminStaffRosterScreen> {
                     Container(
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       decoration: const BoxDecoration(
-                        color: Color(0xFF08201D),
+                        color: AdminColors.peachLight,
                         borderRadius: BorderRadius.vertical(top: Radius.circular(17)),
+                        border: Border(bottom: BorderSide(color: AdminColors.border)),
                       ),
                       child: Row(
                         children: [
@@ -541,7 +549,7 @@ class _AdminStaffRosterScreenState extends State<AdminStaffRosterScreen> {
                               style: GoogleFonts.beVietnamPro(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w800,
-                                color: AdminColors.gold,
+                                color: AdminColors.primary,
                                 letterSpacing: 0.8,
                               ),
                             ),
@@ -557,7 +565,7 @@ class _AdminStaffRosterScreenState extends State<AdminStaffRosterScreen> {
                               width: 140,
                               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
                               decoration: BoxDecoration(
-                                color: isToday ? AdminColors.gold.withValues(alpha: 0.15) : null,
+                                color: isToday ? AdminColors.peach : null,
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Column(
@@ -571,7 +579,7 @@ class _AdminStaffRosterScreenState extends State<AdminStaffRosterScreen> {
                                         style: GoogleFonts.beVietnamPro(
                                           fontSize: 12,
                                           fontWeight: FontWeight.w800,
-                                          color: isToday ? AdminColors.gold : Colors.white,
+                                          color: isToday ? AdminColors.primary : AdminColors.textPrimary,
                                         ),
                                       ),
                                       if (isToday) ...[
@@ -579,7 +587,7 @@ class _AdminStaffRosterScreenState extends State<AdminStaffRosterScreen> {
                                         Container(
                                           padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
                                           decoration: BoxDecoration(
-                                            color: AdminColors.gold,
+                                            color: AdminColors.primary,
                                             borderRadius: BorderRadius.circular(4),
                                           ),
                                           child: Text(
@@ -587,7 +595,7 @@ class _AdminStaffRosterScreenState extends State<AdminStaffRosterScreen> {
                                             style: GoogleFonts.beVietnamPro(
                                               fontSize: 8,
                                               fontWeight: FontWeight.w900,
-                                              color: const Color(0xFF08201D),
+                                              color: Colors.white,
                                             ),
                                           ),
                                         ),
@@ -598,7 +606,7 @@ class _AdminStaffRosterScreenState extends State<AdminStaffRosterScreen> {
                                     '${day.day}/${day.month}',
                                     style: GoogleFonts.beVietnamPro(
                                       fontSize: 10,
-                                      color: isToday ? AdminColors.gold : Colors.white60,
+                                      color: isToday ? AdminColors.primary : AdminColors.textSecondary,
                                     ),
                                   ),
                                 ],
@@ -614,7 +622,7 @@ class _AdminStaffRosterScreenState extends State<AdminStaffRosterScreen> {
                       return Container(
                         padding: const EdgeInsets.symmetric(vertical: 8),
                         decoration: const BoxDecoration(
-                          border: Border(bottom: BorderSide(color: Color(0xFF165B52))),
+                          border: Border(bottom: BorderSide(color: AdminColors.borderSubtle)),
                         ),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.center,
@@ -627,7 +635,7 @@ class _AdminStaffRosterScreenState extends State<AdminStaffRosterScreen> {
                                 children: [
                                   CircleAvatar(
                                     radius: 18,
-                                    backgroundColor: staff.roleColor.withValues(alpha: 0.2),
+                                    backgroundColor: staff.roleColor.withValues(alpha: 0.15),
                                     child: Text(
                                       staff.initials,
                                       style: TextStyle(
@@ -647,7 +655,7 @@ class _AdminStaffRosterScreenState extends State<AdminStaffRosterScreen> {
                                           style: GoogleFonts.beVietnamPro(
                                             fontSize: 13,
                                             fontWeight: FontWeight.w700,
-                                            color: Colors.white,
+                                            color: AdminColors.textPrimary,
                                           ),
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
@@ -681,10 +689,10 @@ class _AdminStaffRosterScreenState extends State<AdminStaffRosterScreen> {
                                 padding: const EdgeInsets.all(4),
                                 decoration: BoxDecoration(
                                   color: isToday
-                                      ? AdminColors.gold.withValues(alpha: 0.04)
+                                      ? AdminColors.peachLight.withValues(alpha: 0.3)
                                       : null,
                                   border: const Border(
-                                    left: BorderSide(color: Color(0xFF165B52), width: 0.6),
+                                    left: BorderSide(color: AdminColors.borderSubtle, width: 0.8),
                                   ),
                                 ),
                                 child: dayShifts.isNotEmpty
@@ -700,11 +708,11 @@ class _AdminStaffRosterScreenState extends State<AdminStaffRosterScreen> {
                                             width: 32,
                                             height: 32,
                                             decoration: BoxDecoration(
-                                              color: Colors.white.withValues(alpha: 0.03),
+                                              color: AdminColors.peachLight,
                                               borderRadius: BorderRadius.circular(8),
-                                              border: Border.all(color: Colors.white12),
+                                              border: Border.all(color: AdminColors.border),
                                             ),
-                                            child: const Icon(Icons.add_rounded, size: 18, color: Colors.white24),
+                                            child: const Icon(Icons.add_rounded, size: 18, color: AdminColors.primary),
                                           ),
                                         ),
                                       ),
@@ -735,12 +743,12 @@ class _AdminStaffRosterScreenState extends State<AdminStaffRosterScreen> {
         margin: const EdgeInsets.symmetric(vertical: 2),
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 5),
         decoration: BoxDecoration(
-          color: AdminColors.slateTeal,
+          color: AdminColors.cardSurface,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(color: statusColor, width: 1.2),
           boxShadow: [
             BoxShadow(
-              color: statusColor.withValues(alpha: 0.15),
+              color: statusColor.withValues(alpha: 0.1),
               blurRadius: 4,
               offset: const Offset(0, 2),
             ),
@@ -758,7 +766,7 @@ class _AdminStaffRosterScreenState extends State<AdminStaffRosterScreen> {
                   style: GoogleFonts.beVietnamPro(
                     fontSize: 10,
                     fontWeight: FontWeight.w800,
-                    color: Colors.white,
+                    color: AdminColors.textPrimary,
                   ),
                 ),
                 Container(
@@ -776,7 +784,7 @@ class _AdminStaffRosterScreenState extends State<AdminStaffRosterScreen> {
               shift.timeRange,
               style: GoogleFonts.beVietnamPro(
                 fontSize: 8,
-                color: AdminColors.gold,
+                color: AdminColors.textSecondary,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -807,14 +815,14 @@ class _AdminStaffRosterScreenState extends State<AdminStaffRosterScreen> {
             const SizedBox(height: 14),
             Text(
               'Không thể tải lịch phân ca trực',
-              style: GoogleFonts.beVietnamPro(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.white),
+              style: GoogleFonts.beVietnamPro(fontSize: 16, fontWeight: FontWeight.w700, color: AdminColors.textPrimary),
             ),
             const SizedBox(height: 6),
-            Text(_error ?? 'Lỗi kết nối', style: GoogleFonts.beVietnamPro(fontSize: 12, color: Colors.white60)),
+            Text(_error ?? 'Lỗi kết nối', style: GoogleFonts.beVietnamPro(fontSize: 12, color: AdminColors.textSecondary)),
             const SizedBox(height: 16),
             FilledButton(
               onPressed: _fetchData,
-              style: FilledButton.styleFrom(backgroundColor: AdminColors.gold, foregroundColor: Colors.black87),
+              style: FilledButton.styleFrom(backgroundColor: AdminColors.primary, foregroundColor: Colors.white),
               child: const Text('Thử lại'),
             ),
           ],

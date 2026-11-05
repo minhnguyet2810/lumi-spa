@@ -313,15 +313,15 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
                             gradient: const LinearGradient(
-                              colors: [Color(0xFF0D3B35), Color(0xFF08201D)],
+                              colors: [Color(0xFFFBE4D6), Color(0xFFFAF2EB)],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
                             borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: const Color(0xFFD4AF37), width: 1.2),
+                            border: Border.all(color: const Color(0xFFEADDD3), width: 1.2),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.2),
+                                color: const Color(0xFFA5553E).withValues(alpha: 0.08),
                                 blurRadius: 10,
                                 offset: const Offset(0, 4),
                               ),
@@ -332,12 +332,12 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
                               Container(
                                 padding: const EdgeInsets.all(10),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFD4AF37).withValues(alpha: 0.2),
+                                  color: const Color(0xFFA5553E).withValues(alpha: 0.15),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: const Icon(
                                   Icons.workspace_premium_rounded,
-                                  color: Color(0xFFD4AF37),
+                                  color: Color(0xFFA5553E),
                                   size: 26,
                                 ),
                               ),
@@ -347,11 +347,11 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'CUSTOMER 360 CRM & TIERED LOYALTY (V2)',
+                                      'HỒ SƠ KHÁCH HÀNG 360° & HỘI VIÊN',
                                       style: GoogleFonts.beVietnamPro(
                                         fontSize: 13,
                                         fontWeight: FontWeight.w800,
-                                        color: const Color(0xFFD4AF37),
+                                        color: const Color(0xFFA5553E),
                                         letterSpacing: 0.8,
                                       ),
                                     ),
@@ -360,7 +360,7 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
                                       'Tra cứu hồ sơ da liễu, hoạt chất dị ứng, điều chỉnh điểm thưởng & thăng hạng VIP đa tầng.',
                                       style: GoogleFonts.beVietnamPro(
                                         fontSize: 12,
-                                        color: Colors.white.withValues(alpha: 0.9),
+                                        color: const Color(0xFF81726A),
                                       ),
                                     ),
                                   ],
@@ -375,8 +375,8 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
                                   ),
                                 ),
                                 style: FilledButton.styleFrom(
-                                  backgroundColor: const Color(0xFFD4AF37),
-                                  foregroundColor: const Color(0xFF08201D),
+                                  backgroundColor: const Color(0xFFA5553E),
+                                  foregroundColor: Colors.white,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(10),
                                   ),

@@ -10,7 +10,9 @@ import '../widgets/admin_loyalty_adjust_dialog.dart';
 import '../widgets/admin_skin_profile_dialog.dart';
 
 class AdminCustomer360Screen extends StatefulWidget {
-  const AdminCustomer360Screen({super.key});
+  const AdminCustomer360Screen({super.key, this.showAppBar = true});
+
+  final bool showAppBar;
 
   @override
   State<AdminCustomer360Screen> createState() => _AdminCustomer360ScreenState();
@@ -117,14 +119,47 @@ class _AdminCustomer360ScreenState extends State<AdminCustomer360Screen> {
 
   @override
   Widget build(BuildContext context) {
+    final bodyContent = Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 1600),
+        child: Column(
+          children: [
+            // 1. KPI Metrics Overview Bar
+            _buildKpiMetricsBar(),
+
+            // 2. Filters & Search Toolbar
+            _buildFilterToolbar(),
+
+            // 3. Customer Cards Grid / List
+            Expanded(
+              child: _loading
+                  ? const Center(
+                      child: CircularProgressIndicator(color: AdminColors.primary),
+                    )
+                  : _error != null
+                      ? _buildErrorView()
+                      : _buildCustomerList(),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (!widget.showAppBar) {
+      return Container(
+        color: AdminColors.background,
+        child: bodyContent,
+      );
+    }
+
     return Scaffold(
-      backgroundColor: const Color(0xFF08201D),
+      backgroundColor: AdminColors.background,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF08201D),
+        backgroundColor: AdminColors.background,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 18),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AdminColors.textPrimary, size: 18),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Row(
@@ -132,11 +167,11 @@ class _AdminCustomer360ScreenState extends State<AdminCustomer360Screen> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: AdminColors.gold.withValues(alpha: 0.15),
+                color: AdminColors.peach,
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: AdminColors.gold.withValues(alpha: 0.4)),
+                border: Border.all(color: AdminColors.border),
               ),
-              child: const Icon(Icons.people_alt_rounded, color: AdminColors.gold, size: 20),
+              child: const Icon(Icons.people_alt_rounded, color: AdminColors.primary, size: 20),
             ),
             const SizedBox(width: 12),
             Column(
@@ -148,14 +183,14 @@ class _AdminCustomer360ScreenState extends State<AdminCustomer360Screen> {
                     fontSize: 15,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 1.1,
-                    color: Colors.white,
+                    color: AdminColors.textPrimary,
                   ),
                 ),
                 Text(
                   'Quản trị thông tin khách hàng, hồ sơ da liễu chuyên sâu & điểm thưởng hội viên',
                   style: GoogleFonts.beVietnamPro(
                     fontSize: 10,
-                    color: Colors.white60,
+                    color: AdminColors.textSecondary,
                   ),
                 ),
               ],
@@ -165,37 +200,13 @@ class _AdminCustomer360ScreenState extends State<AdminCustomer360Screen> {
         actions: [
           IconButton(
             tooltip: 'Làm mới dữ liệu',
-            icon: const Icon(Icons.refresh_rounded, color: AdminColors.gold),
+            icon: const Icon(Icons.refresh_rounded, color: AdminColors.primary),
             onPressed: _fetchData,
           ),
           const SizedBox(width: 8),
         ],
       ),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 1400),
-          child: Column(
-            children: [
-              // 1. KPI Metrics Overview Bar
-              _buildKpiMetricsBar(),
-
-              // 2. Filters & Search Toolbar
-              _buildFilterToolbar(),
-
-              // 3. Customer Cards Grid / List
-              Expanded(
-                child: _loading
-                    ? const Center(
-                        child: CircularProgressIndicator(color: AdminColors.gold),
-                      )
-                    : _error != null
-                        ? _buildErrorView()
-                        : _buildCustomerList(),
-              ),
-            ],
-          ),
-        ),
-      ),
+      body: bodyContent,
     );
   }
 
@@ -204,16 +215,10 @@ class _AdminCustomer360ScreenState extends State<AdminCustomer360Screen> {
       margin: const EdgeInsets.fromLTRB(16, 12, 16, 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AdminColors.darkTeal,
+        color: AdminColors.cardSurface,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFF165B52)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.25),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        border: Border.all(color: AdminColors.border),
+        boxShadow: AdminColors.cardShadow,
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
@@ -228,7 +233,7 @@ class _AdminCustomer360ScreenState extends State<AdminCustomer360Screen> {
                 value: '${_stats.totalCustomers}',
                 subtitle: '${_stats.activeCustomers} đang hoạt động',
                 icon: Icons.groups_rounded,
-                color: const Color(0xFF38BDF8),
+                color: const Color(0xFF0284C7),
                 width: isCompact ? constraints.maxWidth / 2 - 12 : 180,
               ),
               _kpiCard(
@@ -236,7 +241,7 @@ class _AdminCustomer360ScreenState extends State<AdminCustomer360Screen> {
                 value: '${_stats.vipCustomers}',
                 subtitle: 'Hạng Vàng & Kim Cương',
                 icon: Icons.workspace_premium_rounded,
-                color: AdminColors.gold,
+                color: AdminColors.primary,
                 width: isCompact ? constraints.maxWidth / 2 - 12 : 180,
               ),
               _kpiCard(
@@ -244,7 +249,7 @@ class _AdminCustomer360ScreenState extends State<AdminCustomer360Screen> {
                 value: _stats.displayAverageSpend,
                 subtitle: 'ARPU / Khách hàng',
                 icon: Icons.monetization_on_rounded,
-                color: const Color(0xFF1ABC9C),
+                color: AdminColors.emerald,
                 width: isCompact ? constraints.maxWidth / 2 - 12 : 210,
               ),
               _kpiCard(
@@ -252,7 +257,7 @@ class _AdminCustomer360ScreenState extends State<AdminCustomer360Screen> {
                 value: '${_stats.suspendedCustomers}',
                 subtitle: 'Cần kiểm tra can thiệp',
                 icon: Icons.lock_clock_rounded,
-                color: const Color(0xFFE74C3C),
+                color: const Color(0xFFDC2626),
                 width: isCompact ? constraints.maxWidth / 2 - 12 : 180,
               ),
             ],
@@ -274,16 +279,16 @@ class _AdminCustomer360ScreenState extends State<AdminCustomer360Screen> {
       width: width,
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: AdminColors.slateTeal,
+        color: AdminColors.elevatedSurface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFF1E6B60)),
+        border: Border.all(color: AdminColors.border),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.15),
+              color: color.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(icon, color: color, size: 22),
@@ -296,7 +301,7 @@ class _AdminCustomer360ScreenState extends State<AdminCustomer360Screen> {
               children: [
                 Text(
                   title,
-                  style: GoogleFonts.beVietnamPro(fontSize: 10, color: Colors.white60),
+                  style: GoogleFonts.beVietnamPro(fontSize: 10, color: AdminColors.textSecondary, fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 2),
                 Text(
@@ -304,12 +309,12 @@ class _AdminCustomer360ScreenState extends State<AdminCustomer360Screen> {
                   style: GoogleFonts.beVietnamPro(
                     fontSize: 16,
                     fontWeight: FontWeight.w800,
-                    color: Colors.white,
+                    color: AdminColors.textPrimary,
                   ),
                 ),
                 Text(
                   subtitle,
-                  style: GoogleFonts.beVietnamPro(fontSize: 9, color: color),
+                  style: GoogleFonts.beVietnamPro(fontSize: 9, color: color, fontWeight: FontWeight.w600),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -326,9 +331,10 @@ class _AdminCustomer360ScreenState extends State<AdminCustomer360Screen> {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AdminColors.darkTeal,
+        color: AdminColors.cardSurface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF165B52)),
+        border: Border.all(color: AdminColors.border),
+        boxShadow: AdminColors.softShadow,
       ),
       child: Column(
         children: [
@@ -338,18 +344,18 @@ class _AdminCustomer360ScreenState extends State<AdminCustomer360Screen> {
               Expanded(
                 child: TextField(
                   controller: _searchController,
-                  style: GoogleFonts.beVietnamPro(color: Colors.white, fontSize: 13),
+                  style: GoogleFonts.beVietnamPro(color: AdminColors.textPrimary, fontSize: 13),
                   onSubmitted: (_) => _fetchData(),
                   decoration: InputDecoration(
                     hintText: 'Tìm theo tên khách, số điện thoại, email hoặc mã UID...',
-                    hintStyle: GoogleFonts.beVietnamPro(color: Colors.white38, fontSize: 13),
+                    hintStyle: GoogleFonts.beVietnamPro(color: AdminColors.textMuted, fontSize: 13),
                     isDense: true,
                     filled: true,
-                    fillColor: AdminColors.slateTeal,
-                    prefixIcon: const Icon(Icons.search_rounded, color: AdminColors.gold, size: 20),
+                    fillColor: AdminColors.elevatedSurface,
+                    prefixIcon: const Icon(Icons.search_rounded, color: AdminColors.primary, size: 20),
                     suffixIcon: _searchController.text.isNotEmpty
                         ? IconButton(
-                            icon: const Icon(Icons.clear_rounded, color: Colors.white54, size: 18),
+                            icon: const Icon(Icons.clear_rounded, color: AdminColors.textMuted, size: 18),
                             onPressed: () {
                               _searchController.clear();
                               _fetchData();
@@ -358,15 +364,15 @@ class _AdminCustomer360ScreenState extends State<AdminCustomer360Screen> {
                         : null,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Color(0xFF1E6B60)),
+                      borderSide: const BorderSide(color: AdminColors.border),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Color(0xFF1E6B60)),
+                      borderSide: const BorderSide(color: AdminColors.border),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: AdminColors.gold),
+                      borderSide: const BorderSide(color: AdminColors.primary, width: 1.4),
                     ),
                   ),
                 ),
@@ -375,8 +381,8 @@ class _AdminCustomer360ScreenState extends State<AdminCustomer360Screen> {
               FilledButton.icon(
                 onPressed: _fetchData,
                 style: FilledButton.styleFrom(
-                  backgroundColor: AdminColors.gold,
-                  foregroundColor: const Color(0xFF08201D),
+                  backgroundColor: AdminColors.primary,
+                  foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
@@ -395,19 +401,19 @@ class _AdminCustomer360ScreenState extends State<AdminCustomer360Screen> {
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
-                Text('Hạng: ', style: GoogleFonts.beVietnamPro(fontSize: 12, color: Colors.white60)),
+                Text('Hạng: ', style: GoogleFonts.beVietnamPro(fontSize: 12, color: AdminColors.textSecondary, fontWeight: FontWeight.w600)),
                 _filterChip('all', 'Tất cả (${_stats.totalCustomers})', isTier: true),
                 _filterChip('bronze', 'Đồng (${_stats.tierBreakdown['bronze'] ?? 0})', isTier: true, color: const Color(0xFFC5A880)),
-                _filterChip('silver', 'Bạc (${_stats.tierBreakdown['silver'] ?? 0})', isTier: true, color: const Color(0xFF94A3B8)),
-                _filterChip('gold', 'Vàng (${_stats.tierBreakdown['gold'] ?? 0})', isTier: true, color: const Color(0xFFF59E0B)),
-                _filterChip('diamond', 'Kim Cương (${_stats.tierBreakdown['diamond'] ?? 0})', isTier: true, color: const Color(0xFF38BDF8)),
+                _filterChip('silver', 'Bạc (${_stats.tierBreakdown['silver'] ?? 0})', isTier: true, color: const Color(0xFF64748B)),
+                _filterChip('gold', 'Vàng (${_stats.tierBreakdown['gold'] ?? 0})', isTier: true, color: const Color(0xFFD97706)),
+                _filterChip('diamond', 'Kim Cương (${_stats.tierBreakdown['diamond'] ?? 0})', isTier: true, color: const Color(0xFF0284C7)),
                 const SizedBox(width: 16),
-                const SizedBox(height: 20, child: VerticalDivider(color: Colors.white24)),
+                const SizedBox(height: 20, child: VerticalDivider(color: AdminColors.border)),
                 const SizedBox(width: 16),
-                Text('Trạng thái: ', style: GoogleFonts.beVietnamPro(fontSize: 12, color: Colors.white60)),
+                Text('Trạng thái: ', style: GoogleFonts.beVietnamPro(fontSize: 12, color: AdminColors.textSecondary, fontWeight: FontWeight.w600)),
                 _filterChip('all', 'Tất cả', isTier: false),
-                _filterChip('active', 'Hoạt động', isTier: false, color: const Color(0xFF1ABC9C)),
-                _filterChip('suspended', 'Tạm khóa', isTier: false, color: const Color(0xFFE74C3C)),
+                _filterChip('active', 'Hoạt động', isTier: false, color: AdminColors.emerald),
+                _filterChip('suspended', 'Tạm khóa', isTier: false, color: const Color(0xFFDC2626)),
               ],
             ),
           ),
@@ -418,7 +424,7 @@ class _AdminCustomer360ScreenState extends State<AdminCustomer360Screen> {
 
   Widget _filterChip(String key, String label, {required bool isTier, Color? color}) {
     final isSelected = isTier ? _selectedTier == key : _selectedStatus == key;
-    final chipColor = color ?? AdminColors.gold;
+    final chipColor = color ?? AdminColors.primary;
 
     return Padding(
       padding: const EdgeInsets.only(right: 6),
@@ -437,15 +443,15 @@ class _AdminCustomer360ScreenState extends State<AdminCustomer360Screen> {
             _fetchData();
           }
         },
-        selectedColor: chipColor.withValues(alpha: 0.25),
-        backgroundColor: Colors.white.withValues(alpha: 0.05),
+        selectedColor: AdminColors.peach,
+        backgroundColor: AdminColors.cardSurface,
         labelStyle: GoogleFonts.beVietnamPro(
           fontSize: 11,
           fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-          color: isSelected ? chipColor : Colors.white70,
+          color: isSelected ? chipColor : AdminColors.textSecondary,
         ),
         side: BorderSide(
-          color: isSelected ? chipColor : Colors.white12,
+          color: isSelected ? chipColor : AdminColors.border,
         ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
@@ -460,11 +466,11 @@ class _AdminCustomer360ScreenState extends State<AdminCustomer360Screen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.person_search_rounded, size: 54, color: Colors.white30),
+              const Icon(Icons.person_search_rounded, size: 54, color: AdminColors.textMuted),
               const SizedBox(height: 14),
               Text(
                 'Không tìm thấy khách hàng nào phù hợp với bộ lọc.',
-                style: GoogleFonts.beVietnamPro(fontSize: 14, color: Colors.white60),
+                style: GoogleFonts.beVietnamPro(fontSize: 14, color: AdminColors.textSecondary),
               ),
             ],
           ),
@@ -501,23 +507,17 @@ class _AdminCustomer360ScreenState extends State<AdminCustomer360Screen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AdminColors.darkTeal,
+        color: AdminColors.cardSurface,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
           color: c.isSuspended
-              ? const Color(0xFFE74C3C).withValues(alpha: 0.6)
+              ? const Color(0xFFDC2626).withValues(alpha: 0.6)
               : c.hasAllergyWarning
-                  ? const Color(0xFFF59E0B).withValues(alpha: 0.5)
-                  : const Color(0xFF165B52),
+                  ? const Color(0xFFD97706).withValues(alpha: 0.5)
+                  : AdminColors.border,
           width: 1.2,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.2),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
-        ],
+        boxShadow: AdminColors.cardShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -536,7 +536,7 @@ class _AdminCustomer360ScreenState extends State<AdminCustomer360Screen> {
                   border: Border.all(color: tierColor, width: 2),
                 ),
                 child: CircleAvatar(
-                  backgroundColor: AdminColors.slateTeal,
+                  backgroundColor: AdminColors.peach,
                   backgroundImage: c.photoUrl != null && c.photoUrl!.isNotEmpty
                       ? NetworkImage(c.photoUrl!)
                       : null,
@@ -544,7 +544,7 @@ class _AdminCustomer360ScreenState extends State<AdminCustomer360Screen> {
                       ? Text(
                           c.initials,
                           style: GoogleFonts.beVietnamPro(
-                            color: Colors.white,
+                            color: AdminColors.primary,
                             fontWeight: FontWeight.w800,
                             fontSize: 16,
                           ),
@@ -567,7 +567,7 @@ class _AdminCustomer360ScreenState extends State<AdminCustomer360Screen> {
                             style: GoogleFonts.beVietnamPro(
                               fontSize: 14,
                               fontWeight: FontWeight.w700,
-                              color: Colors.white,
+                              color: AdminColors.textPrimary,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -578,7 +578,7 @@ class _AdminCustomer360ScreenState extends State<AdminCustomer360Screen> {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFE74C3C),
+                              color: const Color(0xFFDC2626),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: const Text('KHÓA', style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w900)),
@@ -589,7 +589,7 @@ class _AdminCustomer360ScreenState extends State<AdminCustomer360Screen> {
                     const SizedBox(height: 2),
                     Text(
                       c.phone.isNotEmpty ? c.phone : (c.email.isNotEmpty ? c.email : 'Chưa có SĐT'),
-                      style: GoogleFonts.beVietnamPro(fontSize: 11, color: Colors.white60),
+                      style: GoogleFonts.beVietnamPro(fontSize: 11, color: AdminColors.textSecondary),
                     ),
                     const SizedBox(height: 4),
                     // Tier badge + Skin badge
@@ -600,7 +600,7 @@ class _AdminCustomer360ScreenState extends State<AdminCustomer360Screen> {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
-                            color: tierColor.withValues(alpha: 0.2),
+                            color: tierColor.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(6),
                             border: Border.all(color: tierColor, width: 0.8),
                           ),
@@ -616,12 +616,13 @@ class _AdminCustomer360ScreenState extends State<AdminCustomer360Screen> {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.08),
+                            color: AdminColors.elevatedSurface,
                             borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: AdminColors.border),
                           ),
                           child: Text(
                             c.skinType.toUpperCase(),
-                            style: GoogleFonts.beVietnamPro(fontSize: 9, color: Colors.white70),
+                            style: GoogleFonts.beVietnamPro(fontSize: 9, color: AdminColors.textSecondary, fontWeight: FontWeight.w600),
                           ),
                         ),
                       ],
@@ -638,13 +639,13 @@ class _AdminCustomer360ScreenState extends State<AdminCustomer360Screen> {
               margin: const EdgeInsets.symmetric(vertical: 4),
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: const Color(0xFFE74C3C).withValues(alpha: 0.15),
+                color: const Color(0xFFDC2626).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(6),
-                border: Border.all(color: const Color(0xFFE74C3C).withValues(alpha: 0.5)),
+                border: Border.all(color: const Color(0xFFDC2626).withValues(alpha: 0.4)),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.warning_amber_rounded, size: 14, color: Color(0xFFE74C3C)),
+                  const Icon(Icons.warning_amber_rounded, size: 14, color: Color(0xFFDC2626)),
                   const SizedBox(width: 6),
                   Expanded(
                     child: Text(
@@ -652,7 +653,7 @@ class _AdminCustomer360ScreenState extends State<AdminCustomer360Screen> {
                       style: GoogleFonts.beVietnamPro(
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
-                        color: const Color(0xFFFFAAA6),
+                        color: const Color(0xFFDC2626),
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -666,22 +667,23 @@ class _AdminCustomer360ScreenState extends State<AdminCustomer360Screen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              color: AdminColors.slateTeal,
+              color: AdminColors.elevatedSurface,
               borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: AdminColors.border),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.military_tech_rounded, size: 14, color: AdminColors.gold),
+                    const Icon(Icons.military_tech_rounded, size: 14, color: AdminColors.primary),
                     const SizedBox(width: 4),
                     Text(
                       '${c.points} pts',
                       style: GoogleFonts.beVietnamPro(
                         fontSize: 12,
                         fontWeight: FontWeight.w800,
-                        color: AdminColors.gold,
+                        color: AdminColors.primary,
                       ),
                     ),
                   ],
@@ -691,7 +693,7 @@ class _AdminCustomer360ScreenState extends State<AdminCustomer360Screen> {
                   style: GoogleFonts.beVietnamPro(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
-                    color: Colors.white,
+                    color: AdminColors.textPrimary,
                   ),
                 ),
               ],
@@ -705,8 +707,8 @@ class _AdminCustomer360ScreenState extends State<AdminCustomer360Screen> {
                 child: FilledButton.icon(
                   onPressed: () => _open360Dialog(c),
                   style: FilledButton.styleFrom(
-                    backgroundColor: AdminColors.gold,
-                    foregroundColor: const Color(0xFF08201D),
+                    backgroundColor: AdminColors.primary,
+                    foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                   ),
@@ -720,21 +722,21 @@ class _AdminCustomer360ScreenState extends State<AdminCustomer360Screen> {
               const SizedBox(width: 6),
               IconButton(
                 tooltip: 'Điều chỉnh Điểm & Hạng',
-                icon: const Icon(Icons.military_tech_rounded, color: AdminColors.gold, size: 18),
+                icon: const Icon(Icons.military_tech_rounded, color: AdminColors.primary, size: 18),
                 onPressed: () => _openLoyaltyAdjust(c),
                 style: IconButton.styleFrom(
-                  backgroundColor: AdminColors.slateTeal,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  backgroundColor: AdminColors.elevatedSurface,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8), side: const BorderSide(color: AdminColors.border)),
                 ),
               ),
               const SizedBox(width: 4),
               IconButton(
                 tooltip: 'Hồ sơ Da Liễu',
-                icon: const Icon(Icons.healing_rounded, color: Color(0xFF38BDF8), size: 18),
+                icon: const Icon(Icons.healing_rounded, color: Color(0xFF0284C7), size: 18),
                 onPressed: () => _openSkinProfileEdit(c),
                 style: IconButton.styleFrom(
-                  backgroundColor: AdminColors.slateTeal,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  backgroundColor: AdminColors.elevatedSurface,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8), side: const BorderSide(color: AdminColors.border)),
                 ),
               ),
               const SizedBox(width: 4),
@@ -742,13 +744,13 @@ class _AdminCustomer360ScreenState extends State<AdminCustomer360Screen> {
                 tooltip: c.isActive ? 'Khóa tài khoản' : 'Mở khóa tài khoản',
                 icon: Icon(
                   c.isActive ? Icons.lock_person_rounded : Icons.lock_open_rounded,
-                  color: c.isActive ? const Color(0xFFE74C3C) : const Color(0xFF1ABC9C),
+                  color: c.isActive ? const Color(0xFFDC2626) : AdminColors.emerald,
                   size: 18,
                 ),
                 onPressed: () => _openModeration(c),
                 style: IconButton.styleFrom(
-                  backgroundColor: AdminColors.slateTeal,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  backgroundColor: AdminColors.elevatedSurface,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8), side: const BorderSide(color: AdminColors.border)),
                 ),
               ),
             ],
@@ -765,18 +767,18 @@ class _AdminCustomer360ScreenState extends State<AdminCustomer360Screen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.error_outline_rounded, size: 48, color: Color(0xFFE74C3C)),
+            const Icon(Icons.error_outline_rounded, size: 48, color: Color(0xFFDC2626)),
             const SizedBox(height: 14),
             Text(
               'Không thể tải dữ liệu CRM',
-              style: GoogleFonts.beVietnamPro(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.white),
+              style: GoogleFonts.beVietnamPro(fontSize: 16, fontWeight: FontWeight.w700, color: AdminColors.textPrimary),
             ),
             const SizedBox(height: 6),
-            Text(_error ?? 'Lỗi kết nối', style: GoogleFonts.beVietnamPro(fontSize: 12, color: Colors.white60)),
+            Text(_error ?? 'Lỗi kết nối', style: GoogleFonts.beVietnamPro(fontSize: 12, color: AdminColors.textSecondary)),
             const SizedBox(height: 16),
             FilledButton(
               onPressed: _fetchData,
-              style: FilledButton.styleFrom(backgroundColor: AdminColors.gold, foregroundColor: Colors.black87),
+              style: FilledButton.styleFrom(backgroundColor: AdminColors.primary, foregroundColor: Colors.white),
               child: const Text('Thử lại'),
             ),
           ],
@@ -785,4 +787,3 @@ class _AdminCustomer360ScreenState extends State<AdminCustomer360Screen> {
     );
   }
 }
-

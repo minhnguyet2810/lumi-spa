@@ -10,7 +10,9 @@ import '../widgets/admin_reject_reason_dialog.dart';
 import '../widgets/admin_treatment_record_dialog.dart';
 
 class AdminBookingTimelineScreen extends StatefulWidget {
-  const AdminBookingTimelineScreen({super.key});
+  const AdminBookingTimelineScreen({super.key, this.showAppBar = true});
+
+  final bool showAppBar;
 
   @override
   State<AdminBookingTimelineScreen> createState() =>
@@ -466,61 +468,10 @@ class _AdminBookingTimelineScreenState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AdminColors.background,
-      appBar: AppBar(
-        backgroundColor: AdminColors.deepTeal,
-        elevation: 0,
-        surfaceTintColor: Colors.transparent,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AdminColors.textPrimary, size: 18),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: AdminColors.gold.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: AdminColors.gold.withValues(alpha: 0.4)),
-              ),
-              child: const Icon(Icons.calendar_month_rounded, color: AdminColors.gold, size: 20),
-            ),
-            const SizedBox(width: 12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'LỊCH HẸN DỊCH VỤ & ĐIỀU PHỐI PHÒNG',
-                  style: GoogleFonts.beVietnamPro(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 1.1,
-                    color: AdminColors.textPrimary,
-                  ),
-                ),
-                Text(
-                  'Ma trận khung giờ x Chuyên viên trị liệu x Phòng spa theo ngày',
-                  style: GoogleFonts.beVietnamPro(fontSize: 10, color: AdminColors.textSecondary),
-                ),
-              ],
-            ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            tooltip: 'Làm mới lịch hẹn',
-            icon: const Icon(Icons.refresh_rounded, color: AdminColors.gold),
-            onPressed: _loadTimeline,
-          ),
-          const SizedBox(width: 8),
-        ],
-      ),
-      body: Column(
-        children: [
-          // 1. Controls Bar: Date Picker & View Switcher
-          Container(
+    final bodyContent = Column(
+      children: [
+        // 1. Controls Bar: Date Picker & View Switcher
+        Container(
             padding: const EdgeInsets.all(14),
             color: AdminColors.deepTeal,
             child: Row(
@@ -852,7 +803,67 @@ class _AdminBookingTimelineScreenState
                   ),
           ),
         ],
+      );
+
+    if (!widget.showAppBar) {
+      return Container(
+        color: AdminColors.background,
+        child: bodyContent,
+      );
+    }
+
+    return Scaffold(
+      backgroundColor: AdminColors.background,
+      appBar: AppBar(
+        backgroundColor: AdminColors.background,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AdminColors.textPrimary, size: 18),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AdminColors.peach,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: AdminColors.border),
+              ),
+              child: const Icon(Icons.calendar_month_rounded, color: AdminColors.primary, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'LỊCH HẸN DỊCH VỤ & ĐIỀU PHỐI PHÒNG',
+                  style: GoogleFonts.beVietnamPro(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.1,
+                    color: AdminColors.textPrimary,
+                  ),
+                ),
+                Text(
+                  'Ma trận khung giờ x Chuyên viên trị liệu x Phòng spa theo ngày',
+                  style: GoogleFonts.beVietnamPro(fontSize: 10, color: AdminColors.textSecondary),
+                ),
+              ],
+            ),
+          ],
+        ),
+        actions: [
+          IconButton(
+            tooltip: 'Làm mới lịch hẹn',
+            icon: const Icon(Icons.refresh_rounded, color: AdminColors.primary),
+            onPressed: _loadTimeline,
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
+      body: bodyContent,
     );
   }
 }

@@ -10,7 +10,9 @@ import '../widgets/admin_order_detail_dialog.dart';
 import '../widgets/admin_shipping_dialog.dart';
 
 class AdminOrderFulfillmentScreen extends StatefulWidget {
-  const AdminOrderFulfillmentScreen({super.key});
+  const AdminOrderFulfillmentScreen({super.key, this.showAppBar = true});
+
+  final bool showAppBar;
 
   @override
   State<AdminOrderFulfillmentScreen> createState() =>
@@ -368,50 +370,7 @@ class _AdminOrderFulfillmentScreenState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AdminColors.background,
-      appBar: AppBar(
-        backgroundColor: AdminColors.deepTeal,
-        elevation: 0,
-        surfaceTintColor: Colors.transparent,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AdminColors.textPrimary, size: 18),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: AdminColors.gold.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: AdminColors.gold.withValues(alpha: 0.4)),
-              ),
-              child: const Icon(Icons.local_shipping_rounded, color: AdminColors.gold, size: 20),
-            ),
-            const SizedBox(width: 12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'ĐƠN HÀNG MỸ PHẨM & XỬ LÝ KHO',
-                  style: GoogleFonts.beVietnamPro(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 1.1,
-                    color: AdminColors.textPrimary,
-                  ),
-                ),
-                Text(
-                  'Quy trình trừ kho nguyên tử, đóng gói và điều phối vận chuyển',
-                  style: GoogleFonts.beVietnamPro(fontSize: 10, color: AdminColors.textSecondary),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-      body: StreamBuilder<List<AdminOrderItem>>(
+    final bodyContent = StreamBuilder<List<AdminOrderItem>>(
         stream: AdminOrderRepository.instance.streamAllOrders(),
         builder: (context, snapshot) {
           final allOrders = snapshot.data ?? [];
@@ -912,7 +871,59 @@ class _AdminOrderFulfillmentScreenState
             ],
           );
         },
+      );
+
+    if (!widget.showAppBar) {
+      return Container(
+        color: AdminColors.background,
+        child: bodyContent,
+      );
+    }
+
+    return Scaffold(
+      backgroundColor: AdminColors.background,
+      appBar: AppBar(
+        backgroundColor: AdminColors.background,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AdminColors.textPrimary, size: 18),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AdminColors.peach,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: AdminColors.border),
+              ),
+              child: const Icon(Icons.local_shipping_rounded, color: AdminColors.primary, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'ĐƠN HÀNG MỸ PHẨM & XỬ LÝ KHO',
+                  style: GoogleFonts.beVietnamPro(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.1,
+                    color: AdminColors.textPrimary,
+                  ),
+                ),
+                Text(
+                  'Quy trình trừ kho nguyên tử, đóng gói và điều phối vận chuyển',
+                  style: GoogleFonts.beVietnamPro(fontSize: 10, color: AdminColors.textSecondary),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
+      body: bodyContent,
     );
   }
 }

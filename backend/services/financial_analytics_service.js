@@ -27,6 +27,17 @@ function parseDate(val) {
 }
 
 /**
+ * Chuyển Timestamp / Date sang chuỗi ngày YYYY-MM-DD theo múi giờ Việt Nam (UTC+7 / Asia/Ho_Chi_Minh)
+ */
+function toVietnamDateString(val) {
+  if (!val) return '';
+  const d = val instanceof Date ? val : (val.toDate ? val.toDate() : new Date(val));
+  if (isNaN(d.getTime())) return '';
+  const vnTime = new Date(d.getTime() + 7 * 60 * 60 * 1000);
+  return vnTime.toISOString().split('T')[0];
+}
+
+/**
  * Xác định khoảng thời gian start/end Date dựa trên period hoặc custom dates
  */
 function resolveDateRange(period = 'last_30_days', startDateStr = null, endDateStr = null) {
@@ -237,7 +248,7 @@ async function getFinancialOverview({
           }
 
           hasRealRecords = true;
-          const dayKey = orderDate.toISOString().split('T')[0];
+          const dayKey = toVietnamDateString(orderDate);
           const orderTotal = Number(ord.total || ord.pricing?.finalAmount || ord.subtotal || 0);
 
           let orderCogs = 0;
@@ -296,7 +307,7 @@ async function getFinancialOverview({
           }
 
           hasRealRecords = true;
-          const dayKey = bookingDate.toISOString().split('T')[0];
+          const dayKey = toVietnamDateString(bookingDate);
           const servicePrice = Number(b.billing?.totalAmount || b.price || b.totalAmount || b.amount || 0);
           const serviceCogs = Math.round(servicePrice * DEFAULT_SERVICE_COGS_RATIO);
 

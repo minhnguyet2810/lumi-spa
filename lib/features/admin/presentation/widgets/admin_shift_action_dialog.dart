@@ -200,10 +200,10 @@ class _AdminShiftActionDialogState extends State<AdminShiftActionDialog> {
     final statusColor = shift.statusColor;
 
     return Dialog(
-      backgroundColor: AdminColors.deepTeal,
+      backgroundColor: AdminColors.cardSurface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        side: const BorderSide(color: Color(0xFF165B52), width: 1.2),
+        side: const BorderSide(color: AdminColors.border, width: 1.2),
       ),
       insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       child: ConstrainedBox(
@@ -240,7 +240,7 @@ class _AdminShiftActionDialogState extends State<AdminShiftActionDialog> {
                           style: GoogleFonts.beVietnamPro(
                             fontSize: 16,
                             fontWeight: FontWeight.w800,
-                            color: Colors.white,
+                            color: AdminColors.textPrimary,
                           ),
                         ),
                         Text(
@@ -280,15 +280,15 @@ class _AdminShiftActionDialogState extends State<AdminShiftActionDialog> {
                 decoration: BoxDecoration(
                   color: AdminColors.slateTeal,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFF1E6B60)),
+                  border: Border.all(color: AdminColors.border),
                 ),
                 child: Column(
                   children: [
                     _infoRow('Ngày làm việc', shift.date),
-                    const Divider(color: Color(0xFF1E6B60), height: 14),
+                    const Divider(color: AdminColors.border, height: 14),
                     _infoRow('Khung giờ chuẩn', shift.timeRange),
                     if (shift.actualCheckIn != null) ...[
-                      const Divider(color: Color(0xFF1E6B60), height: 14),
+                      const Divider(color: AdminColors.border, height: 14),
                       _infoRow(
                         'Thời gian Check-in',
                         '${shift.actualCheckIn!.hour.toString().padLeft(2, '0')}:${shift.actualCheckIn!.minute.toString().padLeft(2, '0')} (${shift.actualCheckIn!.day}/${shift.actualCheckIn!.month})',
@@ -296,7 +296,7 @@ class _AdminShiftActionDialogState extends State<AdminShiftActionDialog> {
                       ),
                     ],
                     if (shift.actualCheckOut != null) ...[
-                      const Divider(color: Color(0xFF1E6B60), height: 14),
+                      const Divider(color: AdminColors.border, height: 14),
                       _infoRow(
                         'Thời gian Check-out',
                         '${shift.actualCheckOut!.hour.toString().padLeft(2, '0')}:${shift.actualCheckOut!.minute.toString().padLeft(2, '0')} (${shift.actualCheckOut!.day}/${shift.actualCheckOut!.month})',
@@ -304,11 +304,11 @@ class _AdminShiftActionDialogState extends State<AdminShiftActionDialog> {
                       ),
                     ],
                     if (shift.notes.isNotEmpty) ...[
-                      const Divider(color: Color(0xFF1E6B60), height: 14),
+                      const Divider(color: AdminColors.border, height: 14),
                       _infoRow('Ghi chú ca trực', shift.notes),
                     ],
                     if (shift.leaveReason != null && shift.leaveReason!.isNotEmpty) ...[
-                      const Divider(color: Color(0xFF1E6B60), height: 14),
+                      const Divider(color: AdminColors.border, height: 14),
                       _infoRow('Lý do xin nghỉ', shift.leaveReason!, valueColor: const Color(0xFFF59E0B)),
                     ],
                   ],
@@ -320,21 +320,21 @@ class _AdminShiftActionDialogState extends State<AdminShiftActionDialog> {
                 const SizedBox(height: 14),
                 Text(
                   'Nhập lý do xin nghỉ phép:',
-                  style: GoogleFonts.beVietnamPro(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white),
+                  style: GoogleFonts.beVietnamPro(fontSize: 12, fontWeight: FontWeight.w600, color: AdminColors.textPrimary),
                 ),
                 const SizedBox(height: 6),
                 TextField(
                   controller: _leaveReasonController,
                   maxLines: 2,
-                  style: GoogleFonts.beVietnamPro(color: Colors.white, fontSize: 13),
+                  style: GoogleFonts.beVietnamPro(color: AdminColors.textPrimary, fontSize: 13),
                   decoration: InputDecoration(
                     hintText: 'VD: Việc gia đình, lý do sức khỏe...',
-                    hintStyle: GoogleFonts.beVietnamPro(color: Colors.white38),
+                    hintStyle: GoogleFonts.beVietnamPro(color: AdminColors.textMuted),
                     filled: true,
                     fillColor: AdminColors.slateTeal,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(color: Color(0xFF1E6B60)),
+                      borderSide: const BorderSide(color: AdminColors.border),
                     ),
                   ),
                 ),
@@ -344,7 +344,7 @@ class _AdminShiftActionDialogState extends State<AdminShiftActionDialog> {
                   children: [
                     TextButton(
                       onPressed: () => setState(() => _showLeaveInput = false),
-                      child: Text('HỦY', style: GoogleFonts.beVietnamPro(color: Colors.white60)),
+                      child: Text('HỦY', style: GoogleFonts.beVietnamPro(color: AdminColors.textSecondary)),
                     ),
                     const SizedBox(width: 8),
                     FilledButton(
@@ -409,7 +409,7 @@ class _AdminShiftActionDialogState extends State<AdminShiftActionDialog> {
                               onPressed: _submitting ? null : _handleCheckOut,
                               style: FilledButton.styleFrom(
                                 backgroundColor: AdminColors.gold,
-                                foregroundColor: const Color(0xFF08201D),
+                                foregroundColor: Colors.white,
                                 padding: const EdgeInsets.symmetric(vertical: 12),
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                               ),
@@ -442,8 +442,8 @@ class _AdminShiftActionDialogState extends State<AdminShiftActionDialog> {
                             child: OutlinedButton.icon(
                               onPressed: _submitting ? null : () => _handleApproveLeave(false),
                               style: OutlinedButton.styleFrom(
-                                foregroundColor: Colors.white,
-                                side: const BorderSide(color: Colors.white38),
+                                foregroundColor: AdminColors.textSecondary,
+                                side: const BorderSide(color: AdminColors.border),
                                 padding: const EdgeInsets.symmetric(vertical: 10),
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                               ),
@@ -489,14 +489,14 @@ class _AdminShiftActionDialogState extends State<AdminShiftActionDialog> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: GoogleFonts.beVietnamPro(fontSize: 12, color: Colors.white60)),
+        Text(label, style: GoogleFonts.beVietnamPro(fontSize: 12, color: AdminColors.textSecondary)),
         Flexible(
           child: Text(
             value,
             style: GoogleFonts.beVietnamPro(
               fontSize: 12,
               fontWeight: FontWeight.w700,
-              color: valueColor ?? Colors.white,
+              color: valueColor ?? AdminColors.textPrimary,
             ),
             textAlign: TextAlign.right,
           ),

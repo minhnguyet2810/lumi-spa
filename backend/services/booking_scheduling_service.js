@@ -21,6 +21,14 @@ function generateSlotKeys(resourceType, resourceId, startTime, durationMinutes) 
   return keys;
 }
 
+function toVietnamDateString(val = new Date()) {
+  if (!val) return '';
+  const d = val instanceof Date ? val : (val.toDate ? val.toDate() : new Date(val));
+  if (isNaN(d.getTime())) return '';
+  const vnTime = new Date(d.getTime() + 7 * 60 * 60 * 1000);
+  return vnTime.toISOString().split('T')[0];
+}
+
 /**
  * 1. Lấy dữ liệu ma trận lịch hẹn (Timeline & Calendar Matrix)
  */
@@ -29,7 +37,7 @@ async function getTimelineMatrix({ branchId = 'central_hub', date, roomId, techn
     return { success: true, date, branchId, timeline: [], stats: { total: 0, occupancyRate: 0 } };
   }
 
-  const queryDate = date || new Date().toISOString().split('T')[0];
+  const queryDate = date || toVietnamDateString(new Date());
   const [year, month, day] = queryDate.split('-').map(Number);
   const startOfDay = new Date(Date.UTC(year, month - 1, day, -7));
   const endOfDay = new Date(startOfDay.getTime() + 24 * 60 * 60 * 1000 - 1);
@@ -220,8 +228,10 @@ async function confirmBookingAndReserveTechnician({
         userId: apptData.userId,
         bookingId: appointmentId,
         serviceName: apptData.serviceName || 'Liệu trình Spa',
-        date: apptData.startAt?.toDate ? apptData.startAt.toDate().toISOString().split('T')[0] : '',
-        hour: apptData.startAt?.toDate ? apptData.startAt.toDate().getHours() : 9,
+        date: apptData.startAt ? toVietnamDateString(apptData.startAt) : '',
+        hour: apptData.startAt
+          ? new Date((apptData.startAt.toDate ? apptData.startAt.toDate() : new Date(apptData.startAt)).getTime() + 7 * 60 * 60 * 1000).getUTCHours()
+          : 9,
       });
 
       await db.collection('notifications').add({

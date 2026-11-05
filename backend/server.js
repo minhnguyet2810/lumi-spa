@@ -616,11 +616,11 @@ app.patch('/api/admin-orders/:id/status', handleAdminOrderStatus);
 app.post('/api/orders/:id/notify-status', handleAdminOrderStatus);
 
 // ==========================================
-// ADMIN USER APIS (Qu?n l� Th�ng tin Ngu?i d�ng)
+// ADMIN USER APIS (Quản lý Thông tin Người dùng)
 // ==========================================
 
 // GET /api/admin-users
-// L?y danh s�ch to�n b? ngu?i d�ng k�m th?ng k� s? l?ch h?n v� don h�ng
+// Lấy danh sách toàn bộ người dùng kèm thống kê số lịch hẹn và đơn hàng
 app.get('/api/admin-users', async (req, res) => {
   try {
     const { q, role } = req.query;
@@ -708,12 +708,12 @@ app.get('/api/admin-users', async (req, res) => {
     });
   } catch (err) {
     console.error('Error fetching admin users:', err);
-    return res.status(500).json({ success: false, message: 'Kh�ng th? t?i danh s�ch ngu?i d�ng.' });
+    return res.status(500).json({ success: false, message: 'Không thể tải danh sách người dùng.' });
   }
 });
 
 // POST /api/admin-dev/clear-test-data
-// D?n d?p don h�ng v� l?ch h?n th? nghi?m (reset test state)
+// Dọn dẹp đơn hàng và lịch hẹn thử nghiệm (reset test state)
 // PATCH & POST /api/admin-users/:id/address
 // Lưu thêm / cập nhật địa chỉ người dùng từ giao diện quản trị
 async function handleAdminUserAddress(req, res) {
@@ -800,16 +800,36 @@ app.post('/api/admin-dev/clear-test-data', async (req, res) => {
 
     return res.json({
       success: true,
-      message: `�� d?n d?p th�nh c�ng ${deletedOrders} don h�ng v� ${deletedBookings} l?ch h?n test!`,
+      message: `Đã dọn dẹp thành công ${deletedOrders} đơn hàng và ${deletedBookings} lịch hẹn test!`,
       deletedOrders,
       deletedBookings,
     });
   } catch (err) {
     console.error('Error clearing test data:', err);
-    return res.status(500).json({ success: false, message: 'L?i khi d?n d?p d? li?u test: ' + err.message });
+    return res.status(500).json({ success: false, message: 'Lỗi khi dọn dẹp dữ liệu test: ' + err.message });
   }
 });
 
+
+// Global Express Error Handling Middleware (4 arguments)
+app.use((err, req, res, next) => {
+  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+    return res.status(400).json({
+      success: false,
+      message: 'Dữ liệu JSON không hợp lệ.',
+    });
+  }
+
+  const statusCode = err.statusCode || err.status || 500;
+  if (statusCode >= 500) {
+    console.error('[LUMI API Unhandled Error]:', err);
+  }
+
+  return res.status(statusCode).json({
+    success: false,
+    message: err.message || 'Lỗi máy chủ nội bộ. Vui lòng thử lại sau.',
+  });
+});
 
 // Start server only when run directly.
 if (require.main === module) {

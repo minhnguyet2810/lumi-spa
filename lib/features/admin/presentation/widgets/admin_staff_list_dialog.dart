@@ -105,10 +105,10 @@ class _AdminStaffListDialogState extends State<AdminStaffListDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      backgroundColor: AdminColors.deepTeal,
+      backgroundColor: AdminColors.cardSurface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        side: const BorderSide(color: Color(0xFF165B52), width: 1.2),
+        side: const BorderSide(color: AdminColors.border, width: 1.2),
       ),
       insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       child: ConstrainedBox(
@@ -144,7 +144,7 @@ class _AdminStaffListDialogState extends State<AdminStaffListDialog> {
                           style: GoogleFonts.beVietnamPro(
                             fontSize: 16,
                             fontWeight: FontWeight.w800,
-                            color: Colors.white,
+                            color: AdminColors.textPrimary,
                             letterSpacing: 0.8,
                           ),
                         ),
@@ -152,7 +152,7 @@ class _AdminStaffListDialogState extends State<AdminStaffListDialog> {
                           'Kỹ thuật viên, Lễ tân & Quản lý cơ sở',
                           style: GoogleFonts.beVietnamPro(
                             fontSize: 12,
-                            color: Colors.white70,
+                            color: AdminColors.textSecondary,
                           ),
                         ),
                       ],
@@ -160,12 +160,12 @@ class _AdminStaffListDialogState extends State<AdminStaffListDialog> {
                   ),
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(Icons.close_rounded, color: Colors.white70),
+                    icon: const Icon(Icons.close_rounded, color: AdminColors.textSecondary),
                   ),
                 ],
               ),
               const SizedBox(height: 16),
-              const Divider(color: Color(0xFF1E6B60), height: 1),
+              const Divider(color: AdminColors.border, height: 1),
               const SizedBox(height: 16),
 
               // Toggle Add form button
@@ -181,7 +181,7 @@ class _AdminStaffListDialogState extends State<AdminStaffListDialog> {
                       onPressed: () => setState(() => _showAddForm = true),
                       style: FilledButton.styleFrom(
                         backgroundColor: AdminColors.gold,
-                        foregroundColor: const Color(0xFF08201D),
+                        foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                       ),
@@ -208,7 +208,7 @@ class _AdminStaffListDialogState extends State<AdminStaffListDialog> {
                         children: [
                           Text('Thêm nhân sự mới:', style: GoogleFonts.beVietnamPro(fontSize: 13, fontWeight: FontWeight.w800, color: AdminColors.gold)),
                           IconButton(
-                            icon: const Icon(Icons.close_rounded, size: 18, color: Colors.white70),
+                            icon: const Icon(Icons.close_rounded, size: 18, color: AdminColors.textSecondary),
                             onPressed: () => setState(() => _showAddForm = false),
                           ),
                         ],
@@ -216,13 +216,13 @@ class _AdminStaffListDialogState extends State<AdminStaffListDialog> {
                       const SizedBox(height: 8),
                       TextField(
                         controller: _nameController,
-                        style: GoogleFonts.beVietnamPro(color: Colors.white, fontSize: 13),
+                        style: GoogleFonts.beVietnamPro(color: AdminColors.textPrimary, fontSize: 13),
                         decoration: InputDecoration(
                           hintText: 'Họ và tên nhân viên...',
-                          hintStyle: GoogleFonts.beVietnamPro(color: Colors.white38),
+                          hintStyle: GoogleFonts.beVietnamPro(color: AdminColors.textMuted),
                           isDense: true,
                           filled: true,
-                          fillColor: AdminColors.deepTeal,
+                          fillColor: AdminColors.sidebarBackground,
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                         ),
                       ),
@@ -232,13 +232,13 @@ class _AdminStaffListDialogState extends State<AdminStaffListDialog> {
                           Expanded(
                             child: TextField(
                               controller: _phoneController,
-                              style: GoogleFonts.beVietnamPro(color: Colors.white, fontSize: 13),
+                              style: GoogleFonts.beVietnamPro(color: AdminColors.textPrimary, fontSize: 13),
                               decoration: InputDecoration(
                                 hintText: 'Số điện thoại...',
-                                hintStyle: GoogleFonts.beVietnamPro(color: Colors.white38),
+                                hintStyle: GoogleFonts.beVietnamPro(color: AdminColors.textMuted),
                                 isDense: true,
                                 filled: true,
-                                fillColor: AdminColors.deepTeal,
+                                fillColor: AdminColors.sidebarBackground,
                                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                               ),
                             ),
@@ -248,15 +248,15 @@ class _AdminStaffListDialogState extends State<AdminStaffListDialog> {
                             child: Container(
                               padding: const EdgeInsets.symmetric(horizontal: 10),
                               decoration: BoxDecoration(
-                                color: AdminColors.deepTeal,
+                                color: AdminColors.sidebarBackground,
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: DropdownButtonHideUnderline(
                                 child: DropdownButton<String>(
                                   value: _selectedRole,
                                   isExpanded: true,
-                                  dropdownColor: AdminColors.deepTeal,
-                                  style: GoogleFonts.beVietnamPro(color: Colors.white, fontSize: 12),
+                                  dropdownColor: AdminColors.sidebarBackground,
+                                  style: GoogleFonts.beVietnamPro(color: AdminColors.textPrimary, fontSize: 12),
                                   items: const [
                                     DropdownMenuItem(value: 'specialist', child: Text('Kỹ thuật viên')),
                                     DropdownMenuItem(value: 'receptionist', child: Text('Lễ tân')),
@@ -272,7 +272,7 @@ class _AdminStaffListDialogState extends State<AdminStaffListDialog> {
                         ],
                       ),
                       const SizedBox(height: 10),
-                      Text('Chuyên môn thực hiện liệu trình:', style: GoogleFonts.beVietnamPro(fontSize: 11, color: Colors.white70)),
+                      Text('Chuyên môn thực hiện liệu trình:', style: GoogleFonts.beVietnamPro(fontSize: 11, color: AdminColors.textSecondary)),
                       const SizedBox(height: 6),
                       Wrap(
                         spacing: 6,
@@ -291,13 +291,13 @@ class _AdminStaffListDialogState extends State<AdminStaffListDialog> {
                                 }
                               });
                             },
-                            selectedColor: AdminColors.gold.withValues(alpha: 0.25),
-                            backgroundColor: Colors.white.withValues(alpha: 0.05),
+                            selectedColor: AdminColors.gold.withValues(alpha: 0.15),
+                            backgroundColor: AdminColors.sidebarBackground,
                             labelStyle: GoogleFonts.beVietnamPro(
                               fontSize: 10,
-                              color: isSelected ? AdminColors.gold : Colors.white70,
+                              color: isSelected ? AdminColors.gold : AdminColors.textSecondary,
                             ),
-                            side: BorderSide(color: isSelected ? AdminColors.gold : Colors.white12),
+                            side: BorderSide(color: isSelected ? AdminColors.gold : AdminColors.border),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
                           );
                         }).toList(),
@@ -311,7 +311,7 @@ class _AdminStaffListDialogState extends State<AdminStaffListDialog> {
                         alignment: Alignment.centerRight,
                         child: FilledButton(
                           onPressed: _submitting ? null : _handleSaveStaff,
-                          style: FilledButton.styleFrom(backgroundColor: AdminColors.gold, foregroundColor: Colors.black87),
+                          style: FilledButton.styleFrom(backgroundColor: AdminColors.gold, foregroundColor: Colors.white),
                           child: Text(_submitting ? 'ĐANG LƯU...' : 'LƯU NHÂN SỰ'),
                         ),
                       ),
@@ -331,9 +331,9 @@ class _AdminStaffListDialogState extends State<AdminStaffListDialog> {
                       margin: const EdgeInsets.only(bottom: 10),
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: AdminColors.slateTeal,
+                        color: AdminColors.cardSurface,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFF1E6B60)),
+                        border: Border.all(color: AdminColors.border),
                       ),
                       child: Row(
                         children: [
@@ -349,7 +349,7 @@ class _AdminStaffListDialogState extends State<AdminStaffListDialog> {
                               children: [
                                 Row(
                                   children: [
-                                    Text(s.name, style: GoogleFonts.beVietnamPro(fontSize: 14, fontWeight: FontWeight.w700, color: Colors.white)),
+                                    Text(s.name, style: GoogleFonts.beVietnamPro(fontSize: 14, fontWeight: FontWeight.w700, color: AdminColors.textPrimary)),
                                     const SizedBox(width: 8),
                                     Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -365,7 +365,7 @@ class _AdminStaffListDialogState extends State<AdminStaffListDialog> {
                                 const SizedBox(height: 3),
                                 Text(
                                   'Chuyên môn: ${s.displayCategories}',
-                                  style: GoogleFonts.beVietnamPro(fontSize: 11, color: Colors.white60),
+                                  style: GoogleFonts.beVietnamPro(fontSize: 11, color: AdminColors.textSecondary),
                                 ),
                                 if (s.phone.isNotEmpty)
                                   Text(
@@ -378,7 +378,7 @@ class _AdminStaffListDialogState extends State<AdminStaffListDialog> {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                             decoration: BoxDecoration(
-                              color: s.isActive ? const Color(0xFF1ABC9C).withValues(alpha: 0.2) : Colors.white12,
+                              color: s.isActive ? const Color(0xFF1ABC9C).withValues(alpha: 0.15) : AdminColors.sidebarBackground,
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
@@ -386,7 +386,7 @@ class _AdminStaffListDialogState extends State<AdminStaffListDialog> {
                               style: TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.w700,
-                                color: s.isActive ? const Color(0xFF1ABC9C) : Colors.white60,
+                                color: s.isActive ? const Color(0xFF1ABC9C) : AdminColors.textMuted,
                               ),
                             ),
                           ),

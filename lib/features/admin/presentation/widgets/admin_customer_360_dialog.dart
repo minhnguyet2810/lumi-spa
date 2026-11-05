@@ -139,10 +139,10 @@ class _AdminCustomer360DialogState extends State<AdminCustomer360Dialog>
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      backgroundColor: AdminColors.darkTeal,
+      backgroundColor: AdminColors.cardSurface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(24),
-        side: const BorderSide(color: Color(0xFF165B52), width: 1.5),
+        side: const BorderSide(color: AdminColors.border, width: 1.5),
       ),
       insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
       child: ConstrainedBox(
@@ -171,14 +171,14 @@ class _AdminCustomer360DialogState extends State<AdminCustomer360Dialog>
           const SizedBox(height: 16),
           Text(
             'Không thể tải hồ sơ khách hàng',
-            style: GoogleFonts.beVietnamPro(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.white),
+            style: GoogleFonts.beVietnamPro(fontSize: 16, fontWeight: FontWeight.w700, color: AdminColors.textPrimary),
           ),
           const SizedBox(height: 8),
-          Text(_error ?? 'Lỗi không xác định', style: GoogleFonts.beVietnamPro(fontSize: 13, color: Colors.white70)),
+          Text(_error ?? 'Lỗi không xác định', style: GoogleFonts.beVietnamPro(fontSize: 13, color: AdminColors.textSecondary)),
           const SizedBox(height: 20),
           FilledButton(
             onPressed: _loadProfile,
-            style: FilledButton.styleFrom(backgroundColor: AdminColors.gold, foregroundColor: Colors.black87),
+            style: FilledButton.styleFrom(backgroundColor: AdminColors.gold, foregroundColor: Colors.white),
             child: const Text('Thử lại'),
           ),
         ],
@@ -195,7 +195,7 @@ class _AdminCustomer360DialogState extends State<AdminCustomer360Dialog>
         Container(
           padding: const EdgeInsets.fromLTRB(24, 20, 20, 16),
           decoration: const BoxDecoration(
-            color: Color(0xFF08201D),
+            color: AdminColors.sidebarBackground,
             borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
           ),
           child: Column(
@@ -227,7 +227,7 @@ class _AdminCustomer360DialogState extends State<AdminCustomer360Dialog>
                           ? Text(
                               p.initials,
                               style: GoogleFonts.beVietnamPro(
-                                color: Colors.white,
+                                color: AdminColors.textPrimary,
                                 fontWeight: FontWeight.w800,
                                 fontSize: 20,
                               ),
@@ -250,7 +250,7 @@ class _AdminCustomer360DialogState extends State<AdminCustomer360Dialog>
                                 style: GoogleFonts.beVietnamPro(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w800,
-                                  color: Colors.white,
+                                  color: AdminColors.textPrimary,
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -317,7 +317,7 @@ class _AdminCustomer360DialogState extends State<AdminCustomer360Dialog>
                                 children: [
                                   const Icon(Icons.phone_rounded, size: 13, color: AdminColors.gold),
                                   const SizedBox(width: 5),
-                                  Text(p.phone, style: GoogleFonts.beVietnamPro(fontSize: 12, color: Colors.white70)),
+                                  Text(p.phone, style: GoogleFonts.beVietnamPro(fontSize: 12, color: AdminColors.textSecondary)),
                                 ],
                               ),
                             if (p.email.isNotEmpty)
@@ -326,15 +326,15 @@ class _AdminCustomer360DialogState extends State<AdminCustomer360Dialog>
                                 children: [
                                   const Icon(Icons.email_outlined, size: 13, color: AdminColors.gold),
                                   const SizedBox(width: 5),
-                                  Text(p.email, style: GoogleFonts.beVietnamPro(fontSize: 12, color: Colors.white70)),
+                                  Text(p.email, style: GoogleFonts.beVietnamPro(fontSize: 12, color: AdminColors.textSecondary)),
                                 ],
                               ),
                             Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(Icons.tag_rounded, size: 13, color: Colors.white38),
+                                const Icon(Icons.tag_rounded, size: 13, color: AdminColors.textMuted),
                                 const SizedBox(width: 3),
-                                Text('ID: ${p.customerId}', style: GoogleFonts.beVietnamPro(fontSize: 11, color: Colors.white38)),
+                                Text('ID: ${p.customerId}', style: GoogleFonts.beVietnamPro(fontSize: 11, color: AdminColors.textMuted)),
                               ],
                             ),
                           ],
@@ -346,7 +346,7 @@ class _AdminCustomer360DialogState extends State<AdminCustomer360Dialog>
                   // Close button
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(Icons.close_rounded, color: Colors.white70),
+                    icon: const Icon(Icons.close_rounded, color: AdminColors.textSecondary),
                   ),
                 ],
               ),
@@ -415,11 +415,11 @@ class _AdminCustomer360DialogState extends State<AdminCustomer360Dialog>
           color: AdminColors.slateTeal,
           child: TabBar(
             controller: _tabController,
-            dividerColor: const Color(0xFF1E6B60),
+            dividerColor: AdminColors.border,
             indicatorColor: AdminColors.gold,
             indicatorWeight: 3,
             labelColor: AdminColors.gold,
-            unselectedLabelColor: Colors.white60,
+            unselectedLabelColor: AdminColors.textSecondary,
             labelStyle: GoogleFonts.beVietnamPro(fontSize: 12, fontWeight: FontWeight.w700),
             unselectedLabelStyle: GoogleFonts.beVietnamPro(fontSize: 12, fontWeight: FontWeight.w500),
             tabs: [
@@ -608,7 +608,7 @@ class _AdminCustomer360DialogState extends State<AdminCustomer360Dialog>
                   decoration: BoxDecoration(
                     color: AdminColors.slateTeal,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: const Color(0xFF1E6B60)),
+                    border: Border.all(color: AdminColors.border),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -616,7 +616,7 @@ class _AdminCustomer360DialogState extends State<AdminCustomer360Dialog>
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('Loại da chẩn đoán', style: GoogleFonts.beVietnamPro(fontSize: 11, color: Colors.white60)),
+                          Text('Loại da chẩn đoán', style: GoogleFonts.beVietnamPro(fontSize: 11, color: AdminColors.textSecondary)),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                             decoration: BoxDecoration(
@@ -631,10 +631,10 @@ class _AdminCustomer360DialogState extends State<AdminCustomer360Dialog>
                         ],
                       ),
                       const SizedBox(height: 12),
-                      Text('Vấn đề da quan tâm:', style: GoogleFonts.beVietnamPro(fontSize: 11, color: Colors.white60)),
+                      Text('Vấn đề da quan tâm:', style: GoogleFonts.beVietnamPro(fontSize: 11, color: AdminColors.textSecondary)),
                       const SizedBox(height: 6),
                       skin.concerns.isEmpty
-                          ? Text('Chưa ghi nhận vấn đề da cụ thể.', style: GoogleFonts.beVietnamPro(fontSize: 12, color: Colors.white38))
+                          ? Text('Chưa ghi nhận vấn đề da cụ thể.', style: GoogleFonts.beVietnamPro(fontSize: 12, color: AdminColors.textMuted))
                           : Wrap(
                               spacing: 6,
                               runSpacing: 6,
@@ -642,10 +642,10 @@ class _AdminCustomer360DialogState extends State<AdminCustomer360Dialog>
                                 return Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withValues(alpha: 0.06),
+                                    color: AdminColors.sidebarBackground,
                                     borderRadius: BorderRadius.circular(6),
                                   ),
-                                  child: Text(c, style: GoogleFonts.beVietnamPro(fontSize: 11, color: Colors.white70)),
+                                  child: Text(c, style: GoogleFonts.beVietnamPro(fontSize: 11, color: AdminColors.textSecondary)),
                                 );
                               }).toList(),
                             ),
@@ -663,7 +663,7 @@ class _AdminCustomer360DialogState extends State<AdminCustomer360Dialog>
                   decoration: BoxDecoration(
                     color: AdminColors.slateTeal,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: const Color(0xFF1E6B60)),
+                    border: Border.all(color: AdminColors.border),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -722,16 +722,16 @@ class _AdminCustomer360DialogState extends State<AdminCustomer360Dialog>
               decoration: BoxDecoration(
                 color: AdminColors.slateTeal.withValues(alpha: 0.5),
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: const Color(0xFF1E6B60)),
+                border: Border.all(color: AdminColors.border),
               ),
               alignment: Alignment.center,
               child: Column(
                 children: [
-                  const Icon(Icons.assignment_outlined, size: 36, color: Colors.white30),
+                  const Icon(Icons.assignment_outlined, size: 36, color: AdminColors.textMuted),
                   const SizedBox(height: 10),
                   Text(
                     'Chưa có bệnh án lâm sàng nào được ghi nhận cho khách hàng này.',
-                    style: GoogleFonts.beVietnamPro(fontSize: 12, color: Colors.white60),
+                    style: GoogleFonts.beVietnamPro(fontSize: 12, color: AdminColors.textSecondary),
                   ),
                 ],
               ),
@@ -750,7 +750,7 @@ class _AdminCustomer360DialogState extends State<AdminCustomer360Dialog>
       decoration: BoxDecoration(
         color: AdminColors.slateTeal,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFF1E6B60)),
+        border: Border.all(color: AdminColors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -872,7 +872,7 @@ class _AdminCustomer360DialogState extends State<AdminCustomer360Dialog>
           decoration: BoxDecoration(
             color: AdminColors.slateTeal,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: const Color(0xFF1E6B60)),
+            border: Border.all(color: AdminColors.border),
           ),
           child: Row(
             children: [
@@ -987,7 +987,7 @@ class _AdminCustomer360DialogState extends State<AdminCustomer360Dialog>
           decoration: BoxDecoration(
             color: AdminColors.slateTeal,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: const Color(0xFF1E6B60)),
+            border: Border.all(color: AdminColors.border),
           ),
           child: Row(
             children: [
@@ -1010,7 +1010,7 @@ class _AdminCustomer360DialogState extends State<AdminCustomer360Dialog>
                       style: GoogleFonts.beVietnamPro(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
-                        color: Colors.white,
+                        color: AdminColors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -1083,9 +1083,9 @@ class _AdminCustomer360DialogState extends State<AdminCustomer360Dialog>
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  const Color(0xFF08201D),
-                  tierColor.withValues(alpha: 0.4),
-                  const Color(0xFF0D3B35),
+                  AdminColors.slateTeal,
+                  tierColor.withValues(alpha: 0.35),
+                  AdminColors.elevatedSurface,
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -1116,7 +1116,7 @@ class _AdminCustomer360DialogState extends State<AdminCustomer360Dialog>
                             fontSize: 16,
                             fontWeight: FontWeight.w900,
                             letterSpacing: 2,
-                            color: Colors.white,
+                            color: AdminColors.textPrimary,
                           ),
                         ),
                       ],
@@ -1132,7 +1132,7 @@ class _AdminCustomer360DialogState extends State<AdminCustomer360Dialog>
                         style: GoogleFonts.beVietnamPro(
                           fontSize: 11,
                           fontWeight: FontWeight.w900,
-                          color: const Color(0xFF08201D),
+                          color: Colors.white,
                         ),
                       ),
                     ),
@@ -1145,14 +1145,14 @@ class _AdminCustomer360DialogState extends State<AdminCustomer360Dialog>
                     fontSize: 18,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 1.5,
-                    color: Colors.white,
+                    color: AdminColors.textPrimary,
                   ),
                 ),
                 Text(
                   p.phone.isNotEmpty ? p.phone : p.email,
                   style: GoogleFonts.beVietnamPro(
                     fontSize: 12,
-                    color: Colors.white70,
+                    color: AdminColors.textSecondary,
                     letterSpacing: 1,
                   ),
                 ),
@@ -1163,7 +1163,7 @@ class _AdminCustomer360DialogState extends State<AdminCustomer360Dialog>
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('ĐIỂM TÍCH LŨY', style: GoogleFonts.beVietnamPro(fontSize: 10, color: Colors.white60)),
+                        Text('ĐIỂM TÍCH LŨY', style: GoogleFonts.beVietnamPro(fontSize: 10, color: AdminColors.textMuted)),
                         const SizedBox(height: 2),
                         Text(
                           '${loyalty.points} pts',
@@ -1178,14 +1178,14 @@ class _AdminCustomer360DialogState extends State<AdminCustomer360Dialog>
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        Text('TỔNG CHI TIÊU', style: GoogleFonts.beVietnamPro(fontSize: 10, color: Colors.white60)),
+                        Text('TỔNG CHI TIÊU', style: GoogleFonts.beVietnamPro(fontSize: 10, color: AdminColors.textMuted)),
                         const SizedBox(height: 2),
                         Text(
                           p.displayLifetimeSpent,
                           style: GoogleFonts.beVietnamPro(
                             fontSize: 18,
                             fontWeight: FontWeight.w800,
-                            color: Colors.white,
+                            color: AdminColors.textPrimary,
                           ),
                         ),
                       ],
@@ -1204,7 +1204,7 @@ class _AdminCustomer360DialogState extends State<AdminCustomer360Dialog>
               decoration: BoxDecoration(
                 color: AdminColors.slateTeal,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFF1E6B60)),
+                border: Border.all(color: AdminColors.border),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1214,7 +1214,7 @@ class _AdminCustomer360DialogState extends State<AdminCustomer360Dialog>
                     children: [
                       Text(
                         'Tiến độ lên hạng ${loyalty.nextTierLabel}:',
-                        style: GoogleFonts.beVietnamPro(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.white),
+                        style: GoogleFonts.beVietnamPro(fontSize: 12, fontWeight: FontWeight.w700, color: AdminColors.textPrimary),
                       ),
                       Text(
                         'Cần thêm ${loyalty.pointsToNextTier} điểm',
@@ -1228,7 +1228,7 @@ class _AdminCustomer360DialogState extends State<AdminCustomer360Dialog>
                     child: LinearProgressIndicator(
                       value: loyalty.progress,
                       minHeight: 8,
-                      backgroundColor: Colors.white12,
+                      backgroundColor: AdminColors.sidebarBackground,
                       valueColor: const AlwaysStoppedAnimation<Color>(AdminColors.gold),
                     ),
                   ),
@@ -1243,7 +1243,7 @@ class _AdminCustomer360DialogState extends State<AdminCustomer360Dialog>
             decoration: BoxDecoration(
               color: AdminColors.slateTeal,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFF1E6B60)),
+              border: Border.all(color: AdminColors.border),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

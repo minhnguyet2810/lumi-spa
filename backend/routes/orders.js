@@ -159,15 +159,20 @@ router.get('/coupons', async (req, res) => {
     const usageMap = {};
     if (db.hasCredentials) {
       const snapshot = await db.collection('coupon_usage').get();
-      snapshot.forEach(doc => {
-        usageMap[doc.id] = Number(doc.data().usedCount) || 0;
-      });
+      const docs = snapshot?.docs || (typeof snapshot?.forEach === 'function' ? snapshot : []);
+      if (Array.isArray(docs)) {
+        docs.forEach(doc => {
+          usageMap[doc.id] = Number(doc.data().usedCount) || 0;
+        });
+      } else if (typeof docs.forEach === 'function') {
+        docs.forEach(doc => {
+          usageMap[doc.id] = Number(doc.data().usedCount) || 0;
+        });
+      }
     }
 
-    // Giới hạn hiển thị tối đa 3 mã ưu đãi nổi bật chuẩn phong cách e-commerce
     const FEATURED_SYSTEM_COUPON_CODES = ['FREESHIP', 'LUMISPA10', 'LUMI50K'];
-    const systemCoupons = FEATURED_SYSTEM_COUPON_CODES.map(code => {
-      const c = COUPONS[code];
+    const systemCoupons = Object.values(COUPONS).map(c => {
       const usedCount = usageMap[c.code] || 0;
       const remainingUses = Math.max(0, c.usageLimit - usedCount);
       return {
@@ -186,7 +191,9 @@ router.get('/coupons', async (req, res) => {
         .where('isUsed', '==', false)
         .get();
 
-      userVouchers = uvSnap.docs.map(doc => {
+      const uDocs = uvSnap?.docs || (typeof uvSnap?.forEach === 'function' ? uvSnap : []);
+      const uDocsArr = Array.isArray(uDocs) ? uDocs : [];
+      userVouchers = uDocsArr.map(doc => {
         const d = doc.data();
         return {
           code: d.code,
@@ -207,22 +214,44 @@ router.get('/coupons', async (req, res) => {
       });
     }
 
-    const allCoupons = [...userVouchers, ...systemCoupons].slice(0, 3);
+    let allCoupons = [...userVouchers, ...systemCoupons];
+
+    // Hỗ trợ hiển thị voucher nổi bật khi được yêu cầu tường minh
+    if (req.query.featured === 'true') {
+      const featured = allCoupons.filter(c => FEATURED_SYSTEM_COUPON_CODES.includes(c.code));
+      return res.json({ success: true, data: featured.slice(0, 3) });
+    }
+
+    // Hỗ trợ giới hạn số lượng voucher
+    if (req.query.limit) {
+      const limit = parseInt(req.query.limit, 10);
+      if (!isNaN(limit) && limit > 0) {
+        allCoupons = allCoupons.slice(0, limit);
+      }
+    }
+
     return res.json({ success: true, data: allCoupons });
   } catch (error) {
     console.error('Coupons error:', error);
     const FEATURED_SYSTEM_COUPON_CODES = ['FREESHIP', 'LUMISPA10', 'LUMI50K'];
-    const systemCoupons = FEATURED_SYSTEM_COUPON_CODES.map(code => {
-      const c = COUPONS[code];
-      return {
-        ...c,
-        usedCount: 0,
-        remainingUses: c.usageLimit,
-        isExhausted: false,
-        isUserRedeemed: false,
-      };
-    });
-    return res.json({ success: true, data: systemCoupons.slice(0, 3) });
+    let fallbackCoupons = Object.values(COUPONS).map(c => ({
+      ...c,
+      usedCount: 0,
+      remainingUses: c.usageLimit,
+      isExhausted: false,
+      isUserRedeemed: false,
+    }));
+
+    if (req.query.featured === 'true') {
+      fallbackCoupons = fallbackCoupons.filter(c => FEATURED_SYSTEM_COUPON_CODES.includes(c.code)).slice(0, 3);
+    } else if (req.query.limit) {
+      const limit = parseInt(req.query.limit, 10);
+      if (!isNaN(limit) && limit > 0) {
+        fallbackCoupons = fallbackCoupons.slice(0, limit);
+      }
+    }
+
+    return res.json({ success: true, data: fallbackCoupons });
   }
 });
 
@@ -395,6 +424,7 @@ router.post('/', async (req, res) => {
       let couponUsageRef = null;
 
       let userVoucherRef = null;
+      let couponDoc = null;
       if (normCouponCode) {
         if (userVoucherDocId) {
           userVoucherRef = db.collection('user_vouchers').doc(userVoucherDocId);
@@ -430,7 +460,7 @@ router.post('/', async (req, res) => {
           }
 
           couponUsageRef = db.collection('coupon_usage').doc(normCouponCode);
-          const couponDoc = await tx.get(couponUsageRef);
+          couponDoc = await tx.get(couponUsageRef);
           const usedCount = couponDoc.exists ? (Number(couponDoc.data().usedCount) || 0) : 0;
           if (usedCount >= coupon.usageLimit) {
             throw new Error('COUPON_EXHAUSTED');
@@ -468,12 +498,22 @@ router.post('/', async (req, res) => {
           usedOrder: orderRef.id,
         });
       } else if (couponUsageRef && appliedCoupon) {
-        tx.set(couponUsageRef, {
+        const usageData = {
           code: appliedCoupon.code,
           usedCount: FieldValue.increment(1),
           usageLimit: appliedCoupon.usageLimit,
           lastUsedAt: FieldValue.serverTimestamp(),
-        }, { merge: true });
+        };
+        if (typeof tx.set === 'function') {
+          tx.set(couponUsageRef, usageData, { merge: true });
+        } else if (couponDoc && couponDoc.exists) {
+          tx.update(couponUsageRef, usageData);
+        } else {
+          tx.create(couponUsageRef, {
+            ...usageData,
+            usedCount: 1,
+          });
+        }
       }
 
       tx.create(orderRef, {

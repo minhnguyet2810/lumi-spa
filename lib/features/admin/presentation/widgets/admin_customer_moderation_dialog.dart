@@ -96,10 +96,10 @@ class _AdminCustomerModerationDialogState extends State<AdminCustomerModerationD
     final isSuspending = _targetStatus == 'suspended';
 
     return Dialog(
-      backgroundColor: AdminColors.darkTeal,
+      backgroundColor: AdminColors.cardSurface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        side: const BorderSide(color: Color(0xFF165B52), width: 1.2),
+        side: const BorderSide(color: AdminColors.border, width: 1.2),
       ),
       insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       child: ConstrainedBox(
@@ -144,7 +144,7 @@ class _AdminCustomerModerationDialogState extends State<AdminCustomerModerationD
                           style: GoogleFonts.beVietnamPro(
                             fontSize: 16,
                             fontWeight: FontWeight.w800,
-                            color: Colors.white,
+                            color: AdminColors.textPrimary,
                             letterSpacing: 0.8,
                           ),
                         ),
@@ -152,7 +152,7 @@ class _AdminCustomerModerationDialogState extends State<AdminCustomerModerationD
                           widget.customer.displayName,
                           style: GoogleFonts.beVietnamPro(
                             fontSize: 12,
-                            color: Colors.white70,
+                            color: AdminColors.textSecondary,
                           ),
                         ),
                       ],
@@ -160,7 +160,7 @@ class _AdminCustomerModerationDialogState extends State<AdminCustomerModerationD
                   ),
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(Icons.close_rounded, color: Colors.white70),
+                    icon: const Icon(Icons.close_rounded, color: AdminColors.textSecondary),
                   ),
                 ],
               ),
@@ -200,7 +200,7 @@ class _AdminCustomerModerationDialogState extends State<AdminCustomerModerationD
                             : 'Tài khoản sẽ được khôi phục toàn bộ quyền đặt lịch, mua hàng và tích lũy điểm thưởng bình thường.',
                         style: GoogleFonts.beVietnamPro(
                           fontSize: 12,
-                          color: Colors.white,
+                          color: AdminColors.textPrimary,
                           height: 1.4,
                         ),
                       ),
@@ -216,7 +216,7 @@ class _AdminCustomerModerationDialogState extends State<AdminCustomerModerationD
                   style: GoogleFonts.beVietnamPro(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                    color: AdminColors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -233,12 +233,12 @@ class _AdminCustomerModerationDialogState extends State<AdminCustomerModerationD
                         decoration: BoxDecoration(
                           color: isSelected
                               ? const Color(0xFFE74C3C).withValues(alpha: 0.25)
-                              : Colors.white.withValues(alpha: 0.05),
+                              : AdminColors.sidebarBackground,
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
                             color: isSelected
                                 ? const Color(0xFFE74C3C)
-                                : Colors.white12,
+                                : AdminColors.border,
                           ),
                         ),
                         child: Text(
@@ -247,7 +247,7 @@ class _AdminCustomerModerationDialogState extends State<AdminCustomerModerationD
                             fontSize: 11,
                             color: isSelected
                                 ? const Color(0xFFE74C3C)
-                                : Colors.white70,
+                                : AdminColors.textSecondary,
                           ),
                         ),
                       ),
@@ -258,19 +258,19 @@ class _AdminCustomerModerationDialogState extends State<AdminCustomerModerationD
                 TextField(
                   controller: _reasonController,
                   maxLines: 3,
-                  style: GoogleFonts.beVietnamPro(color: Colors.white, fontSize: 13),
+                  style: GoogleFonts.beVietnamPro(color: AdminColors.textPrimary, fontSize: 13),
                   decoration: InputDecoration(
                     hintText: 'Nhập ghi chú chi tiết lý do phục vụ quản lý...',
-                    hintStyle: GoogleFonts.beVietnamPro(color: Colors.white38),
+                    hintStyle: GoogleFonts.beVietnamPro(color: AdminColors.textMuted),
                     filled: true,
                     fillColor: AdminColors.slateTeal,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Color(0xFF1E6B60)),
+                      borderSide: const BorderSide(color: AdminColors.border),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Color(0xFF1E6B60)),
+                      borderSide: const BorderSide(color: AdminColors.border),
                     ),
                   ),
                 ),
@@ -280,6 +280,7 @@ class _AdminCustomerModerationDialogState extends State<AdminCustomerModerationD
                   decoration: BoxDecoration(
                     color: AdminColors.slateTeal,
                     borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AdminColors.border),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -288,7 +289,7 @@ class _AdminCustomerModerationDialogState extends State<AdminCustomerModerationD
                         'Lý do bị khóa trước đây:',
                         style: GoogleFonts.beVietnamPro(
                           fontSize: 11,
-                          color: Colors.white60,
+                          color: AdminColors.textMuted,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -343,7 +344,7 @@ class _AdminCustomerModerationDialogState extends State<AdminCustomerModerationD
                     onPressed: _submitting ? null : () => Navigator.of(context).pop(),
                     child: Text(
                       'HỦY',
-                      style: GoogleFonts.beVietnamPro(color: Colors.white60),
+                      style: GoogleFonts.beVietnamPro(color: AdminColors.textSecondary),
                     ),
                   ),
                   const SizedBox(width: 12),

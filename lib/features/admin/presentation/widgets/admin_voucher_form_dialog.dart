@@ -558,7 +558,7 @@ class _AdminVoucherFormDialogState extends State<AdminVoucherFormDialog> {
                         ? const SizedBox(
                             width: 16,
                             height: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black87),
+                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                           )
                         : const Icon(Icons.check_circle_outline, size: 18),
                     label: Text(
@@ -567,7 +567,7 @@ class _AdminVoucherFormDialogState extends State<AdminVoucherFormDialog> {
                     ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AdminColors.goldAccent,
-                      foregroundColor: Colors.black,
+                      foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),

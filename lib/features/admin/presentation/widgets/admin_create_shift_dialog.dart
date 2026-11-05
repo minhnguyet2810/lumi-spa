@@ -112,10 +112,10 @@ class _AdminCreateShiftDialogState extends State<AdminCreateShiftDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      backgroundColor: AdminColors.deepTeal,
+      backgroundColor: AdminColors.cardSurface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        side: const BorderSide(color: Color(0xFF165B52), width: 1.2),
+        side: const BorderSide(color: AdminColors.border, width: 1.2),
       ),
       insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       child: ConstrainedBox(
@@ -152,7 +152,7 @@ class _AdminCreateShiftDialogState extends State<AdminCreateShiftDialog> {
                           style: GoogleFonts.beVietnamPro(
                             fontSize: 16,
                             fontWeight: FontWeight.w800,
-                            color: Colors.white,
+                            color: AdminColors.textPrimary,
                             letterSpacing: 0.8,
                           ),
                         ),
@@ -160,7 +160,7 @@ class _AdminCreateShiftDialogState extends State<AdminCreateShiftDialog> {
                           'Phân bổ ca trực nhân sự chi nhánh',
                           style: GoogleFonts.beVietnamPro(
                             fontSize: 12,
-                            color: Colors.white70,
+                            color: AdminColors.textSecondary,
                           ),
                         ),
                       ],
@@ -168,7 +168,7 @@ class _AdminCreateShiftDialogState extends State<AdminCreateShiftDialog> {
                   ),
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(Icons.close_rounded, color: Colors.white70),
+                    icon: const Icon(Icons.close_rounded, color: AdminColors.textSecondary),
                   ),
                 ],
               ),
@@ -180,7 +180,7 @@ class _AdminCreateShiftDialogState extends State<AdminCreateShiftDialog> {
                 style: GoogleFonts.beVietnamPro(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
-                  color: Colors.white,
+                  color: AdminColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 8),
@@ -189,14 +189,14 @@ class _AdminCreateShiftDialogState extends State<AdminCreateShiftDialog> {
                 decoration: BoxDecoration(
                   color: AdminColors.slateTeal,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFF1E6B60)),
+                  border: Border.all(color: AdminColors.border),
                 ),
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<String>(
                     value: _selectedStaffId,
                     isExpanded: true,
-                    dropdownColor: AdminColors.slateTeal,
-                    style: GoogleFonts.beVietnamPro(color: Colors.white, fontSize: 13),
+                    dropdownColor: AdminColors.sidebarBackground,
+                    style: GoogleFonts.beVietnamPro(color: AdminColors.textPrimary, fontSize: 13),
                     items: widget.staffList.map((s) {
                       return DropdownMenuItem<String>(
                         value: s.id,
@@ -213,7 +213,7 @@ class _AdminCreateShiftDialogState extends State<AdminCreateShiftDialog> {
                             const SizedBox(width: 10),
                             Text(s.name, style: const TextStyle(fontWeight: FontWeight.w600)),
                             const SizedBox(width: 8),
-                            Text('(${s.roleLabel})', style: const TextStyle(color: Colors.white60, fontSize: 11)),
+                            Text('(${s.roleLabel})', style: const TextStyle(color: AdminColors.textMuted, fontSize: 11)),
                           ],
                         ),
                       );
@@ -230,7 +230,7 @@ class _AdminCreateShiftDialogState extends State<AdminCreateShiftDialog> {
                 style: GoogleFonts.beVietnamPro(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
-                  color: Colors.white,
+                  color: AdminColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 8),
@@ -244,9 +244,9 @@ class _AdminCreateShiftDialogState extends State<AdminCreateShiftDialog> {
                     builder: (context, child) {
                       return Theme(
                         data: Theme.of(context).copyWith(
-                          colorScheme: const ColorScheme.dark(
+                          colorScheme: const ColorScheme.light(
                             primary: AdminColors.gold,
-                            surface: AdminColors.deepTeal,
+                            surface: AdminColors.cardSurface,
                           ),
                         ),
                         child: child!,
@@ -263,7 +263,7 @@ class _AdminCreateShiftDialogState extends State<AdminCreateShiftDialog> {
                   decoration: BoxDecoration(
                     color: AdminColors.slateTeal,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFF1E6B60)),
+                    border: Border.all(color: AdminColors.border),
                   ),
                   child: Row(
                     children: [
@@ -274,11 +274,11 @@ class _AdminCreateShiftDialogState extends State<AdminCreateShiftDialog> {
                         style: GoogleFonts.beVietnamPro(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
-                          color: Colors.white,
+                          color: AdminColors.textPrimary,
                         ),
                       ),
                       const Spacer(),
-                      const Icon(Icons.arrow_drop_down_rounded, color: Colors.white70),
+                      const Icon(Icons.arrow_drop_down_rounded, color: AdminColors.textSecondary),
                     ],
                   ),
                 ),
@@ -291,7 +291,7 @@ class _AdminCreateShiftDialogState extends State<AdminCreateShiftDialog> {
                 style: GoogleFonts.beVietnamPro(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
-                  color: Colors.white,
+                  color: AdminColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 8),
@@ -314,7 +314,7 @@ class _AdminCreateShiftDialogState extends State<AdminCreateShiftDialog> {
                               : AdminColors.slateTeal,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: isSelected ? info.color : const Color(0xFF1E6B60),
+                            color: isSelected ? info.color : AdminColors.border,
                             width: isSelected ? 1.5 : 1.0,
                           ),
                         ),
@@ -322,7 +322,7 @@ class _AdminCreateShiftDialogState extends State<AdminCreateShiftDialog> {
                           children: [
                             Icon(
                               isSelected ? Icons.radio_button_checked_rounded : Icons.radio_button_off_rounded,
-                              color: isSelected ? info.color : Colors.white38,
+                              color: isSelected ? info.color : AdminColors.textMuted,
                               size: 18,
                             ),
                             const SizedBox(width: 12),
@@ -331,14 +331,14 @@ class _AdminCreateShiftDialogState extends State<AdminCreateShiftDialog> {
                               style: GoogleFonts.beVietnamPro(
                                 fontSize: 13,
                                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                                color: isSelected ? Colors.white : Colors.white70,
+                                color: isSelected ? AdminColors.textPrimary : AdminColors.textSecondary,
                               ),
                             ),
                             const Spacer(),
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                               decoration: BoxDecoration(
-                                color: Colors.black26,
+                                color: AdminColors.sidebarBackground,
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
@@ -365,26 +365,26 @@ class _AdminCreateShiftDialogState extends State<AdminCreateShiftDialog> {
                 style: GoogleFonts.beVietnamPro(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
-                  color: Colors.white,
+                  color: AdminColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 8),
               TextField(
                 controller: _notesController,
                 maxLines: 2,
-                style: GoogleFonts.beVietnamPro(color: Colors.white, fontSize: 13),
+                style: GoogleFonts.beVietnamPro(color: AdminColors.textPrimary, fontSize: 13),
                 decoration: InputDecoration(
                   hintText: 'Nhập ghi chú hoặc yêu cầu bàn giao ca...',
-                  hintStyle: GoogleFonts.beVietnamPro(color: Colors.white38),
+                  hintStyle: GoogleFonts.beVietnamPro(color: AdminColors.textMuted),
                   filled: true,
                   fillColor: AdminColors.slateTeal,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFF1E6B60)),
+                    borderSide: const BorderSide(color: AdminColors.border),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFF1E6B60)),
+                    borderSide: const BorderSide(color: AdminColors.border),
                   ),
                 ),
               ),
@@ -421,14 +421,14 @@ class _AdminCreateShiftDialogState extends State<AdminCreateShiftDialog> {
                 children: [
                   TextButton(
                     onPressed: _submitting ? null : () => Navigator.of(context).pop(),
-                    child: Text('HỦY', style: GoogleFonts.beVietnamPro(color: Colors.white60)),
+                    child: Text('HỦY', style: GoogleFonts.beVietnamPro(color: AdminColors.textSecondary)),
                   ),
                   const SizedBox(width: 12),
                   FilledButton.icon(
                     onPressed: _submitting ? null : _handleSubmit,
                     style: FilledButton.styleFrom(
                       backgroundColor: AdminColors.gold,
-                      foregroundColor: const Color(0xFF08201D),
+                      foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
@@ -436,7 +436,7 @@ class _AdminCreateShiftDialogState extends State<AdminCreateShiftDialog> {
                         ? const SizedBox(
                             width: 18,
                             height: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF08201D)),
+                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                           )
                         : const Icon(Icons.check_rounded, size: 18),
                     label: Text(

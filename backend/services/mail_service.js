@@ -1,13 +1,17 @@
 const nodemailer = require('nodemailer');
 require('dotenv').config();
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.GMAIL_USER || 'lumispa.project@gmail.com',
-    pass: process.env.GMAIL_PASS || 'gsacetnpmwpdprtq',
-  },
-});
+const hasCredentials = Boolean(process.env.GMAIL_USER && process.env.GMAIL_PASS);
+
+const transporter = hasCredentials
+  ? nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_PASS,
+      },
+    })
+  : null;
 
 function formatVND(amount) {
   if (amount == null) return '0 đ';
@@ -255,6 +259,10 @@ async function sendBookingCreatedEmail({
   );
 
   try {
+    if (!transporter || !process.env.GMAIL_USER || !process.env.GMAIL_PASS) {
+      console.warn('[MailService] GMAIL credentials not configured in environment. Skipping email sending (mock fallback).');
+      return { success: true, mocked: true };
+    }
     const info = await transporter.sendMail({
       from: `"LUMI SPA & WELLNESS" <${process.env.GMAIL_USER}>`,
       to: recipient,
@@ -337,6 +345,10 @@ async function sendBookingConfirmedEmail({
   );
 
   try {
+    if (!transporter || !process.env.GMAIL_USER || !process.env.GMAIL_PASS) {
+      console.warn('[MailService] GMAIL credentials not configured in environment. Skipping email sending (mock fallback).');
+      return { success: true, mocked: true };
+    }
     const info = await transporter.sendMail({
       from: `"LUMI SPA & WELLNESS" <${process.env.GMAIL_USER}>`,
       to: recipient,
@@ -441,6 +453,10 @@ async function sendOrderSuccessEmail({
   );
 
   try {
+    if (!transporter || !process.env.GMAIL_USER || !process.env.GMAIL_PASS) {
+      console.warn('[MailService] GMAIL credentials not configured in environment. Skipping email sending (mock fallback).');
+      return { success: true, mocked: true };
+    }
     const info = await transporter.sendMail({
       from: `"LUMI SPA & WELLNESS" <${process.env.GMAIL_USER}>`,
       to: recipient,
@@ -584,6 +600,10 @@ async function sendOrderStatusUpdatedEmail({
   );
 
   try {
+    if (!transporter || !process.env.GMAIL_USER || !process.env.GMAIL_PASS) {
+      console.warn('[MailService] GMAIL credentials not configured in environment. Skipping email sending (mock fallback).');
+      return { success: true, mocked: true };
+    }
     const info = await transporter.sendMail({
       from: `"LUMI SPA & WELLNESS" <${process.env.GMAIL_USER}>`,
       to: recipient,

@@ -435,7 +435,7 @@ class _AdminBroadcastPushDialogState extends State<AdminBroadcastPushDialog> {
                         ? const SizedBox(
                             width: 16,
                             height: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black87),
+                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                           )
                         : const Icon(Icons.send_rounded, size: 18),
                     label: Text(
@@ -444,7 +444,7 @@ class _AdminBroadcastPushDialogState extends State<AdminBroadcastPushDialog> {
                     ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AdminColors.goldAccent,
-                      foregroundColor: Colors.black,
+                      foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),

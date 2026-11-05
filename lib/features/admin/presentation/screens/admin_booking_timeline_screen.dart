@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../booking/data/models/booking_item.dart';
 import '../../data/admin_booking_repository.dart';
 import '../theme/admin_colors.dart';
+import '../theme/admin_formatters.dart';
 import '../widgets/admin_assign_technician_dialog.dart';
 import '../widgets/admin_booking_detail_dialog.dart';
 import '../widgets/admin_reject_reason_dialog.dart';
@@ -289,7 +290,7 @@ class _AdminBookingTimelineScreenState
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Ngày $_formattedDateString • $confirmed / $total lịch đã duyệt',
+                  'Ngày ${AdminFormatters.formatDate(_selectedDate)} • $confirmed / $total lịch đã duyệt',
                   style: GoogleFonts.beVietnamPro(
                     fontSize: 12,
                     color: AdminColors.textSecondary,

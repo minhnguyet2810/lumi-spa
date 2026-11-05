@@ -102,10 +102,10 @@ class _AdminLoyaltyAdjustDialogState extends State<AdminLoyaltyAdjustDialog> {
         : (currentPoints + delta);
 
     return Dialog(
-      backgroundColor: AdminColors.darkTeal,
+      backgroundColor: AdminColors.cardSurface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        side: const BorderSide(color: Color(0xFF165B52), width: 1.2),
+        side: const BorderSide(color: AdminColors.border, width: 1.2),
       ),
       insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       child: ConstrainedBox(
@@ -146,7 +146,7 @@ class _AdminLoyaltyAdjustDialogState extends State<AdminLoyaltyAdjustDialog> {
                           style: GoogleFonts.beVietnamPro(
                             fontSize: 16,
                             fontWeight: FontWeight.w800,
-                            color: Colors.white,
+                            color: AdminColors.textPrimary,
                             letterSpacing: 0.8,
                           ),
                         ),
@@ -162,7 +162,7 @@ class _AdminLoyaltyAdjustDialogState extends State<AdminLoyaltyAdjustDialog> {
                   ),
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(Icons.close_rounded, color: Colors.white70),
+                    icon: const Icon(Icons.close_rounded, color: AdminColors.textSecondary),
                   ),
                 ],
               ),
@@ -174,7 +174,7 @@ class _AdminLoyaltyAdjustDialogState extends State<AdminLoyaltyAdjustDialog> {
                 decoration: BoxDecoration(
                   color: AdminColors.slateTeal,
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: const Color(0xFF1E6B60)),
+                  border: Border.all(color: AdminColors.border),
                 ),
                 child: Row(
                   children: [
@@ -186,7 +186,7 @@ class _AdminLoyaltyAdjustDialogState extends State<AdminLoyaltyAdjustDialog> {
                             'Điểm hiện tại',
                             style: GoogleFonts.beVietnamPro(
                               fontSize: 11,
-                              color: Colors.white60,
+                              color: AdminColors.textSecondary,
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -195,7 +195,7 @@ class _AdminLoyaltyAdjustDialogState extends State<AdminLoyaltyAdjustDialog> {
                             style: GoogleFonts.beVietnamPro(
                               fontSize: 18,
                               fontWeight: FontWeight.w800,
-                              color: Colors.white,
+                              color: AdminColors.textPrimary,
                             ),
                           ),
                         ],
@@ -237,7 +237,7 @@ class _AdminLoyaltyAdjustDialogState extends State<AdminLoyaltyAdjustDialog> {
                 style: GoogleFonts.beVietnamPro(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: Colors.white,
+                  color: AdminColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 8),
@@ -252,12 +252,12 @@ class _AdminLoyaltyAdjustDialogState extends State<AdminLoyaltyAdjustDialog> {
                         decoration: BoxDecoration(
                           color: !_isDeduction
                               ? const Color(0xFF1ABC9C).withValues(alpha: 0.25)
-                              : Colors.black26,
+                              : AdminColors.sidebarBackground,
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(
                             color: !_isDeduction
                                 ? const Color(0xFF1ABC9C)
-                                : Colors.white12,
+                                : AdminColors.border,
                             width: 1.5,
                           ),
                         ),
@@ -275,7 +275,7 @@ class _AdminLoyaltyAdjustDialogState extends State<AdminLoyaltyAdjustDialog> {
                                 fontWeight: FontWeight.w700,
                                 color: !_isDeduction
                                     ? const Color(0xFF1ABC9C)
-                                    : Colors.white70,
+                                    : AdminColors.textSecondary,
                               ),
                             ),
                           ],
@@ -293,12 +293,12 @@ class _AdminLoyaltyAdjustDialogState extends State<AdminLoyaltyAdjustDialog> {
                         decoration: BoxDecoration(
                           color: _isDeduction
                               ? const Color(0xFFE74C3C).withValues(alpha: 0.25)
-                              : Colors.black26,
+                              : AdminColors.sidebarBackground,
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(
                             color: _isDeduction
                                 ? const Color(0xFFE74C3C)
-                                : Colors.white12,
+                                : AdminColors.border,
                             width: 1.5,
                           ),
                         ),
@@ -316,7 +316,7 @@ class _AdminLoyaltyAdjustDialogState extends State<AdminLoyaltyAdjustDialog> {
                                 fontWeight: FontWeight.w700,
                                 color: _isDeduction
                                     ? const Color(0xFFE74C3C)
-                                    : Colors.white70,
+                                    : AdminColors.textSecondary,
                               ),
                             ),
                           ],
@@ -332,11 +332,11 @@ class _AdminLoyaltyAdjustDialogState extends State<AdminLoyaltyAdjustDialog> {
               TextField(
                 controller: _pointsController,
                 keyboardType: TextInputType.number,
-                style: GoogleFonts.beVietnamPro(color: Colors.white, fontSize: 15),
+                style: GoogleFonts.beVietnamPro(color: AdminColors.textPrimary, fontSize: 15),
                 onChanged: (_) => setState(() {}),
                 decoration: InputDecoration(
                   hintText: 'Nhập số điểm cần điều chỉnh...',
-                  hintStyle: GoogleFonts.beVietnamPro(color: Colors.white38),
+                  hintStyle: GoogleFonts.beVietnamPro(color: AdminColors.textMuted),
                   filled: true,
                   fillColor: AdminColors.slateTeal,
                   prefixIcon: Icon(
@@ -347,11 +347,11 @@ class _AdminLoyaltyAdjustDialogState extends State<AdminLoyaltyAdjustDialog> {
                   suffixStyle: GoogleFonts.beVietnamPro(color: AdminColors.gold),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFF1E6B60)),
+                    borderSide: const BorderSide(color: AdminColors.border),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFF1E6B60)),
+                    borderSide: const BorderSide(color: AdminColors.border),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -367,7 +367,7 @@ class _AdminLoyaltyAdjustDialogState extends State<AdminLoyaltyAdjustDialog> {
                 style: GoogleFonts.beVietnamPro(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: Colors.white,
+                  color: AdminColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 8),
@@ -389,7 +389,7 @@ class _AdminLoyaltyAdjustDialogState extends State<AdminLoyaltyAdjustDialog> {
                 style: GoogleFonts.beVietnamPro(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: Colors.white,
+                  color: AdminColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 8),
@@ -410,17 +410,17 @@ class _AdminLoyaltyAdjustDialogState extends State<AdminLoyaltyAdjustDialog> {
                       decoration: BoxDecoration(
                         color: isSelected
                             ? AdminColors.gold.withValues(alpha: 0.2)
-                            : Colors.white.withValues(alpha: 0.05),
+                            : AdminColors.sidebarBackground,
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                          color: isSelected ? AdminColors.gold : Colors.white12,
+                          color: isSelected ? AdminColors.gold : AdminColors.border,
                         ),
                       ),
                       child: Text(
                         r,
                         style: GoogleFonts.beVietnamPro(
                           fontSize: 11,
-                          color: isSelected ? AdminColors.gold : Colors.white70,
+                          color: isSelected ? AdminColors.gold : AdminColors.textSecondary,
                         ),
                       ),
                     ),
@@ -431,19 +431,19 @@ class _AdminLoyaltyAdjustDialogState extends State<AdminLoyaltyAdjustDialog> {
               TextField(
                 controller: _reasonController,
                 maxLines: 2,
-                style: GoogleFonts.beVietnamPro(color: Colors.white, fontSize: 13),
+                style: GoogleFonts.beVietnamPro(color: AdminColors.textPrimary, fontSize: 13),
                 decoration: InputDecoration(
                   hintText: 'Nhập chi tiết lý do phục vụ kiểm toán hệ thống...',
-                  hintStyle: GoogleFonts.beVietnamPro(color: Colors.white38),
+                  hintStyle: GoogleFonts.beVietnamPro(color: AdminColors.textMuted),
                   filled: true,
                   fillColor: AdminColors.slateTeal,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFF1E6B60)),
+                    borderSide: const BorderSide(color: AdminColors.border),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFF1E6B60)),
+                    borderSide: const BorderSide(color: AdminColors.border),
                   ),
                 ),
               ),
@@ -486,7 +486,7 @@ class _AdminLoyaltyAdjustDialogState extends State<AdminLoyaltyAdjustDialog> {
                     onPressed: _submitting ? null : () => Navigator.of(context).pop(),
                     child: Text(
                       'HỦY',
-                      style: GoogleFonts.beVietnamPro(color: Colors.white60),
+                      style: GoogleFonts.beVietnamPro(color: AdminColors.textSecondary),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -494,7 +494,7 @@ class _AdminLoyaltyAdjustDialogState extends State<AdminLoyaltyAdjustDialog> {
                     onPressed: _submitting ? null : _handleSubmit,
                     style: FilledButton.styleFrom(
                       backgroundColor: AdminColors.gold,
-                      foregroundColor: const Color(0xFF08201D),
+                      foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -506,7 +506,7 @@ class _AdminLoyaltyAdjustDialogState extends State<AdminLoyaltyAdjustDialog> {
                             height: 18,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              color: Color(0xFF08201D),
+                              color: Colors.white,
                             ),
                           )
                         : const Icon(Icons.check_circle_rounded, size: 18),
@@ -536,14 +536,14 @@ class _AdminLoyaltyAdjustDialogState extends State<AdminLoyaltyAdjustDialog> {
         if (val) setState(() => _selectedTier = tierKey);
       },
       selectedColor: color.withValues(alpha: 0.3),
-      backgroundColor: Colors.white.withValues(alpha: 0.05),
+      backgroundColor: AdminColors.sidebarBackground,
       labelStyle: GoogleFonts.beVietnamPro(
         fontSize: 12,
         fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-        color: isSelected ? color : Colors.white70,
+        color: isSelected ? color : AdminColors.textSecondary,
       ),
       side: BorderSide(
-        color: isSelected ? color : Colors.white12,
+        color: isSelected ? color : AdminColors.border,
         width: isSelected ? 1.5 : 1.0,
       ),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),

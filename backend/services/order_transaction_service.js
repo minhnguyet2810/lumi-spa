@@ -2,6 +2,7 @@ const { FieldValue } = require('firebase-admin/firestore');
 const db = require('../firebase');
 const pushService = require('./push_service');
 const mailService = require('./mail_service');
+const { awardPointsInTransaction } = require('./membership_service');
 
 const ORDER_LIFECYCLE_MATRIX = {
   pending: ['confirmed', 'cancelled'],
@@ -38,72 +39,72 @@ async function confirmOrderWithAtomicInventory({ orderId, staffId, branchId = 'c
       );
     }
 
-    if (orderData.inventoryReserved === true) {
-      throw Object.assign(new Error('Tồn kho của đơn hàng đã được giữ trước đó.'), { statusCode: 400 });
-    }
+    const alreadyReserved = orderData.inventoryReserved === true;
 
-    const items = orderData.items || [];
-    if (items.length === 0) {
-      throw Object.assign(new Error('Đơn hàng không có danh mục sản phẩm hợp lệ.'), { statusCode: 422 });
-    }
-
-    // Đọc đồng thời dữ liệu sản phẩm trong transaction
-    const productRefs = items.map(item => db.collection('products').doc(item.productId));
-    const productSnaps = await tx.getAll(...productRefs);
-
-    // Kiểm tra tính sẵn sàng và số lượng tồn kho
-    for (let i = 0; i < productSnaps.length; i++) {
-      const pDoc = productSnaps[i];
-      const item = items[i];
-
-      if (!pDoc.exists || pDoc.data().isActive === false) {
-        throw Object.assign(
-          new Error(`Sản phẩm '${item.name || item.productId}' hiện không khả dụng.`),
-          { statusCode: 400 }
-        );
+    if (!alreadyReserved) {
+      const items = orderData.items || [];
+      if (items.length === 0) {
+        throw Object.assign(new Error('Đơn hàng không có danh mục sản phẩm hợp lệ.'), { statusCode: 422 });
       }
 
-      const pData = pDoc.data();
-      const availableStock = pData.branchStocks?.[branchId] ?? pData.stock ?? 0;
+      // Đọc đồng thời dữ liệu sản phẩm trong transaction
+      const productRefs = items.map(item => db.collection('products').doc(item.productId));
+      const productSnaps = await tx.getAll(...productRefs);
 
-      if (availableStock < item.quantity) {
-        throw Object.assign(
-          new Error(`Sản phẩm '${item.name || pData.name}' không đủ tồn kho tại chi nhánh (Hiện còn: ${availableStock}, yêu cầu: ${item.quantity}).`),
-          { statusCode: 409 }
-        );
+      // Kiểm tra tính sẵn sàng và số lượng tồn kho
+      for (let i = 0; i < productSnaps.length; i++) {
+        const pDoc = productSnaps[i];
+        const item = items[i];
+
+        if (!pDoc.exists || pDoc.data().isActive === false) {
+          throw Object.assign(
+            new Error(`Sản phẩm '${item.name || item.productId}' hiện không khả dụng.`),
+            { statusCode: 400 }
+          );
+        }
+
+        const pData = pDoc.data();
+        const availableStock = pData.branchStocks?.[branchId] ?? pData.stock ?? 0;
+
+        if (availableStock < item.quantity) {
+          throw Object.assign(
+            new Error(`Sản phẩm '${item.name || pData.name}' không đủ tồn kho tại chi nhánh (Hiện còn: ${availableStock}, yêu cầu: ${item.quantity}).`),
+            { statusCode: 409 }
+          );
+        }
       }
-    }
 
-    // Thực hiện trừ kho và tạo audit log
-    for (let i = 0; i < productSnaps.length; i++) {
-      const pDoc = productSnaps[i];
-      const item = items[i];
-      const pRef = productRefs[i];
-      const pData = pDoc.data();
-      const prevStock = pData.branchStocks?.[branchId] ?? pData.stock ?? 0;
-      const nextStock = prevStock - item.quantity;
+      // Thực hiện trừ kho và tạo audit log
+      for (let i = 0; i < productSnaps.length; i++) {
+        const pDoc = productSnaps[i];
+        const item = items[i];
+        const pRef = productRefs[i];
+        const pData = pDoc.data();
+        const prevStock = pData.branchStocks?.[branchId] ?? pData.stock ?? 0;
+        const nextStock = prevStock - item.quantity;
 
-      tx.update(pRef, {
-        [`branchStocks.${branchId}`]: FieldValue.increment(-item.quantity),
-        stock: FieldValue.increment(-item.quantity),
-        updatedAt: FieldValue.serverTimestamp(),
-      });
+        tx.update(pRef, {
+          [`branchStocks.${branchId}`]: FieldValue.increment(-item.quantity),
+          stock: FieldValue.increment(-item.quantity),
+          updatedAt: FieldValue.serverTimestamp(),
+        });
 
-      const logRef = db.collection('inventory_logs').doc();
-      tx.set(logRef, {
-        logId: logRef.id,
-        productId: item.productId,
-        sku: item.sku || pData.sku || item.productId,
-        branchId,
-        type: 'order_deduction',
-        quantityDelta: -item.quantity,
-        previousStock: prevStock,
-        newStock: nextStock,
-        referenceId: orderId,
-        staffId,
-        reason: `Duyệt đơn hàng #${orderId}`,
-        timestamp: FieldValue.serverTimestamp(),
-      });
+        const logRef = db.collection('inventory_logs').doc();
+        tx.set(logRef, {
+          logId: logRef.id,
+          productId: item.productId,
+          sku: item.sku || pData.sku || item.productId,
+          branchId,
+          type: 'order_deduction',
+          quantityDelta: -item.quantity,
+          previousStock: prevStock,
+          newStock: nextStock,
+          referenceId: orderId,
+          staffId,
+          reason: `Duyệt đơn hàng #${orderId}`,
+          timestamp: FieldValue.serverTimestamp(),
+        });
+      }
     }
 
     const auditEntry = {
@@ -111,7 +112,7 @@ async function confirmOrderWithAtomicInventory({ orderId, staffId, branchId = 'c
       toStatus: 'confirmed',
       changedBy: staffId,
       branchId,
-      note: note || 'Duyệt đơn và trừ tồn kho chi nhánh thành công.',
+      note: note || (alreadyReserved ? 'Duyệt đơn hàng (tồn kho đã được giữ trước đó).' : 'Duyệt đơn và trừ tồn kho chi nhánh thành công.'),
       timestamp: new Date().toISOString(),
     };
 
@@ -211,6 +212,16 @@ async function transitionOrderStatus({
     } else if (toStatus === 'completed') {
       updates.completedAt = FieldValue.serverTimestamp();
       updates.completedBy = staffId;
+      if (orderData.pointsAwarded !== true && orderData.userId && (Number(orderData.total) || 0) > 0) {
+        const pointsRes = await awardPointsInTransaction(tx, db, {
+          userId: orderData.userId,
+          amount: Number(orderData.total) || 0,
+          sourceId: pushService.formatOrderId(orderId),
+          sourceType: 'order',
+        });
+        updates.pointsAwarded = true;
+        updates.earnedPoints = pointsRes?.pointsAwarded ?? 0;
+      }
     }
 
     const auditEntry = {

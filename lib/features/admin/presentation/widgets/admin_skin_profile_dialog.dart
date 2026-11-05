@@ -133,10 +133,10 @@ class _AdminSkinProfileDialogState extends State<AdminSkinProfileDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      backgroundColor: AdminColors.darkTeal,
+      backgroundColor: AdminColors.cardSurface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        side: const BorderSide(color: Color(0xFF165B52), width: 1.2),
+        side: const BorderSide(color: AdminColors.border, width: 1.2),
       ),
       insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       child: ConstrainedBox(
@@ -172,7 +172,7 @@ class _AdminSkinProfileDialogState extends State<AdminSkinProfileDialog> {
                           style: GoogleFonts.beVietnamPro(
                             fontSize: 15,
                             fontWeight: FontWeight.w800,
-                            color: Colors.white,
+                            color: AdminColors.textPrimary,
                             letterSpacing: 0.8,
                           ),
                         ),
@@ -188,12 +188,12 @@ class _AdminSkinProfileDialogState extends State<AdminSkinProfileDialog> {
                   ),
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(Icons.close_rounded, color: Colors.white70),
+                    icon: const Icon(Icons.close_rounded, color: AdminColors.textSecondary),
                   ),
                 ],
               ),
               const SizedBox(height: 16),
-              const Divider(color: Color(0xFF1E6B60), height: 1),
+              const Divider(color: AdminColors.border, height: 1),
               const SizedBox(height: 16),
 
               Expanded(
@@ -207,7 +207,7 @@ class _AdminSkinProfileDialogState extends State<AdminSkinProfileDialog> {
                         style: GoogleFonts.beVietnamPro(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
-                          color: Colors.white,
+                          color: AdminColors.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -223,14 +223,14 @@ class _AdminSkinProfileDialogState extends State<AdminSkinProfileDialog> {
                               if (val) setState(() => _selectedSkinType = k);
                             },
                             selectedColor: AdminColors.gold.withValues(alpha: 0.25),
-                            backgroundColor: Colors.white.withValues(alpha: 0.05),
+                            backgroundColor: AdminColors.sidebarBackground,
                             labelStyle: GoogleFonts.beVietnamPro(
                               fontSize: 12,
                               fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                              color: isSelected ? AdminColors.gold : Colors.white70,
+                              color: isSelected ? AdminColors.gold : AdminColors.textSecondary,
                             ),
                             side: BorderSide(
-                              color: isSelected ? AdminColors.gold : Colors.white12,
+                              color: isSelected ? AdminColors.gold : AdminColors.border,
                             ),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                           );
@@ -244,7 +244,7 @@ class _AdminSkinProfileDialogState extends State<AdminSkinProfileDialog> {
                         style: GoogleFonts.beVietnamPro(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
-                          color: Colors.white,
+                          color: AdminColors.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -266,13 +266,13 @@ class _AdminSkinProfileDialogState extends State<AdminSkinProfileDialog> {
                               });
                             },
                             selectedColor: const Color(0xFF0284C7).withValues(alpha: 0.3),
-                            backgroundColor: Colors.white.withValues(alpha: 0.05),
+                            backgroundColor: AdminColors.sidebarBackground,
                             labelStyle: GoogleFonts.beVietnamPro(
                               fontSize: 11,
-                              color: isSelected ? const Color(0xFF38BDF8) : Colors.white70,
+                              color: isSelected ? const Color(0xFF38BDF8) : AdminColors.textSecondary,
                             ),
                             side: BorderSide(
-                              color: isSelected ? const Color(0xFF38BDF8) : Colors.white12,
+                              color: isSelected ? const Color(0xFF38BDF8) : AdminColors.border,
                             ),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                           );
@@ -311,7 +311,7 @@ class _AdminSkinProfileDialogState extends State<AdminSkinProfileDialog> {
                               'KTV & Lễ tân sẽ nhận được cảnh báo đỏ trên hồ sơ điều trị để tránh sử dụng mỹ phẩm chứa các hoạt chất này.',
                               style: GoogleFonts.beVietnamPro(
                                 fontSize: 11,
-                                color: Colors.white70,
+                                color: AdminColors.textSecondary,
                               ),
                             ),
                             const SizedBox(height: 10),
@@ -333,14 +333,14 @@ class _AdminSkinProfileDialogState extends State<AdminSkinProfileDialog> {
                                     });
                                   },
                                   selectedColor: const Color(0xFFE74C3C).withValues(alpha: 0.35),
-                                  backgroundColor: Colors.white.withValues(alpha: 0.05),
+                                  backgroundColor: AdminColors.sidebarBackground,
                                   labelStyle: GoogleFonts.beVietnamPro(
                                     fontSize: 11,
                                     fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                                    color: isSelected ? const Color(0xFFFFAAA6) : Colors.white70,
+                                    color: isSelected ? const Color(0xFFFFAAA6) : AdminColors.textSecondary,
                                   ),
                                   side: BorderSide(
-                                    color: isSelected ? const Color(0xFFE74C3C) : Colors.white12,
+                                    color: isSelected ? const Color(0xFFE74C3C) : AdminColors.border,
                                   ),
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                                 );
@@ -352,17 +352,17 @@ class _AdminSkinProfileDialogState extends State<AdminSkinProfileDialog> {
                                 Expanded(
                                   child: TextField(
                                     controller: _customAllergyController,
-                                    style: GoogleFonts.beVietnamPro(color: Colors.white, fontSize: 12),
+                                    style: GoogleFonts.beVietnamPro(color: AdminColors.textPrimary, fontSize: 12),
                                     decoration: InputDecoration(
                                       hintText: 'Thêm hoạt chất dị ứng khác...',
-                                      hintStyle: GoogleFonts.beVietnamPro(color: Colors.white38, fontSize: 12),
+                                      hintStyle: GoogleFonts.beVietnamPro(color: AdminColors.textMuted, fontSize: 12),
                                       isDense: true,
                                       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                                       filled: true,
-                                      fillColor: AdminColors.darkTeal,
+                                      fillColor: AdminColors.sidebarBackground,
                                       border: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(8),
-                                        borderSide: const BorderSide(color: Color(0xFF1E6B60)),
+                                        borderSide: const BorderSide(color: AdminColors.border),
                                       ),
                                     ),
                                   ),
@@ -397,7 +397,7 @@ class _AdminSkinProfileDialogState extends State<AdminSkinProfileDialog> {
                         style: GoogleFonts.beVietnamPro(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
-                          color: Colors.white,
+                          color: AdminColors.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -419,13 +419,13 @@ class _AdminSkinProfileDialogState extends State<AdminSkinProfileDialog> {
                               });
                             },
                             selectedColor: const Color(0xFFF59E0B).withValues(alpha: 0.3),
-                            backgroundColor: Colors.white.withValues(alpha: 0.05),
+                            backgroundColor: AdminColors.sidebarBackground,
                             labelStyle: GoogleFonts.beVietnamPro(
                               fontSize: 11,
-                              color: isSelected ? const Color(0xFFFCD34D) : Colors.white70,
+                              color: isSelected ? const Color(0xFFFCD34D) : AdminColors.textSecondary,
                             ),
                             side: BorderSide(
-                              color: isSelected ? const Color(0xFFF59E0B) : Colors.white12,
+                              color: isSelected ? const Color(0xFFF59E0B) : AdminColors.border,
                             ),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                           );
@@ -439,26 +439,26 @@ class _AdminSkinProfileDialogState extends State<AdminSkinProfileDialog> {
                         style: GoogleFonts.beVietnamPro(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
-                          color: Colors.white,
+                          color: AdminColors.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 8),
                       TextField(
                         controller: _routineController,
                         maxLines: 3,
-                        style: GoogleFonts.beVietnamPro(color: Colors.white, fontSize: 13),
+                        style: GoogleFonts.beVietnamPro(color: AdminColors.textPrimary, fontSize: 13),
                         decoration: InputDecoration(
                           hintText: 'VD: Sáng: Sữa rửa mặt dịu nhẹ, Serum B5, Kem chống nắng SPF 50. Tối: Tẩy trang, Nước hoa hồng không cồn...',
-                          hintStyle: GoogleFonts.beVietnamPro(color: Colors.white38),
+                          hintStyle: GoogleFonts.beVietnamPro(color: AdminColors.textMuted),
                           filled: true,
                           fillColor: AdminColors.slateTeal,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Color(0xFF1E6B60)),
+                            borderSide: const BorderSide(color: AdminColors.border),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Color(0xFF1E6B60)),
+                            borderSide: const BorderSide(color: AdminColors.border),
                           ),
                         ),
                       ),
@@ -492,7 +492,7 @@ class _AdminSkinProfileDialogState extends State<AdminSkinProfileDialog> {
               ],
 
               const SizedBox(height: 16),
-              const Divider(color: Color(0xFF1E6B60), height: 1),
+              const Divider(color: AdminColors.border, height: 1),
               const SizedBox(height: 16),
 
               // Action buttons
@@ -503,7 +503,7 @@ class _AdminSkinProfileDialogState extends State<AdminSkinProfileDialog> {
                     onPressed: _submitting ? null : () => Navigator.of(context).pop(),
                     child: Text(
                       'HỦY',
-                      style: GoogleFonts.beVietnamPro(color: Colors.white60),
+                      style: GoogleFonts.beVietnamPro(color: AdminColors.textSecondary),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -511,7 +511,7 @@ class _AdminSkinProfileDialogState extends State<AdminSkinProfileDialog> {
                     onPressed: _submitting ? null : _handleSubmit,
                     style: FilledButton.styleFrom(
                       backgroundColor: AdminColors.gold,
-                      foregroundColor: const Color(0xFF08201D),
+                      foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
@@ -521,7 +521,7 @@ class _AdminSkinProfileDialogState extends State<AdminSkinProfileDialog> {
                             height: 18,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              color: Color(0xFF08201D),
+                              color: Colors.white,
                             ),
                           )
                         : const Icon(Icons.save_rounded, size: 18),

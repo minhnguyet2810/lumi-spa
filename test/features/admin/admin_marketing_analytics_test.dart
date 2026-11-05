@@ -29,7 +29,7 @@ void main() {
       expect(v.isExhausted, isFalse);
       expect(v.usagePercent, closeTo(0.36, 0.01));
       expect(v.discountDisplayText, contains('Giảm 20%'));
-      expect(v.minOrderFormatted, contains('800.000đ'));
+      expect(v.minOrderFormatted, contains('800.000 đ'));
       expect(v.audienceDisplayText, 'VIP Gold & Diamond');
       expect(v.isActive, isTrue);
     });
@@ -60,7 +60,7 @@ void main() {
 
       final fixed = AdminVoucherItem.fromJson(fixedJson);
       expect(fixed.fixedDiscount, 50000);
-      expect(fixed.discountDisplayText, contains('50.000đ'));
+      expect(fixed.discountDisplayText, contains('50.000 đ'));
     });
 
     test('AdminMarketingKpi parses json accurately', () {
@@ -110,8 +110,8 @@ void main() {
       expect(s.grossProfit, s.totalRevenue - s.totalCogs);
       expect(s.grossMarginPercent, 70.1);
       expect(s.retailRatio + s.serviceRatio, 100.0);
-      expect(s.totalRevenueFormatted, contains('125.400.000đ'));
-      expect(s.grossProfitFormatted, contains('87.905.400đ'));
+      expect(s.totalRevenueFormatted, contains('125.400.000 đ'));
+      expect(s.grossProfitFormatted, contains('87.905.400 đ'));
     });
 
     test('DailyFinancialTrend formats short date correctly', () {

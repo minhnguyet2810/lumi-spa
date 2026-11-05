@@ -43,7 +43,7 @@ class FinancialSummary {
 
   static String formatCurrency(num amount) {
     final formatter = NumberFormat('#,###', 'vi_VN');
-    return '${formatter.format(amount)}đ';
+    return '${formatter.format(amount)} đ';
   }
 
   factory FinancialSummary.fromJson(Map<String, dynamic> json) {

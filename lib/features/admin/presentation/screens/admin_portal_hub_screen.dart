@@ -252,12 +252,12 @@ class _AdminPortalHubScreenState extends State<AdminPortalHubScreen>
                     ),
                   ),
                   Text(
-                    'KHÔNG GIAN QUẢN TRỊ',
+                    'TỔNG QUAN HOẠT ĐỘNG SPA',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.beVietnamPro(
                       fontSize: 9,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w700,
                       letterSpacing: 1.1,
                       color: const Color(0xFF81726A),
                     ),
@@ -357,7 +357,7 @@ class _AdminPortalHubScreenState extends State<AdminPortalHubScreen>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Chăm chút từng trải nghiệm.',
+                              'Không Gian Điều Hành LUMI SPA',
                               style: GoogleFonts.beVietnamPro(
                                 fontSize: 21,
                                 height: 1.2,
@@ -367,7 +367,7 @@ class _AdminPortalHubScreenState extends State<AdminPortalHubScreen>
                             ),
                             const SizedBox(height: 7),
                             Text(
-                              'Lịch hẹn, đơn hàng và khách hàng trong một không gian.',
+                              'Theo dõi toàn diện lịch khách hẹn trong ngày, đơn hàng mỹ phẩm và hiệu suất vận hành.',
                               style: GoogleFonts.beVietnamPro(
                                 fontSize: 12,
                                 height: 1.5,
@@ -380,9 +380,9 @@ class _AdminPortalHubScreenState extends State<AdminPortalHubScreen>
                               runSpacing: 8,
                               children: [
                                 ActionChip(
-                                  avatar: const Icon(Icons.view_timeline_rounded, size: 16, color: Color(0xFF0D3B35)),
+                                  avatar: const Icon(Icons.calendar_month_rounded, size: 16, color: Color(0xFF0D3B35)),
                                   label: Text(
-                                    'Timeline Matrix (v2)',
+                                    'Lịch hẹn dịch vụ',
                                     style: GoogleFonts.beVietnamPro(fontSize: 11, fontWeight: FontWeight.w700, color: const Color(0xFF0D3B35)),
                                   ),
                                   backgroundColor: Colors.white,
@@ -395,7 +395,7 @@ class _AdminPortalHubScreenState extends State<AdminPortalHubScreen>
                                 ActionChip(
                                   avatar: const Icon(Icons.local_shipping_rounded, size: 16, color: Color(0xFF0D3B35)),
                                   label: Text(
-                                    'Fulfillment Hub (v2)',
+                                    'Đơn hàng mỹ phẩm',
                                     style: GoogleFonts.beVietnamPro(fontSize: 11, fontWeight: FontWeight.w700, color: const Color(0xFF0D3B35)),
                                   ),
                                   backgroundColor: Colors.white,
@@ -408,7 +408,7 @@ class _AdminPortalHubScreenState extends State<AdminPortalHubScreen>
                                 ActionChip(
                                   avatar: const Icon(Icons.people_alt_rounded, size: 16, color: Color(0xFF0D3B35)),
                                   label: Text(
-                                    'Customer 360 (v2)',
+                                    'Hồ sơ khách hàng',
                                     style: GoogleFonts.beVietnamPro(fontSize: 11, fontWeight: FontWeight.w700, color: const Color(0xFF0D3B35)),
                                   ),
                                   backgroundColor: Colors.white,
@@ -419,9 +419,9 @@ class _AdminPortalHubScreenState extends State<AdminPortalHubScreen>
                                   ),
                                 ),
                                 ActionChip(
-                                  avatar: const Icon(Icons.calendar_view_week_rounded, size: 16, color: Color(0xFF0D3B35)),
+                                  avatar: const Icon(Icons.badge_rounded, size: 16, color: Color(0xFF0D3B35)),
                                   label: Text(
-                                    'Staff Roster (v2)',
+                                    'Đội ngũ nhân sự & Ca trực',
                                     style: GoogleFonts.beVietnamPro(fontSize: 11, fontWeight: FontWeight.w700, color: const Color(0xFF0D3B35)),
                                   ),
                                   backgroundColor: Colors.white,
@@ -434,7 +434,7 @@ class _AdminPortalHubScreenState extends State<AdminPortalHubScreen>
                                 ActionChip(
                                   avatar: const Icon(Icons.loyalty_rounded, size: 16, color: Color(0xFF0D3B35)),
                                   label: Text(
-                                    'Marketing Hub (v2)',
+                                    'Chương trình ưu đãi',
                                     style: GoogleFonts.beVietnamPro(fontSize: 11, fontWeight: FontWeight.w700, color: const Color(0xFF0D3B35)),
                                   ),
                                   backgroundColor: Colors.white,
@@ -447,7 +447,7 @@ class _AdminPortalHubScreenState extends State<AdminPortalHubScreen>
                                 ActionChip(
                                   avatar: const Icon(Icons.insights_rounded, size: 16, color: Color(0xFF0D3B35)),
                                   label: Text(
-                                    'Báo cáo Doanh thu (v2)',
+                                    'Báo cáo doanh thu & Lợi nhuận',
                                     style: GoogleFonts.beVietnamPro(fontSize: 11, fontWeight: FontWeight.w700, color: const Color(0xFF0D3B35)),
                                   ),
                                   backgroundColor: Colors.white,
@@ -467,6 +467,127 @@ class _AdminPortalHubScreenState extends State<AdminPortalHubScreen>
                         Icons.auto_awesome_outlined,
                         size: 30,
                         color: Color(0xFFA5553E),
+                      ),
+                    ],
+                  ),
+                ),
+                // Khối Tóm Tắt Vận Hành Trực Quan (Xem nhanh lịch hẹn & đơn hàng)
+                Container(
+                  margin: const EdgeInsets.fromLTRB(20, 0, 20, 14),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: StreamBuilder<List<BookingItem>>(
+                          stream: AdminBookingRepository.instance.streamPendingBookings(),
+                          builder: (context, snapshot) {
+                            final count = snapshot.data?.length ?? 0;
+                            return InkWell(
+                              onTap: () => _tabController.animateTo(0),
+                              borderRadius: BorderRadius.circular(16),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(color: const Color(0xFFEADDD3)),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: ink.withValues(alpha: 0.03),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 3),
+                                    ),
+                                  ],
+                                ),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFF39C12).withValues(alpha: 0.15),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: const Icon(Icons.alarm_on_rounded, color: Color(0xFFF39C12), size: 20),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            'Lịch Chờ Tiếp Nhận',
+                                            style: GoogleFonts.beVietnamPro(fontSize: 11, color: const Color(0xFF81726A), fontWeight: FontWeight.w600),
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            '$count lịch hẹn',
+                                            style: GoogleFonts.beVietnamPro(fontSize: 14, fontWeight: FontWeight.w800, color: ink),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: StreamBuilder<List<AdminOrderItem>>(
+                          stream: AdminOrderRepository.instance.streamPendingOrders(),
+                          builder: (context, snapshot) {
+                            final count = snapshot.data?.length ?? 0;
+                            return InkWell(
+                              onTap: () => _tabController.animateTo(1),
+                              borderRadius: BorderRadius.circular(16),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(color: const Color(0xFFEADDD3)),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: ink.withValues(alpha: 0.03),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 3),
+                                    ),
+                                  ],
+                                ),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF3498DB).withValues(alpha: 0.15),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: const Icon(Icons.inventory_2_outlined, color: Color(0xFF3498DB), size: 20),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            'Đơn Mỹ Phẩm Mới',
+                                            style: GoogleFonts.beVietnamPro(fontSize: 11, color: const Color(0xFF81726A), fontWeight: FontWeight.w600),
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            '$count đơn cần duyệt',
+                                            style: GoogleFonts.beVietnamPro(fontSize: 14, fontWeight: FontWeight.w800, color: ink),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
                       ),
                     ],
                   ),
@@ -513,7 +634,7 @@ class _AdminPortalHubScreenState extends State<AdminPortalHubScreen>
                             .streamPendingBookings(),
                         builder: (context, snapshot) => _destination(
                           Icons.calendar_month_outlined,
-                          'Lịch hẹn',
+                          'Lịch hẹn dịch vụ',
                           snapshot.data?.length ?? 0,
                         ),
                       ),
@@ -522,7 +643,7 @@ class _AdminPortalHubScreenState extends State<AdminPortalHubScreen>
                             .streamPendingOrders(),
                         builder: (context, snapshot) => _destination(
                           Icons.shopping_bag_outlined,
-                          'Đơn hàng',
+                          'Đơn hàng mỹ phẩm',
                           snapshot.data?.length ?? 0,
                         ),
                       ),
@@ -530,7 +651,7 @@ class _AdminPortalHubScreenState extends State<AdminPortalHubScreen>
                         stream: AdminUserRepository.instance.streamAllUsers(),
                         builder: (context, snapshot) => _destination(
                           Icons.people_outline_rounded,
-                          'Khách hàng',
+                          'Hồ sơ khách hàng',
                           snapshot.data?.length ?? 0,
                         ),
                       ),

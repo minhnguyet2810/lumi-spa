@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../data/admin_order_repository.dart';
 import '../../data/models/admin_order_item.dart';
 import '../theme/admin_colors.dart';
+import '../theme/admin_formatters.dart';
 import '../widgets/admin_order_cancel_dialog.dart';
 import '../widgets/admin_order_detail_dialog.dart';
 import '../widgets/admin_shipping_dialog.dart';
@@ -369,6 +370,47 @@ class _AdminOrderFulfillmentScreenState
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AdminColors.background,
+      appBar: AppBar(
+        backgroundColor: AdminColors.deepTeal,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AdminColors.textPrimary, size: 18),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AdminColors.gold.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: AdminColors.gold.withValues(alpha: 0.4)),
+              ),
+              child: const Icon(Icons.local_shipping_rounded, color: AdminColors.gold, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'ĐƠN HÀNG MỸ PHẨM & XỬ LÝ KHO',
+                  style: GoogleFonts.beVietnamPro(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.1,
+                    color: AdminColors.textPrimary,
+                  ),
+                ),
+                Text(
+                  'Quy trình trừ kho nguyên tử, đóng gói và điều phối vận chuyển',
+                  style: GoogleFonts.beVietnamPro(fontSize: 10, color: AdminColors.textSecondary),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
       body: StreamBuilder<List<AdminOrderItem>>(
         stream: AdminOrderRepository.instance.streamAllOrders(),
         builder: (context, snapshot) {
@@ -402,9 +444,9 @@ class _AdminOrderFulfillmentScreenState
                       const SizedBox(width: 10),
                       _buildStatPill(
                         'Doanh thu hoàn tất',
-                        '${(completedRevenue / 1000).toInt()}k đ',
+                        AdminFormatters.formatShortCurrency(completedRevenue),
                         AdminColors.emerald,
-                        Icons.attach_money_rounded,
+                        Icons.payments_rounded,
                       ),
                     ],
                   ),

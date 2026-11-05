@@ -468,6 +468,55 @@ class _AdminBookingTimelineScreenState
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AdminColors.background,
+      appBar: AppBar(
+        backgroundColor: AdminColors.deepTeal,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AdminColors.textPrimary, size: 18),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AdminColors.gold.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: AdminColors.gold.withValues(alpha: 0.4)),
+              ),
+              child: const Icon(Icons.calendar_month_rounded, color: AdminColors.gold, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'LỊCH HẸN DỊCH VỤ & ĐIỀU PHỐI PHÒNG',
+                  style: GoogleFonts.beVietnamPro(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.1,
+                    color: AdminColors.textPrimary,
+                  ),
+                ),
+                Text(
+                  'Ma trận khung giờ x Chuyên viên trị liệu x Phòng spa theo ngày',
+                  style: GoogleFonts.beVietnamPro(fontSize: 10, color: AdminColors.textSecondary),
+                ),
+              ],
+            ),
+          ],
+        ),
+        actions: [
+          IconButton(
+            tooltip: 'Làm mới lịch hẹn',
+            icon: const Icon(Icons.refresh_rounded, color: AdminColors.gold),
+            onPressed: _loadTimeline,
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
       body: Column(
         children: [
           // 1. Controls Bar: Date Picker & View Switcher
@@ -737,7 +786,7 @@ class _AdminBookingTimelineScreenState
                                               ),
                                               icon: const Icon(Icons.login_rounded, size: 16),
                                               label: Text(
-                                                'CHECK-IN',
+                                                'ĐÓN KHÁCH (CHECK-IN)',
                                                 style: GoogleFonts.beVietnamPro(
                                                   fontWeight: FontWeight.w700,
                                                   fontSize: 11,
@@ -760,7 +809,7 @@ class _AdminBookingTimelineScreenState
                                                   ),
                                                   icon: const Icon(Icons.edit_note_rounded, size: 16),
                                                   label: Text(
-                                                    'BỆNH ÁN DA',
+                                                    'HỒ SƠ LIỆU TRÌNH',
                                                     style: GoogleFonts.beVietnamPro(
                                                       fontWeight: FontWeight.w700,
                                                       fontSize: 11,
@@ -780,7 +829,7 @@ class _AdminBookingTimelineScreenState
                                                   ),
                                                   icon: const Icon(Icons.task_alt_rounded, size: 16),
                                                   label: Text(
-                                                    'HOÀN TẤT & TÍNH LƯƠNG',
+                                                    'HOÀN TẤT LIỆU TRÌNH',
                                                     style: GoogleFonts.beVietnamPro(
                                                       fontWeight: FontWeight.w700,
                                                       fontSize: 11,

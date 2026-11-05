@@ -143,7 +143,7 @@ class _AdminCustomer360ScreenState extends State<AdminCustomer360Screen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'CUSTOMER 360 CRM & TIERED LOYALTY',
+                  'HỒ SƠ KHÁCH HÀNG 360° & HỘI VIÊN',
                   style: GoogleFonts.beVietnamPro(
                     fontSize: 15,
                     fontWeight: FontWeight.w800,
@@ -152,7 +152,7 @@ class _AdminCustomer360ScreenState extends State<AdminCustomer360Screen> {
                   ),
                 ),
                 Text(
-                  'Quản trị Quan hệ Khách hàng, Hồ sơ Da liễu & Hệ thống Tích điểm Đa tầng',
+                  'Quản trị thông tin khách hàng, hồ sơ da liễu chuyên sâu & điểm thưởng hội viên',
                   style: GoogleFonts.beVietnamPro(
                     fontSize: 10,
                     color: Colors.white60,

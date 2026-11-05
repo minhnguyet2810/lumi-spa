@@ -125,7 +125,7 @@ class _AdminMarketingCenterScreenState extends State<AdminMarketingCenterScreen>
             ),
             const SizedBox(width: 12),
             Text(
-              'Cấu Hình Voucher & Chiến Dịch Marketing',
+              'Chương Trình Ưu Đãi & Chiến Dịch Tiếp Thị',
               style: GoogleFonts.beVietnamPro(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
@@ -216,10 +216,10 @@ class _AdminMarketingCenterScreenState extends State<AdminMarketingCenterScreen>
               width: cardWidth,
               child: _buildKpiCard(
                 title: 'Ngân Sách Đã Tài Trợ',
-                value: '${currencyFmt.format(_kpi.totalDiscountSponsored)}đ',
+                value: '${currencyFmt.format(_kpi.totalDiscountSponsored)} đ',
                 subtitle: 'Tổng chiết khấu tích lũy toàn hệ thống',
                 icon: Icons.account_balance_wallet_rounded,
-                accentColor: const Color(0xFFE67E22),
+                accentColor: AdminColors.statusPending,
               ),
             ),
             SizedBox(

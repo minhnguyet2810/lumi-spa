@@ -264,7 +264,7 @@ class _AdminFinancialAnalyticsScreenState extends State<AdminFinancialAnalyticsS
                 value: s.totalCogsFormatted,
                 subtitle: 'Chi phí vốn sản phẩm & vật tư liệu trình',
                 icon: Icons.inventory_2_outlined,
-                accentColor: const Color(0xFFE67E22),
+                accentColor: AdminColors.statusPending,
               ),
             ),
             SizedBox(
@@ -546,7 +546,7 @@ class _AdminFinancialAnalyticsScreenState extends State<AdminFinancialAnalyticsS
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text('Giá vốn (COGS):', style: GoogleFonts.beVietnamPro(fontSize: 13, color: AdminColors.textSecondary)),
-              Text(cogs, style: GoogleFonts.beVietnamPro(fontSize: 13, color: const Color(0xFFE67E22))),
+              Text(cogs, style: GoogleFonts.beVietnamPro(fontSize: 13, color: AdminColors.statusPending)),
             ],
           ),
           const Divider(color: AdminColors.border, height: 16),

@@ -141,9 +141,9 @@ class _AdminStaffRosterScreenState extends State<AdminStaffRosterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF08201D),
+      backgroundColor: AdminColors.background,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF08201D),
+        backgroundColor: AdminColors.background,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
@@ -166,7 +166,7 @@ class _AdminStaffRosterScreenState extends State<AdminStaffRosterScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'QUẢN TRỊ NHÂN SỰ & PHÂN CA TRỰC (HRM)',
+                  'ĐỘI NGŨ NHÂN SỰ & CA TRỰC',
                   style: GoogleFonts.beVietnamPro(
                     fontSize: 15,
                     fontWeight: FontWeight.w800,
@@ -175,7 +175,7 @@ class _AdminStaffRosterScreenState extends State<AdminStaffRosterScreen> {
                   ),
                 ),
                 Text(
-                  'Lịch làm việc ca trực, chấm công & duyệt nghỉ phép đa chi nhánh',
+                  'Lịch phân ca làm việc, chấm công thực tế & duyệt nghỉ phép đa chi nhánh',
                   style: GoogleFonts.beVietnamPro(fontSize: 10, color: Colors.white60),
                 ),
               ],

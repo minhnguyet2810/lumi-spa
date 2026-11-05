@@ -779,7 +779,7 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
             children: [
               _filterTab(
                 0,
-                'Chờ duyệt ($pendingCount)',
+                'Chờ tiếp nhận ($pendingCount)',
                 Icons.hourglass_top_rounded,
               ),
               const SizedBox(width: 8),
@@ -787,13 +787,13 @@ class _AdminBookingScreenState extends State<AdminBookingScreen> {
               const SizedBox(width: 8),
               _filterTab(
                 2,
-                'Đã duyệt ($approvedCount)',
+                'Đã xác nhận ($approvedCount)',
                 Icons.check_circle_outline_rounded,
               ),
               const SizedBox(width: 8),
               _filterTab(
                 3,
-                'Đã từ chối ($rejectedCount)',
+                'Đã hủy ($rejectedCount)',
                 Icons.cancel_outlined,
               ),
             ],

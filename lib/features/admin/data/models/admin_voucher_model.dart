@@ -80,7 +80,7 @@ class AdminVoucherItem {
   }
 
   String get minOrderFormatted {
-    if (minOrder <= 0) return 'Đơn từ 0đ';
+    if (minOrder <= 0) return 'Đơn từ 0 đ';
     return 'Đơn từ ${_formatCurrency(minOrder)}';
   }
 
@@ -117,7 +117,7 @@ class AdminVoucherItem {
 
   static String _formatCurrency(num amount) {
     final formatter = NumberFormat('#,###', 'vi_VN');
-    return '${formatter.format(amount)}đ';
+    return '${formatter.format(amount)} đ';
   }
 
   factory AdminVoucherItem.fromJson(Map<String, dynamic> json, [String? docId]) {

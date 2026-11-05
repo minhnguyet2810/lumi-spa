@@ -531,21 +531,21 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
                         _statGrid(
                           children: [
                             _buildStatCard(
-                              title: 'Chờ duyệt',
+                              title: 'Chờ duyệt trừ kho',
                               count: pendingCount,
                               color: const Color(0xFFD97706),
                               icon: Icons.hourglass_top_rounded,
                             ),
                             const SizedBox(width: 12),
                             _buildStatCard(
-                              title: 'Đang chuẩn bị',
+                              title: 'Đã xác nhận',
                               count: confirmedCount,
                               color: const Color(0xFF2563EB),
                               icon: Icons.inventory_2_outlined,
                             ),
                             const SizedBox(width: 12),
                             _buildStatCard(
-                              title: 'Đang giao',
+                              title: 'Đang giao hàng',
                               count: shippingCount,
                               color: const Color(0xFF7C3AED),
                               icon: Icons.local_shipping_outlined,
@@ -661,12 +661,12 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
                           scrollDirection: Axis.horizontal,
                           child: Row(
                             children: [
-                              _buildFilterChip(0, 'Chờ duyệt', pendingCount),
+                              _buildFilterChip(0, 'Chờ duyệt trừ kho', pendingCount),
                               _buildFilterChip(1, 'Tất cả', allOrders.length),
-                              _buildFilterChip(2, 'Đã duyệt', confirmedCount),
-                              _buildFilterChip(3, 'Đang giao', shippingCount),
-                              _buildFilterChip(4, 'Hoàn thành', completedCount),
-                              _buildFilterChip(5, 'Đã hủy', cancelledCount),
+                              _buildFilterChip(2, 'Đã xác nhận', confirmedCount),
+                              _buildFilterChip(3, 'Đang giao hàng', shippingCount),
+                              _buildFilterChip(4, 'Đã hoàn tất', completedCount),
+                              _buildFilterChip(5, 'Đã hủy đơn', cancelledCount),
                             ],
                           ),
                         ),

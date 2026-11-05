@@ -3,6 +3,9 @@ import '../../../../core/theme/lumi_adaptive.dart';
 
 import 'dart:async';
 
+import 'package:lumi_spa/features/experience/experience_widgets.dart';
+import 'package:lumi_spa/core/settings/app_preferences.dart';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -171,10 +174,7 @@ class _TreatmentHistoryScreenState extends State<TreatmentHistoryScreen> {
                   width: 50,
                   height: 50,
                   child: LumiCatalogImage(
-                    item: {
-                      'id': item.serviceId,
-                      'name': item.serviceName,
-                    },
+                    item: {'id': item.serviceId, 'name': item.serviceName},
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -213,6 +213,17 @@ class _TreatmentHistoryScreenState extends State<TreatmentHistoryScreen> {
             child: Text(
               LumiAdaptive.text(_status(item.status)),
               style: LumiAdaptive.style(_type(15, bold: true)),
+            ),
+          ),
+          const SizedBox(height: 12),
+          OutlinedButton.icon(
+            onPressed: () => rebookLumi(context, item.id),
+            icon: const Icon(Icons.event_repeat_rounded),
+            label: Text(
+              context.lumiText(
+                'Đặt lại liệu trình',
+                'Book this treatment again',
+              ),
             ),
           ),
         ],

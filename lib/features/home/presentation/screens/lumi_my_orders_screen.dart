@@ -1,3 +1,6 @@
+import 'package:lumi_spa/core/settings/app_preferences.dart';
+import 'package:lumi_spa/core/widgets/lumi_signature.dart';
+
 import 'lumi_order_ui.dart';
 import '../../../../core/theme/lumi_adaptive.dart';
 
@@ -235,7 +238,9 @@ class _LumiMyOrdersScreenState extends State<LumiMyOrdersScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(LumiAdaptive.text('Cảm ơn bạn! Đơn hàng đã hoàn thành 🎉')),
+          content: Text(
+            LumiAdaptive.text('Cảm ơn bạn! Đơn hàng đã hoàn thành 🎉'),
+          ),
           backgroundColor: const Color(0xFF16A34A),
         ),
       );
@@ -249,7 +254,9 @@ class _LumiMyOrdersScreenState extends State<LumiMyOrdersScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            LumiAdaptive.text('Không thể hoàn thành đơn hàng. Vui lòng thử lại.'),
+            LumiAdaptive.text(
+              'Không thể hoàn thành đơn hàng. Vui lòng thử lại.',
+            ),
           ),
         ),
       );
@@ -272,7 +279,9 @@ class _LumiMyOrdersScreenState extends State<LumiMyOrdersScreen> {
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 Text(
-                  LumiOrderStore.formatOrderId(order['displayId'] ?? order['id']),
+                  LumiOrderStore.formatOrderId(
+                    order['displayId'] ?? order['id'],
+                  ),
                   style: GoogleFonts.beVietnamPro(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
@@ -317,17 +326,17 @@ class _LumiMyOrdersScreenState extends State<LumiMyOrdersScreen> {
                         if (mounted) setState(() {});
                       },
                       style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 12,
+                        ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
                       child: FittedBox(
                         fit: BoxFit.scaleDown,
-                        child: Text(
-                          LumiAdaptive.text('Chi tiết'),
-                          maxLines: 1,
-                        ),
+                        child: Text(LumiAdaptive.text('Chi tiết'), maxLines: 1),
                       ),
                     ),
                   ),
@@ -348,7 +357,10 @@ class _LumiMyOrdersScreenState extends State<LumiMyOrdersScreen> {
                       ),
                       style: FilledButton.styleFrom(
                         backgroundColor: const Color(0xFF16A34A),
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 12,
+                        ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -412,39 +424,17 @@ class _LumiMyOrdersScreenState extends State<LumiMyOrdersScreen> {
           : ListView(
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 30),
               children: [
-                LumiOrderUi.panel(
-                  context,
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Icon(
-                        Icons.shopping_bag_outlined,
-                        size: 32,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        LumiAdaptive.text('Đơn hàng của tôi'),
-                        style: GoogleFonts.beVietnamPro(
-                          fontSize: 28,
-                          fontWeight: FontWeight.w700,
-                          color: Theme.of(context).colorScheme.onSurface,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        LumiAdaptive.text(
-                          'Theo dõi lịch sử mua sắm và trạng thái các đơn hàng của bạn tại LUMI.',
-                        ),
-                        style: GoogleFonts.beVietnamPro(
-                          fontSize: 16,
-                          height: 1.5,
-                          color: Theme.of(context).colorScheme.onSurface,
-                        ),
-                      ),
-                    ],
+                LumiSignatureHeader(
+                  eyebrow: 'THE LUMI COLLECTION',
+                  title: context.lumiText(
+                    'Những điều bạn\nchọn cho mình.',
+                    'Your little\ncollection of care.',
                   ),
-                  hero: true,
+                  description: context.lumiText(
+                    'Theo dõi đơn hàng và xem lại những sản phẩm bạn yêu thích.',
+                    'Track your orders and revisit your favourite finds.',
+                  ),
+                  icon: Icons.shopping_bag_outlined,
                 ),
                 const SizedBox(height: 20),
                 _statusFilter(),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lumi_spa/features/experience/experience_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../../../core/network/lumi_api_client.dart';
@@ -266,6 +267,11 @@ class _AdminPortalHubScreenState extends State<AdminPortalHubScreen>
             tooltip: 'Tài khoản quản trị',
             icon: const Icon(Icons.more_horiz_rounded, color: ink),
             onSelected: (action) async {
+              if (action == 'dashboard') {
+                await Navigator.of(context).push<void>(
+                  MaterialPageRoute(builder: (_) => const LumiAdminDashboard()),
+                );
+              }
               if (action == 'api') {
                 await _checkApi();
               }
@@ -280,6 +286,14 @@ class _AdminPortalHubScreenState extends State<AdminPortalHubScreen>
               }
             },
             itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'dashboard',
+                child: ListTile(
+                  leading: Icon(Icons.dashboard_outlined),
+                  title: Text('Tổng quan LUMI'),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
               PopupMenuItem(
                 value: 'api',
                 enabled: !_checkingApi,

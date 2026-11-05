@@ -1,3 +1,6 @@
+import 'package:lumi_spa/core/settings/app_preferences.dart';
+import 'package:lumi_spa/core/widgets/lumi_signature.dart';
+
 import '../../../../core/services/fcm_service.dart';
 import '../../../../core/theme/lumi_adaptive.dart';
 
@@ -17,8 +20,6 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen>
     with TickerProviderStateMixin {
   late final AnimationController _motionController;
-  late final AnimationController _ambientController;
-  late final Animation<double> _bannerZoom;
   late final Animation<double> _contentFade;
   late final Animation<Offset> _contentSlide;
 
@@ -28,13 +29,6 @@ class _LoginScreenState extends State<LoginScreen>
     _motionController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1350),
-    );
-    _ambientController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 6500),
-    )..repeat(reverse: true);
-    _bannerZoom = Tween<double>(begin: 1.0, end: 1.14).animate(
-      CurvedAnimation(parent: _ambientController, curve: Curves.easeInOutSine),
     );
     _contentFade = CurvedAnimation(
       parent: _motionController,
@@ -50,6 +44,14 @@ class _LoginScreenState extends State<LoginScreen>
     _motionController.forward();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (MediaQuery.disableAnimationsOf(context)) {
+      _motionController.value = 1;
+    }
+  }
+
   final _name = TextEditingController();
   final _email = TextEditingController();
   final _password = TextEditingController();
@@ -60,7 +62,6 @@ class _LoginScreenState extends State<LoginScreen>
 
   @override
   void dispose() {
-    _ambientController.dispose();
     _motionController.dispose();
     _name.dispose();
     _email.dispose();
@@ -154,7 +155,7 @@ class _LoginScreenState extends State<LoginScreen>
         if (credential.user != null) {
           try {
             await _syncUserProfile(credential.user!);
-          await FcmService.instance.syncTokenToFirestore();
+            await FcmService.instance.syncTokenToFirestore();
           } on FirebaseException {
             // Không chặn đăng nhập nếu Firestore tạm thời không khả dụng.
             // Hồ sơ sẽ được thử tạo lại ở lần đăng nhập tiếp theo.
@@ -269,93 +270,18 @@ class _LoginScreenState extends State<LoginScreen>
                         label: Text(LumiAdaptive.text('Quay lại')),
                       ),
                     ),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(32),
-                      child: SizedBox(
-                        height: size.maxHeight < 690 ? 195 : 245,
-                        child: Stack(
-                          fit: StackFit.expand,
-                          children: [
-                            AnimatedBuilder(
-                              animation: _bannerZoom,
-                              builder: (context, child) => Transform.scale(
-                                scale: _bannerZoom.value,
-                                child: child,
-                              ),
-                              child: Image.asset(
-                                'assets/images/welcome_spa_3.png',
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                            DecoratedBox(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.centerLeft,
-                                  end: Alignment.centerRight,
-                                  colors: [
-                                    LumiAdaptive.color(
-                                      Color(0xB52E2421),
-                                      surface: true,
-                                    ),
-                                    LumiAdaptive.color(
-                                      Color(0x002E2421),
-                                      surface: true,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(
-                                22,
-                                24,
-                                22,
-                                24,
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    LumiAdaptive.text('LUMI.'),
-                                    style: LumiAdaptive.style(
-                                      GoogleFonts.beVietnamPro(
-                                        fontSize: 28,
-                                        fontWeight: FontWeight.w800,
-                                        color: LumiAdaptive.color(Colors.white),
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 7),
-                                  Text(
-                                    LumiAdaptive.text(
-                                      'Your little escape,\nright here.',
-                                    ),
-                                    style: LumiAdaptive.style(
-                                      GoogleFonts.beVietnamPro(
-                                        fontSize: 14,
-                                        height: 1.35,
-                                        color: LumiAdaptive.color(Colors.white),
-                                      ),
-                                    ),
-                                  ),
-                                  const Spacer(),
-                                  Text(
-                                    LumiAdaptive.text('SPA & WELLNESS'),
-                                    style: LumiAdaptive.style(
-                                      GoogleFonts.beVietnamPro(
-                                        fontSize: 14,
-                                        letterSpacing: 2,
-                                        fontWeight: FontWeight.w700,
-                                        color: LumiAdaptive.color(Colors.white),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
+                    LumiSignatureHeader(
+                      eyebrow: 'LUMI · SPA & WELLNESS',
+                      title: context.lumiText(
+                        'Chào bạn,\nmình dành chút thời gian nhé.',
+                        'Welcome to\nyour little escape.',
                       ),
+                      description: context.lumiText(
+                        'Một tài khoản để lưu những điều bạn thích, đặt lịch và theo dõi hành trình chăm sóc.',
+                        'Save your favourites, book your next visit and keep your care in one place.',
+                      ),
+                      image: 'assets/images/welcome_spa_3.png',
+                      icon: Icons.spa_outlined,
                     ),
                     const SizedBox(height: 25),
                     Padding(

@@ -26,6 +26,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
+app.use('/api/ai', require('./routes/ai'));
 app.use(express.json());
 app.use(['/api/admin-bookings', '/api/admin-orders', '/api/admin-users', '/api/admin-dev'], requireAuth, requireAdmin, (req, res, next) => {
   if (!db.hasCredentials) return res.status(503).json({ success: false, message: 'LUMI chưa thể kết nối dữ liệu.' });
@@ -41,6 +42,7 @@ app.use('/api/membership', membershipRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/me', profileRoutes);
+app.use('/api/experience', require('./routes/experience'));
 
 // Convert Firestore Timestamp into JSON-compatible values.
 function serialize(value) {
@@ -803,6 +805,18 @@ app.post('/api/admin-dev/clear-test-data', async (req, res) => {
 if (require.main === module) {
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`LUMI API running at http://localhost:${PORT}`);
+    const { runReminders } = require('./services/experience_service');
+    let checkingReminders = false;
+    const tick = async () => {
+      if (checkingReminders) return;
+      checkingReminders = true;
+      try { await runReminders(db, pushService.sendPushToUser); }
+      catch (error) { console.warn('Reminder worker:', error.message); }
+      finally { checkingReminders = false; }
+    };
+    tick();
+    const reminderTimer = setInterval(tick, 60000);
+    reminderTimer.unref();
   });
 }
 

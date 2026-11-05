@@ -1,3 +1,7 @@
+import 'package:lumi_spa/core/widgets/lumi_signature.dart';
+import 'package:lumi_spa/features/ai/lumi_ai_home_card.dart';
+import 'package:lumi_spa/features/ai/lumi_ai_screen.dart';
+
 import '../../../../core/widgets/lumi_interactions.dart';
 import '../../../../core/widgets/lumi_catalog_image.dart';
 import '../../../../core/theme/lumi_adaptive.dart';
@@ -597,9 +601,7 @@ class _HomeScreenState extends State<HomeScreen> {
               decoration: BoxDecoration(
                 color: LumiAdaptive.color(Colors.white, surface: true),
                 borderRadius: BorderRadius.circular(18),
-                border: Border.all(
-                  color: LumiAdaptive.color(blush),
-                ),
+                border: Border.all(color: LumiAdaptive.color(blush)),
               ),
               child: Row(
                 children: [
@@ -814,9 +816,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             surface: true,
                           ),
                           borderRadius: BorderRadius.circular(19),
-                          border: Border.all(
-                            color: LumiAdaptive.color(blush),
-                          ),
+                          border: Border.all(color: LumiAdaptive.color(blush)),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -933,6 +933,20 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
           ),
+          const SizedBox(height: 20),
+          LumiAiHomeCard(
+            onTap: () {
+              if (FirebaseAuth.instance.currentUser == null) {
+                context.push('/login');
+                return;
+              }
+              Navigator.of(context).push<void>(
+                MaterialPageRoute(builder: (_) => const LumiAiScreen()),
+              );
+            },
+          ),
+          const SizedBox(height: 20),
+          const LumiMomentCard(),
         ],
       ),
     );
@@ -950,7 +964,10 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Text(
         LumiAdaptive.text(message),
         style: LumiAdaptive.style(
-          GoogleFonts.beVietnamPro(color: LumiAdaptive.color(_ink), fontSize: 13),
+          GoogleFonts.beVietnamPro(
+            color: LumiAdaptive.color(_ink),
+            fontSize: 13,
+          ),
         ),
       ),
     ),

@@ -1,5 +1,15 @@
+// LUMI_PROFILE_MENU_V2
+import 'package:lumi_spa/core/widgets/lumi_interactions.dart';
+
+import 'package:lumi_spa/core/settings/app_preferences.dart';
+import 'package:lumi_spa/core/widgets/lumi_signature.dart';
+import 'package:lumi_spa/features/ai/lumi_ai_screen.dart';
+
 import '../../../../core/theme/lumi_adaptive.dart';
 import 'support_screen.dart';
+
+import 'package:lumi_spa/features/experience/experience_screen.dart';
+
 import 'treatment_history_screen.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
@@ -95,24 +105,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
     () => ListView(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 130),
       children: [
-        SafeArea(
-          bottom: false,
-          child: Padding(
-            padding: const EdgeInsets.only(top: 12, bottom: 24),
-            child: Text(
-              LumiAdaptive.text('Tài khoản'),
-              style: LumiAdaptive.style(
-                LumiStyle.body(
-                  size: 28,
-                  color: LumiAdaptive.color(LumiStyle.ink, surface: true),
-                ).copyWith(fontWeight: FontWeight.w700, height: 1.2),
-              ),
-            ),
+        LumiSignatureHeader(
+          eyebrow: 'MY LUMI SPACE',
+          title: context.lumiText(
+            'Chăm mình,\ntheo cách của bạn.',
+            'Your space.\nYour kind of care.',
           ),
+          description: context.lumiText(
+            'Hồ sơ, đặc quyền và những trải nghiệm bạn yêu thích — ở cùng một nơi.',
+            'Your profile, membership and favourite experiences, all together.',
+          ),
+          icon: Icons.person_outline_rounded,
         ),
-        _profileCard(),
+        const SizedBox(height: 20),
+        LumiSoftEntrance(child: _profileCard()),
         const SizedBox(height: 14),
-        _membershipCard(),
+        LumiSoftEntrance(child: _membershipCard()),
+        const SizedBox(height: 14),
+        const LumiMomentCard(),
         const SizedBox(height: 14),
         _settingsCard(),
         const SizedBox(height: 18),
@@ -174,7 +184,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       surface: true,
                     ),
                     foregroundImage: hasPhoto ? NetworkImage(photoUrl) : null,
-                    onForegroundImageError: hasPhoto ? (error, stackTrace) {} : null,
+                    onForegroundImageError: hasPhoto
+                        ? (error, stackTrace) {}
+                        : null,
                     child: !hasPhoto
                         ? Icon(
                             Icons.person_outline_rounded,
@@ -354,74 +366,96 @@ class _ProfileScreenState extends State<ProfileScreen> {
     },
   );
 
-  Widget _settingsCard() => _card(
-    child: Column(
-      children: [
-        _setting(
-          Icons.settings_outlined,
-          'Cài đặt',
-          'Tùy chọn tài khoản',
-          () => context.push('/settings'),
+  Widget _settingsCard() => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      Padding(
+        padding: const EdgeInsets.fromLTRB(4, 10, 4, 16),
+        child: Text(
+          Localizations.localeOf(context).languageCode == 'en'
+              ? 'YOUR LUMI ESSENTIALS'
+              : 'KHÔNG GIAN CỦA BẠN',
+          style: LumiStyle.body(
+            size: 11,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ).copyWith(letterSpacing: 1.7, fontWeight: FontWeight.w700),
         ),
-        Divider(
-          height: 20,
-          color: LumiAdaptive.color(LumiStyle.line, surface: true),
-        ),
-        _setting(
-          Icons.location_on_outlined,
-          'Địa chỉ nhận hàng',
-          'Sổ địa chỉ giao nhận (chuẩn Shopee)',
-          widget.isLoggedIn
-              ? () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (_) => const AddressesScreen(),
-                  ),
-                )
-              : widget.onLogin,
-        ),
-        Divider(
-          height: 20,
-          color: LumiAdaptive.color(LumiStyle.line, surface: true),
-        ),
+      ),
+      _setting(
+        Icons.auto_awesome_outlined,
+        'LUMI AI',
+        'Trò chuyện và khám phá mỹ phẩm cùng bạn',
+        widget.isLoggedIn
+            ? () => Navigator.of(context).push(
+                MaterialPageRoute<void>(builder: (_) => const LumiAiScreen()),
+              )
+            : widget.onLogin,
+      ),
+      _setting(
+        Icons.favorite_border_rounded,
+        'Góc riêng của bạn',
+        'Yêu thích, nhắc lịch, đặt lại và đánh giá',
+        widget.isLoggedIn
+            ? () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const LumiExperienceScreen(),
+                ),
+              )
+            : widget.onLogin,
+      ),
+      const SizedBox.shrink(),
+      _setting(
+        Icons.settings_outlined,
+        'Cài đặt',
+        'Tùy chọn tài khoản',
+        () => context.push('/settings'),
+      ),
+      const SizedBox.shrink(),
+      _setting(
+        Icons.location_on_outlined,
+        'Địa chỉ nhận hàng',
+        'Sổ địa chỉ giao nhận (chuẩn Shopee)',
+        widget.isLoggedIn
+            ? () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const AddressesScreen(),
+                ),
+              )
+            : widget.onLogin,
+      ),
+      const SizedBox.shrink(),
 
+      _setting(
+        Icons.event_note_outlined,
+        'Lịch sử liệu trình',
+        'Xem các lịch hẹn của bạn',
+        widget.isLoggedIn
+            ? () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const TreatmentHistoryScreen(),
+                ),
+              )
+            : widget.onLogin,
+      ),
+      const SizedBox.shrink(),
+      if (widget.onOrders != null) ...[
         _setting(
-          Icons.event_note_outlined,
-          'Lịch sử liệu trình',
-          'Xem các lịch hẹn của bạn',
-          widget.isLoggedIn
-              ? () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (_) => const TreatmentHistoryScreen(),
-                  ),
-                )
-              : widget.onLogin,
+          Icons.shopping_bag_outlined,
+          'Đơn hàng của tôi',
+          'Quản lý và theo dõi đơn mua sản phẩm',
+          widget.onOrders!,
         ),
-        Divider(
-          height: 20,
-          color: LumiAdaptive.color(LumiStyle.line, surface: true),
-        ),
-        if (widget.onOrders != null) ...[
-          _setting(
-            Icons.shopping_bag_outlined,
-            'Đơn hàng của tôi',
-            'Quản lý và theo dõi đơn mua sản phẩm',
-            widget.onOrders!,
-          ),
-          Divider(
-            height: 20,
-            color: LumiAdaptive.color(LumiStyle.line, surface: true),
-          ),
-        ],
-        _setting(
-          Icons.support_agent_outlined,
-          'Hỗ trợ và liên hệ',
-          'Liên hệ với LUMI',
-          () => Navigator.of(context).push(
-            MaterialPageRoute<void>(builder: (_) => const LumiSupportScreen()),
-          ),
-        ),
+        const SizedBox.shrink(),
       ],
-    ),
+      _setting(
+        Icons.support_agent_outlined,
+        'Hỗ trợ và liên hệ',
+        'Liên hệ với LUMI',
+        () => Navigator.of(context).push(
+          MaterialPageRoute<void>(builder: (_) => const LumiSupportScreen()),
+        ),
+      ),
+    ],
   );
 
   Widget _setting(
@@ -430,64 +464,113 @@ class _ProfileScreenState extends State<ProfileScreen> {
     String subtitle,
     VoidCallback onTap,
   ) {
-    final background = icon == Icons.settings_outlined
-        ? const Color(0xFFE6F1F5)
-        : icon == Icons.location_on_outlined
-        ? const Color(0xFFFBE7DC)
-        : icon == Icons.event_note_outlined
-        ? const Color(0xFFFBE7DC)
-        : const Color(0xFFEDF1E5);
-    final foreground = icon == Icons.settings_outlined
-        ? const Color(0xFF406779)
-        : icon == Icons.location_on_outlined
-        ? LumiStyle.rose
-        : icon == Icons.event_note_outlined
-        ? LumiStyle.rose
-        : const Color(0xFF526442);
-
-    return Semantics(
-      hint: subtitle,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(16),
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10),
-            child: Row(
-              children: [
-                Container(
-                  width: 46,
-                  height: 46,
-                  decoration: BoxDecoration(
-                    color: LumiAdaptive.color(background, surface: true),
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  child: Icon(
-                    icon,
-                    color: LumiAdaptive.color(foreground),
-                    size: 25,
-                  ),
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final english = Localizations.localeOf(context).languageCode == 'en';
+    final ink = dark ? const Color(0xFFFFF1E6) : const Color(0xFF463B35);
+    final accent = dark ? const Color(0xFFF0BC9E) : const Color(0xFFA65A3E);
+    final hints = <String, String>{
+      'LUMI AI': english
+          ? 'Chat and explore your care options'
+          : 'Trò chuyện và khám phá cách chăm mình',
+      'Góc riêng của bạn': english
+          ? 'Favourites, reminders and reviews'
+          : 'Yêu thích, nhắc lịch và đánh giá',
+      'Cài đặt': english
+          ? 'Language, appearance and preferences'
+          : 'Ngôn ngữ, giao diện và tùy chọn',
+      'Địa chỉ nhận hàng': english
+          ? 'Manage your delivery addresses'
+          : 'Quản lý địa chỉ giao nhận',
+      'Lịch sử liệu trình': english
+          ? 'Revisit your appointments'
+          : 'Xem lại các lịch hẹn của bạn',
+      'Đơn hàng của tôi': english
+          ? 'Track your shopping journey'
+          : 'Theo dõi hành trình mua sắm',
+      'Hỗ trợ và liên hệ': english
+          ? 'We are here to help'
+          : 'LUMI luôn sẵn sàng hỗ trợ',
+    };
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 9),
+      child: LumiPressFeedback(
+        child: Container(
+          decoration: BoxDecoration(
+            color: dark ? const Color(0xFF2D3837) : const Color(0xFFFFFDFA),
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(
+              color: dark ? const Color(0xFF46534E) : const Color(0xFFEDE1D6),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF604536)
+                    .withValues(alpha: dark ? .02 : .045),
+                blurRadius: 14,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(22),
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              onTap: onTap,
+              hoverColor: accent.withValues(alpha: .06),
+              splashColor: accent.withValues(alpha: .12),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 15,
                 ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Text(
-                    LumiAdaptive.text(title),
-                    style: LumiAdaptive.style(
-                      LumiStyle.body(
-                        size: 17,
-                        color: LumiAdaptive.color(LumiStyle.ink, surface: true),
-                      ).copyWith(fontWeight: FontWeight.w600, letterSpacing: 0),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 43,
+                      height: 43,
+                      decoration: BoxDecoration(
+                        color: dark
+                            ? const Color(0xFF574237)
+                            : const Color(0xFFF9E7D9),
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      child: Icon(icon, color: accent, size: 22),
                     ),
-                  ),
+                    const SizedBox(width: 13),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            LumiAdaptive.text(title),
+                            style: LumiStyle.body(size: 15, color: ink)
+                                .copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  height: 1.35,
+                                ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            hints[title] ?? LumiAdaptive.text(subtitle),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: LumiStyle.body(
+                              size: 12,
+                              color: ink.withValues(alpha: .72),
+                            ).copyWith(height: 1.45),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 9),
+                    Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      size: 12,
+                      color: accent,
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 8),
-                Icon(
-                  Icons.chevron_right_rounded,
-                  size: 23,
-                  color: LumiAdaptive.color(LumiStyle.muted),
-                ),
-              ],
+              ),
             ),
           ),
         ),

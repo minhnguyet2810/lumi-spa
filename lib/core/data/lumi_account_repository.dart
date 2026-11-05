@@ -1,3 +1,5 @@
+import 'package:firebase_auth/firebase_auth.dart';
+
 import '../network/lumi_api_client.dart';
 import 'lumi_order_store.dart';
 
@@ -14,13 +16,16 @@ class LumiAccountProfile {
   final String email;
   final String phone;
 
-  factory LumiAccountProfile.fromJson(Map<String, dynamic> json) =>
-      LumiAccountProfile(
-        uid: json['uid']?.toString() ?? '',
-        displayName: json['displayName']?.toString() ?? '',
-        email: json['email']?.toString() ?? '',
-        phone: json['phone']?.toString() ?? '',
-      );
+  factory LumiAccountProfile.fromJson(Map<String, dynamic> json) {
+    final rawName = json['displayName']?.toString() ?? json['name']?.toString() ?? '';
+    final rawPhone = json['phone']?.toString() ?? json['phoneNumber']?.toString() ?? '';
+    return LumiAccountProfile(
+      uid: json['uid']?.toString() ?? '',
+      displayName: rawName,
+      email: json['email']?.toString() ?? '',
+      phone: rawPhone,
+    );
+  }
 }
 
 class LumiTierInfo {
@@ -442,6 +447,9 @@ abstract final class LumiAccountRepository {
       '/api/me',
       body: {'displayName': displayName, 'phone': phone},
     );
+    try {
+      await FirebaseAuth.instance.currentUser?.updateDisplayName(displayName);
+    } catch (_) {}
   }
 
   static Future<LumiMembership> fetchMembership() async {

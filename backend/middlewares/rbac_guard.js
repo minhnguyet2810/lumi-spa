@@ -24,7 +24,7 @@ async function authenticateToken(req, res, next) {
 
     // Xác định role từ custom claims hoặc cờ admin hiện hữu
     let role = decodedToken.role;
-    if (!role && decodedToken.admin === true) {
+    if (role === 'admin' || decodedToken.admin === true || decodedToken.isAdmin === true) {
       role = 'super_admin';
     }
 
@@ -35,7 +35,11 @@ async function authenticateToken(req, res, next) {
         const uDoc = await db.collection('users').doc(decodedToken.uid).get();
         if (uDoc.exists) {
           const uData = uDoc.data();
-          role = uData.role || (uData.isAdmin ? 'super_admin' : 'customer');
+          if (uData.role === 'admin' || uData.role === 'super_admin' || uData.isAdmin === true) {
+            role = 'super_admin';
+          } else {
+            role = uData.role || 'customer';
+          }
           assignedBranchId = uData.assignedBranchId || null;
         }
       } catch (_) {}
@@ -70,7 +74,7 @@ function requireRoles(allowedRoles = []) {
     const currentRole = req.user.role || 'customer';
 
     // Super Admin luôn có quyền truy cập toàn bộ tài nguyên
-    if (currentRole === 'super_admin' || req.user.admin === true) {
+    if (currentRole === 'super_admin' || currentRole === 'admin' || req.user.admin === true || req.user.isAdmin === true) {
       return next();
     }
 
@@ -98,13 +102,13 @@ function enforceBranchAccess(req, res, next) {
   const currentRole = req.user.role || 'customer';
 
   // Super Admin được quyền quản lý tất cả chi nhánh
-  if (currentRole === 'super_admin' || req.user.admin === true) {
-    req.branchContext = req.query.branchId || req.body.branchId || null;
+  if (currentRole === 'super_admin' || currentRole === 'admin' || req.user.admin === true || req.user.isAdmin === true) {
+    req.branchContext = req.query?.branchId || req.body?.branchId || null;
     return next();
   }
 
   const assignedBranch = req.user.assignedBranchId;
-  const requestedBranch = req.query.branchId || req.body.branchId || req.params.branchId;
+  const requestedBranch = req.query?.branchId || req.body?.branchId || req.params?.branchId;
 
   if (requestedBranch && requestedBranch !== 'all' && assignedBranch && requestedBranch !== assignedBranch) {
     return res.status(403).json({

@@ -497,7 +497,104 @@ async function updateSkinProfile({
 }
 
 /**
- * 5. Tra cứu danh sách Khách hàng kèm Chỉ số CRM KPI 360 độ (List Customers with CRM 360 Metrics)
+ * 5. Cập nhật Thông Tin Hồ Sơ Khách Hàng (Tên, SĐT, Email, Địa chỉ, Ghi chú, Giới tính, Ngày sinh)
+ */
+async function updateCustomerProfile({
+  customerId,
+  displayName,
+  phone,
+  email,
+  address,
+  notes,
+  gender,
+  birthday,
+  staffId = 'admin',
+}) {
+  if (!customerId) {
+    throw Object.assign(new Error('Mã khách hàng không được để trống.'), { statusCode: 400 });
+  }
+
+  if (!db.hasCredentials) {
+    throw Object.assign(new Error('Chưa kết nối cơ sở dữ liệu.'), { statusCode: 503 });
+  }
+
+  const userRef = db.collection('users').doc(customerId);
+  const userSnap = await userRef.get();
+
+  if (!userSnap.exists) {
+    throw Object.assign(new Error(`Không tìm thấy khách hàng '${customerId}'.`), { statusCode: 404 });
+  }
+
+  const now = FieldValue.serverTimestamp();
+  const updates = {
+    updatedAt: now,
+  };
+
+  if (displayName !== undefined && typeof displayName === 'string' && displayName.trim()) {
+    updates.displayName = displayName.trim();
+    updates.name = displayName.trim();
+  }
+
+  if (phone !== undefined && typeof phone === 'string' && phone.trim()) {
+    updates.phone = phone.trim();
+    updates.phoneNumber = phone.trim();
+  }
+
+  if (email !== undefined && typeof email === 'string' && email.trim()) {
+    updates.email = email.trim();
+  }
+
+  if (address !== undefined && typeof address === 'string') {
+    updates.address = address.trim();
+    updates.shippingAddress = address.trim();
+  }
+
+  if (notes !== undefined && typeof notes === 'string') {
+    updates.adminNotes = notes.trim();
+    updates.notes = notes.trim();
+  }
+
+  if (gender !== undefined && typeof gender === 'string') {
+    updates.gender = gender.trim();
+  }
+
+  if (birthday !== undefined && typeof birthday === 'string') {
+    updates.birthday = birthday.trim();
+  }
+
+  await userRef.set(updates, { merge: true });
+
+  // Đồng bộ displayName sang Firebase Auth nếu khả dụng
+  try {
+    const { getAuth } = require('firebase-admin/auth');
+    const authUpdates = {};
+    if (updates.displayName) authUpdates.displayName = updates.displayName;
+    if (Object.keys(authUpdates).length > 0) {
+      await getAuth().updateUser(customerId, authUpdates);
+    }
+  } catch (_) {}
+
+  // Ghi nhật ký kiểm toán quản trị
+  try {
+    await db.collection('customer_audit_logs').add({
+      customerId,
+      staffId,
+      action: 'update_profile',
+      updates,
+      createdAt: now,
+    });
+  } catch (_) {}
+
+  const full360 = await getCustomer360Profile(customerId);
+  return {
+    success: true,
+    message: 'Cập nhật hồ sơ khách hàng thành công.',
+    data: full360.data,
+  };
+}
+
+/**
+ * 6. Tra cứu danh sách Khách hàng kèm Chỉ số CRM KPI 360 độ (List Customers with CRM 360 Metrics)
  */
 async function listCustomersWith360Metrics({
   query = '',
@@ -638,6 +735,7 @@ module.exports = {
   adjustLoyalty,
   moderateCustomer,
   updateSkinProfile,
+  updateCustomerProfile,
   listCustomersWith360Metrics,
   calculateTierFromMetrics,
   normalizeTier,

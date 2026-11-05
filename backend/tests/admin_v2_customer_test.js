@@ -53,8 +53,9 @@ async function runCustomerCrmTests() {
     assert.equal(typeof customerService.adjustLoyalty, 'function');
     assert.equal(typeof customerService.moderateCustomer, 'function');
     assert.equal(typeof customerService.updateSkinProfile, 'function');
+    assert.equal(typeof customerService.updateCustomerProfile, 'function');
     assert.equal(typeof customerService.listCustomersWith360Metrics, 'function');
-    console.log('✅ PASS: customer_360_service cung cấp đầy đủ 5 hàm nghiệp vụ CRM.');
+    console.log('✅ PASS: customer_360_service cung cấp đầy đủ 6 hàm nghiệp vụ CRM.');
   }
 
   // Test 4: RBAC Guard cho phép super_admin & branch_manager chỉnh sửa Loyalty

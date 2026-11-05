@@ -5,6 +5,7 @@ const {
   adjustLoyalty,
   moderateCustomer,
   updateSkinProfile,
+  updateCustomerProfile,
   listCustomersWith360Metrics,
 } = require('../../services/customer_360_service');
 
@@ -129,6 +130,38 @@ router.patch('/:id/skin-profile', requireRoles(['super_admin', 'branch_manager',
     return res.status(status).json({ success: false, message: err.message || 'Không thể cập nhật hồ sơ da liễu.' });
   }
 });
+
+/**
+ * PATCH & PUT /api/v2/admin/customers/:id
+ * Cập nhật thông tin hồ sơ cơ bản của khách hàng (Họ tên, SĐT, Email, Địa chỉ, Ghi chú)
+ */
+async function handleUpdateCustomer(req, res) {
+  try {
+    const customerId = req.params.id;
+    const { displayName, name, phone, phoneNumber, email, address, notes, adminNotes, gender, birthday } = req.body || {};
+    const staffId = req.user?.uid || 'admin';
+
+    const result = await updateCustomerProfile({
+      customerId,
+      displayName: displayName || name,
+      phone: phone || phoneNumber,
+      email,
+      address,
+      notes: notes || adminNotes,
+      gender,
+      birthday,
+      staffId,
+    });
+    return res.json(result);
+  } catch (err) {
+    console.error(`[AdminCustomersV2] Update customer profile error for ${req.params.id}:`, err);
+    const status = err.statusCode || 500;
+    return res.status(status).json({ success: false, message: err.message || 'Không thể cập nhật hồ sơ khách hàng.' });
+  }
+}
+
+router.patch('/:id', requireRoles(['super_admin', 'branch_manager', 'receptionist']), handleUpdateCustomer);
+router.put('/:id', requireRoles(['super_admin', 'branch_manager', 'receptionist']), handleUpdateCustomer);
 
 module.exports = router;
 

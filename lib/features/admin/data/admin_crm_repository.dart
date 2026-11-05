@@ -227,5 +227,78 @@ class AdminCrmRepository {
       throw StateError(decoded['message']?.toString() ?? 'Không thể cập nhật hồ sơ da liễu.');
     }
   }
+
+  /// 7. Cập nhật thông tin cơ bản của khách hàng (Họ tên, SĐT, Email, Địa chỉ, Ghi chú)
+  Future<Map<String, dynamic>> updateCustomerProfile({
+    required String customerId,
+    String? displayName,
+    String? phone,
+    String? email,
+    String? address,
+    String? notes,
+    String? gender,
+    String? birthday,
+  }) async {
+    final payload = <String, dynamic>{
+      if (displayName != null) 'displayName': displayName.trim(),
+      if (phone != null) 'phone': phone.trim(),
+      if (email != null) 'email': email.trim(),
+      if (address != null) 'address': address.trim(),
+      if (notes != null) 'notes': notes.trim(),
+      if (gender != null) 'gender': gender.trim(),
+      if (birthday != null) 'birthday': birthday.trim(),
+    };
+
+    try {
+      final uri = Uri.parse('${ApiConfig.baseUrl}/api/v2/admin/customers/$customerId');
+      final headers = await _authHeaders();
+      final res = await http.patch(
+        uri,
+        headers: headers,
+        body: jsonEncode(payload),
+      ).timeout(const Duration(seconds: 10));
+
+      final decoded = jsonDecode(utf8.decode(res.bodyBytes));
+      if (res.statusCode == 200 && decoded['success'] == true) {
+        return Map<String, dynamic>.from(decoded);
+      }
+    } catch (e) {
+      debugPrint('⚠️ [AdminCrmRepository] updateCustomerProfile API error: $e. Thử ghi Firestore fallback...');
+    }
+
+    // Fallback: Cập nhật trực tiếp Firestore
+    try {
+      final firestoreUpdates = <String, dynamic>{
+        'updatedAt': FieldValue.serverTimestamp(),
+      };
+      if (displayName != null) {
+        firestoreUpdates['displayName'] = displayName.trim();
+        firestoreUpdates['name'] = displayName.trim();
+      }
+      if (phone != null) {
+        firestoreUpdates['phone'] = phone.trim();
+        firestoreUpdates['phoneNumber'] = phone.trim();
+      }
+      if (email != null) firestoreUpdates['email'] = email.trim();
+      if (address != null) {
+        firestoreUpdates['address'] = address.trim();
+        firestoreUpdates['shippingAddress'] = address.trim();
+      }
+      if (notes != null) {
+        firestoreUpdates['adminNotes'] = notes.trim();
+        firestoreUpdates['notes'] = notes.trim();
+      }
+      if (gender != null) firestoreUpdates['gender'] = gender.trim();
+      if (birthday != null) firestoreUpdates['birthday'] = birthday.trim();
+
+      await _usersCol.doc(customerId).set(firestoreUpdates, SetOptions(merge: true));
+      return {
+        'success': true,
+        'message': 'Đã cập nhật thông tin khách hàng thành công.',
+      };
+    } catch (err) {
+      throw StateError('Không thể cập nhật hồ sơ khách hàng: $err');
+    }
+  }
 }
 

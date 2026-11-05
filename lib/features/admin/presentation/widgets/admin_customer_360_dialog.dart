@@ -5,6 +5,7 @@ import '../../data/admin_crm_repository.dart';
 import '../../data/models/customer_360_model.dart';
 import '../theme/admin_colors.dart';
 import 'admin_customer_moderation_dialog.dart';
+import 'admin_edit_customer_dialog.dart';
 import 'admin_loyalty_adjust_dialog.dart';
 import 'admin_skin_profile_dialog.dart';
 
@@ -128,6 +129,24 @@ class _AdminCustomer360DialogState extends State<AdminCustomer360Dialog>
         customerId: _profile!.customerId,
         customerName: _profile!.displayName,
         initialProfile: _profile!.skinProfile,
+        onUpdated: () {
+          _loadProfile();
+          widget.onDataChanged?.call();
+        },
+      ),
+    );
+  }
+
+  void _openEditCustomer() {
+    if (_profile == null) return;
+    showDialog(
+      context: context,
+      builder: (_) => AdminEditCustomerDialog(
+        customerId: _profile!.customerId,
+        initialName: _profile!.displayName,
+        initialPhone: _profile!.phone,
+        initialEmail: _profile!.email,
+        initialAddress: _profile!.address,
         onUpdated: () {
           _loadProfile();
           widget.onDataChanged?.call();
@@ -381,6 +400,21 @@ class _AdminCustomer360DialogState extends State<AdminCustomer360Dialog>
                     icon: const Icon(Icons.healing_rounded, size: 16),
                     label: Text(
                       'Cập nhật Hồ sơ Da',
+                      style: GoogleFonts.beVietnamPro(fontSize: 11, fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  OutlinedButton.icon(
+                    onPressed: _openEditCustomer,
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AdminColors.primary,
+                      side: const BorderSide(color: AdminColors.primary),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    icon: const Icon(Icons.edit_note_rounded, size: 16),
+                    label: Text(
+                      'Sửa Hồ Sơ',
                       style: GoogleFonts.beVietnamPro(fontSize: 11, fontWeight: FontWeight.w700),
                     ),
                   ),

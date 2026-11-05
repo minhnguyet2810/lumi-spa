@@ -6,6 +6,7 @@ import '../../data/models/customer_360_model.dart';
 import '../theme/admin_colors.dart';
 import '../widgets/admin_customer_360_dialog.dart';
 import '../widgets/admin_customer_moderation_dialog.dart';
+import '../widgets/admin_edit_customer_dialog.dart';
 import '../widgets/admin_loyalty_adjust_dialog.dart';
 import '../widgets/admin_skin_profile_dialog.dart';
 
@@ -112,6 +113,20 @@ class _AdminCustomer360ScreenState extends State<AdminCustomer360Screen> {
           knownAllergies: c.knownAllergies,
           contraindications: c.contraindications,
         ),
+        onUpdated: _fetchData,
+      ),
+    );
+  }
+
+  void _openEditCustomer(CustomerListItem c) {
+    showDialog(
+      context: context,
+      builder: (_) => AdminEditCustomerDialog(
+        customerId: c.id,
+        initialName: c.displayName,
+        initialPhone: c.phone,
+        initialEmail: c.email,
+        initialAddress: c.address,
         onUpdated: _fetchData,
       ),
     );
@@ -734,6 +749,16 @@ class _AdminCustomer360ScreenState extends State<AdminCustomer360Screen> {
                 tooltip: 'Hồ sơ Da Liễu',
                 icon: const Icon(Icons.healing_rounded, color: Color(0xFF0284C7), size: 18),
                 onPressed: () => _openSkinProfileEdit(c),
+                style: IconButton.styleFrom(
+                  backgroundColor: AdminColors.elevatedSurface,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8), side: const BorderSide(color: AdminColors.border)),
+                ),
+              ),
+              const SizedBox(width: 4),
+              IconButton(
+                tooltip: 'Sửa thông tin hồ sơ',
+                icon: const Icon(Icons.edit_note_rounded, color: AdminColors.primary, size: 20),
+                onPressed: () => _openEditCustomer(c),
                 style: IconButton.styleFrom(
                   backgroundColor: AdminColors.elevatedSurface,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8), side: const BorderSide(color: AdminColors.border)),

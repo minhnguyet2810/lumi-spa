@@ -14,17 +14,37 @@ router.get('/', async (req, res) => {
     const doc = await db.collection('users').doc(uid).get();
 
     if (!doc.exists) {
-      return res.status(404).json({
-        success: false,
-        message: 'Chưa tìm thấy hồ sơ người dùng.',
+      const defaultData = {
+        uid,
+        email: req.user.email || '',
+        displayName: req.user.name || req.user.displayName || (req.user.email ? req.user.email.split('@')[0] : 'Khách hàng LUMI'),
+        name: req.user.name || req.user.displayName || (req.user.email ? req.user.email.split('@')[0] : 'Khách hàng LUMI'),
+        phone: req.user.phone_number || '',
+        phoneNumber: req.user.phone_number || '',
+        role: 'customer',
+        createdAt: FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp(),
+      };
+      if (db.hasCredentials) {
+        try {
+          await db.collection('users').doc(uid).set(defaultData, { merge: true });
+        } catch (_) {}
+      }
+      return res.json({
+        success: true,
+        data: defaultData,
       });
     }
 
+    const userData = doc.data() || {};
     return res.json({
       success: true,
       data: {
         uid,
-        ...doc.data(),
+        displayName: userData.displayName || userData.name || req.user.name || '',
+        phone: userData.phone || userData.phoneNumber || '',
+        email: userData.email || req.user.email || '',
+        ...userData,
       },
     });
   } catch (error) {
@@ -40,34 +60,66 @@ router.get('/', async (req, res) => {
 router.patch('/', async (req, res) => {
   try {
     const uid = req.user.uid;
-    const { displayName, phone } = req.body || {};
+    const {
+      displayName,
+      name,
+      phone,
+      phoneNumber,
+      address,
+      gender,
+      birthday,
+      photoUrl,
+      avatarUrl,
+    } = req.body || {};
     const updates = {};
 
-    if (displayName !== undefined) {
+    const resolvedName = displayName !== undefined ? displayName : name;
+    if (resolvedName !== undefined) {
       if (
-        typeof displayName !== 'string' ||
-        !displayName.trim() ||
-        displayName.trim().length > 100
+        typeof resolvedName !== 'string' ||
+        !resolvedName.trim() ||
+        resolvedName.trim().length > 100
       ) {
         return res.status(400).json({
           success: false,
           message: 'Tên không hợp lệ.',
         });
       }
-      updates.displayName = displayName.trim();
+      updates.displayName = resolvedName.trim();
+      updates.name = resolvedName.trim();
     }
 
-    if (phone !== undefined) {
+    const resolvedPhone = phone !== undefined ? phone : phoneNumber;
+    if (resolvedPhone !== undefined) {
       if (
-        typeof phone !== 'string' ||
-        !/^[0-9+().\s-]{8,20}$/.test(phone.trim())
+        typeof resolvedPhone !== 'string' ||
+        !/^[0-9+().\s-]{8,20}$/.test(resolvedPhone.trim())
       ) {
         return res.status(400).json({
           success: false,
           message: 'Số điện thoại không hợp lệ.',
         });
       }
-      updates.phone = phone.trim();
+      updates.phone = resolvedPhone.trim();
+      updates.phoneNumber = resolvedPhone.trim();
+    }
+
+    if (address !== undefined && typeof address === 'string') {
+      updates.address = address.trim();
+    }
+
+    if (gender !== undefined && typeof gender === 'string') {
+      updates.gender = gender.trim();
+    }
+
+    if (birthday !== undefined && typeof birthday === 'string') {
+      updates.birthday = birthday.trim();
+    }
+
+    const resolvedPhoto = photoUrl !== undefined ? photoUrl : avatarUrl;
+    if (resolvedPhoto !== undefined && typeof resolvedPhoto === 'string') {
+      updates.photoUrl = resolvedPhoto.trim();
+      updates.avatarUrl = resolvedPhoto.trim();
     }
 
     if (Object.keys(updates).length === 0) {
@@ -80,20 +132,30 @@ router.patch('/', async (req, res) => {
     const ref = db.collection('users').doc(uid);
     const existing = await ref.get();
 
-    if (!existing.exists) {
-      return res.status(404).json({
-        success: false,
-        message: 'Chưa tìm thấy hồ sơ người dùng.',
-      });
-    }
-
     updates.updatedAt = FieldValue.serverTimestamp();
 
-    await ref.update(updates);
+    if (!existing.exists) {
+      updates.uid = uid;
+      updates.email = req.user.email || '';
+      updates.role = 'customer';
+      updates.createdAt = FieldValue.serverTimestamp();
+      await ref.set(updates, { merge: true });
+    } else {
+      await ref.update(updates);
+    }
+
+    // Đồng bộ sang Firebase Auth nếu có thể
+    if (updates.displayName) {
+      try {
+        const { getAuth } = require('firebase-admin/auth');
+        await getAuth().updateUser(uid, { displayName: updates.displayName });
+      } catch (_) {}
+    }
 
     return res.json({
       success: true,
       message: 'Cập nhật hồ sơ thành công.',
+      data: updates,
     });
   } catch (error) {
     console.error('Profile PATCH error:', error);

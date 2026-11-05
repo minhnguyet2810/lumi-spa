@@ -20,6 +20,8 @@ const membershipRoutes = require('./routes/membership');
 const orderRoutes = require('./routes/orders');
 const bookingRoutes = require('./routes/bookings');
 const profileRoutes = require('./routes/profile');
+const adminV2OrderRoutes = require('./routes/admin_v2/orders');
+const adminV2BookingRoutes = require('./routes/admin_v2/bookings');
 const { requireAuth, requireAdmin } = require('./admin_auth');
 
 const app = express();
@@ -41,6 +43,8 @@ app.use('/api/membership', membershipRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/me', profileRoutes);
+app.use('/api/v2/admin/orders', adminV2OrderRoutes);
+app.use('/api/v2/admin/bookings', adminV2BookingRoutes);
 
 // Convert Firestore Timestamp into JSON-compatible values.
 function serialize(value) {
